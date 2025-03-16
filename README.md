@@ -1,29 +1,40 @@
-# FitVue
+# FitVue 🏋️‍♂️🍏  
 
-This template should help get you started developing with Vue 3 in Vite.
+🚀 **FitVue** es una plataforma interactiva para personas interesadas en el fitness y la vida saludable. Ofrece recomendaciones personalizadas, seguimiento del progreso y un panel de administración para mejorar la experiencia de los usuarios.  
 
-## Recommended IDE Setup
+## 🎯 Objetivos del proyecto  
+✅ Desarrollar una página web dinámica e intuitiva.  
+✅ Permitir a los usuarios registrarse y recibir recomendaciones personalizadas.  
+✅ Ofrecer planes de ejercicio y alimentación adaptados a cada usuario.  
+✅ Facilitar el seguimiento del progreso en hábitos saludables.  
+✅ Proporcionar herramientas a los administradores para monitorizar usuarios.  
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+---
 
-## Customize configuration
+## 🛠️ Tecnologías utilizadas  
+- **Frontend:** VueJS ⚡  
+- **Backend y Base de datos:** Firebase 🔥  
+- **Autenticación:** Firebase Auth 🔐  
+- **Estilos:** TailwindCSS 🎨  
+- **Gestión de estado:** Vuex / Pinia 🌐  
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+---
 
-## Project Setup
+## ✨ Características principales  
+### 👤 Gestión de usuario  
+- Registro e inicio de sesión con autenticación segura.  
+- Creación y edición del perfil con datos personales.  
 
-```sh
-npm install
-```
+### 🏋️‍♂️ Planes personalizados  
+- Generación automática de rutinas de ejercicios y dietas según objetivos.  
+- Ajuste dinámico basado en el progreso y preferencias del usuario.  
 
-### Compile and Hot-Reload for Development
+### 📊 Seguimiento del progreso  
+- Registro de calorías consumidas y ejercicios completados.  
+- Cálculo automático del porcentaje de cumplimiento del plan.  
+- Historial y estadísticas visuales.  
 
-```sh
-npm run dev
-```
-
-### Compile and Minify for Production
-
-```sh
-npm run build
-```
+### 🛠️ Panel de administración  
+- Seguimiento de la evolución de los usuarios.  
+- Edición y asignación de rutinas y dietas.  
+- Registro de medidas físicas (peso, grasa corporal, etc.).  
