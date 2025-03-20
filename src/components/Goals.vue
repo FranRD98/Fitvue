@@ -9,7 +9,7 @@
       
       <!-- Card 1 -->
       <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-        <img src="https://placehold.co/200/0F3D3E/FFF?text=Goal+1&font=poppins" alt="Rutinas Personalizadas" class="w-full h-64 object-cover rounded-t-lg mb-4" />
+        <img src="/rutina.jpg" alt="Rutinas Personalizadas" class="w-full h-64 object-cover rounded-t-lg mb-4" />
         <div class="p-6">
           <h3 class="text-xl font-bold text-[var(--color-primary)]">Rutinas Personalizadas</h3>
           <p class="mt-4 text-[var(--color-secondary)]">Adaptamos el entrenamiento según tus metas y nivel físico.</p>
@@ -18,7 +18,7 @@
 
       <!-- Card 2 -->
       <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-        <img src="https://placehold.co/200/1F5F5B/FFF?text=Goal+2&font=poppins" alt="Dietas Personalizadas" class="w-full h-64 object-cover rounded-t-lg mb-4" />
+        <img src="/dieta.jpg" alt="Dietas Personalizadas" class="w-full h-64 object-cover rounded-t-lg mb-4" />
         <div class="p-6">
           <h3 class="text-xl font-bold text-[var(--color-primary)]">Dietas Personalizadas</h3>
           <p class="mt-4 text-[var(--color-secondary)]">Planes de nutrición que se ajustan a tus necesidades específicas.</p>
@@ -27,7 +27,7 @@
 
       <!-- Card 3 -->
       <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-        <img src="https://placehold.co/200/387373/FFF?text=Goal+3&font=poppins" alt="Monitoreo de Progreso" class="w-full h-64 object-cover rounded-t-lg mb-4" />
+        <img src="/monitoreo.jpg" alt="Monitoreo de Progreso" class="w-full h-64 object-cover rounded-t-lg mb-4" />
         <div class="p-6">
           <h3 class="text-xl font-bold text-[var(--color-primary)]">Monitoreo de Progreso</h3>
           <p class="mt-4 text-[var(--color-secondary)]">Haz un seguimiento detallado de tus avances con nuestras herramientas.</p>
@@ -36,7 +36,7 @@
 
       <!-- Card 4 -->
       <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-        <img src="https://placehold.co/200/0F3D3E/FFF?text=Goal+4&font=poppins" alt="Entrenadores Personalizados" class="w-full h-64 object-cover rounded-t-lg mb-4" />
+        <img src="/trainer.jpg" alt="Entrenadores Personalizados" class="w-full h-64 object-cover rounded-t-lg mb-4" />
         <div class="p-6">
           <h3 class="text-xl font-bold text-[var(--color-primary)]">Entrenadores Personalizados</h3>
           <p class="mt-4 text-[var(--color-secondary)]">Entrenadores expertos que te guiarán en cada paso de tu entrenamiento.</p>

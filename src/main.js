@@ -1,14 +1,14 @@
-import './assets/main.css'
+import './assets/main.css';
 
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
+import { createApp } from 'vue';
+import { createPinia } from 'pinia';
 
-import Home from './views/Home.vue'
-import router from './router'
+import App from './App.vue'; // ✅ Importamos App.vue en lugar de Home.vue
+import router from './router'; // ✅ Mantenemos el router
 
-const home = createApp(Home)
+const app = createApp(App); // ✅ Creamos la aplicación con App.vue
 
-home.use(createPinia())
-home.use(router)
+app.use(createPinia());
+app.use(router);
 
-home.mount('#app')
+app.mount('#app'); // ✅ Montamos la aplicación correctamente
