@@ -5,7 +5,7 @@
 
     <p class="text-lg text-[var(--color-primary)] mb-8">Ya sea que busques perder peso, ganar músculo o mejorar tu salud, FitVue tiene un plan para ti. Nuestro enfoque personalizado se adapta a todas las edades, condiciones físicas y objetivos.</p>
 
-    <div class="w-4/5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+    <div class="max-w-5/6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
       
       <!-- Card 1 -->
       <div class="bg-white rounded-lg shadow-lg overflow-hidden">

@@ -9,16 +9,33 @@ import Contact from '@/views/Contact.vue';
 import Login from '@/views/Login.vue';
 import StartChange from '@/views/StartChange.vue';
 import NotFound from '@/views/NotFound.vue';
+import Routine from '@/views/Routine-list.vue';
+import Nutrition from '@/views/Nutrition-list.vue';
+import FAQ from '@/views/FAQ.vue';
+
+import PrivacyPolicy from '@/views/PrivacyPolicy.vue';
+import Terms from '@/views/Terms.vue';
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
-  { path: '/about', name: 'About', component: About },
-  { path: '/plans', name: 'Plans', component: Plans },
-  { path: '/cases', name: 'Cases', component: SuccessStories },
-  { path: '/contact', name: 'Contact', component: Contact },
+  { path: '/nosotros', name: 'About', component: About },
+  { path: '/rutinas/entrenamiento', name: 'Rutinas Entrenamiento', component: Routine },
+  { path: '/rutinas/mindfulness', name: 'Rutinas Mindfulness', component: Routine },
+  { path: '/rutinas/estiramientos', name: 'Rutinas Estiramientos', component: Routine },
+  { path: '/rutinas/yoga', name: 'Rutinas Yoga', component: Routine },
+  { path: '/nutricion/dietas', name: 'Nutrición Dietas', component: Nutrition },
+  { path: '/nutricion/suplementacion', name: 'Nutrición Suplementación', component: Nutrition },
+  { path: '/nutricion/recetas', name: 'Nutrición Recetas', component: Nutrition },
+  { path: '/planes', name: 'Plans', component: Plans },
+  { path: '/casos-de-exito', name: 'Cases', component: SuccessStories },
+  { path: '/contacto', name: 'Contact', component: Contact },
+  { path: '/FAQ', name: 'Preguntas Frecuentes', component: FAQ },
   { path: '/login', name: 'Login', component: Login },
-  { path: '/startChange', name: 'Start Change', component: StartChange },
+  { path: '/empezar', name: 'Start Change', component: StartChange },
   { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound }, // Página 404
+  { path: '/politica-privacidad', name: 'Politica de privacidad', component: PrivacyPolicy }, // Página 'Terminos y condiciones'
+  { path: '/terminos-y-condiciones', name: 'Terminos y condiciones', component: Terms }, // Página 'Terminos y condiciones'
+
 ];
 
 const router = createRouter({
