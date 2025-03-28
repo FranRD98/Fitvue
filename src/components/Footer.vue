@@ -1,5 +1,5 @@
 <template>
-  <footer class="bg-[var(--color-primary)] text-white py-12">
+  <footer class="bg-cyan-800 text-white py-12">
     <div class="w-4/5 mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
       <!-- Columna 1: Logo -->
       <div class="flex flex-col space-y-4">
