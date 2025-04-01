@@ -1,17 +1,26 @@
+<script setup>
+import { ref } from 'vue'
+const mobileMenuOpen = ref(false)
+const toggleMobileMenu = () => mobileMenuOpen.value = !mobileMenuOpen.value
+const closeMenu = () => mobileMenuOpen.value = false
+</script>
+
 <template>
   <!-- Navbar -->
   <nav class="bg-white shadow-md sticky top-0 z-50">
-    <div class="max-w-5/6 mx-auto px-6">
+    <div class="max-w-7xl mx-auto px-6">
+      
       <!-- Contenedor principal con 3 grupos -->
       <div class="flex justify-between items-center h-20">
         
         <!-- Grupo 1: Logo -->
-        <router-link to="/">
-        <h1 class="text-3xl font-bold tracking-widest flex items-center gap-2 mr-8 m-0">
-            <img src="/Logo_azul.png" alt="FitVue Logo" class="h-10 w-auto">FitVue
-        </h1>
-        </router-link>
-        
+        <div class="hidden lg:flex items-center space-x-6">
+          <router-link to="/">
+            <h1 class="text-3xl font-bold tracking-widest flex items-center gap-2 mr-8 m-0">
+                <img src="/Logo_azul.png" alt="FitVue Logo" class="h-10 w-auto">FitVue
+            </h1>
+          </router-link>
+        </div>
         
         <!-- Grupo 2: Menú central -->
         <div class="hidden lg:flex items-center space-x-6">
@@ -19,15 +28,16 @@
           <!-- Enlaces '¿Qué es Fitvue?' -->
           <router-link to="/nosotros" class="nav-link px-1 py-2 text-gray-800 font-medium hover:text-cyan-800">¿Qué es FitVue?</router-link>
 
-
           <!-- Dropdown Ejercicios -->
           <div class="relative dropdown">
-            <button class="px-1 py-2 text-gray-800 font-medium hover:text-cyan-800">
+            <router-link to="/rutinas">
+            <a class="px-1 py-2 text-gray-800 font-medium hover:text-cyan-800">
               Rutinas
               <svg class="w-4 h-4 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
               </svg>
-            </button>
+            </a>
+          </router-link>
             
             <div class="dropdown-menu bg-white shadow-lg mt-0 border-t border-gray-200">
               <div class="dropdown-content p-8">
@@ -65,13 +75,15 @@
           
           <!-- Dropdown Nutrición -->
           <div class="relative dropdown">
-            <button class="px-1 py-2 text-gray-800 font-medium hover:text-cyan-800">
+
+            <router-link to="/nutricion">
+            <a class="px-1 py-2 text-gray-800 font-medium hover:text-cyan-800">
               Nutrición
               <svg class="w-4 h-4 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
               </svg>
-            </button>
-            
+            </a>
+          </router-link>
             <div class="dropdown-menu bg-white shadow-lg mt-0 border-t border-gray-200">
               <div class="dropdown-content p-8">
                 <h2 class="text-2xl font-bold text-cyan-800 mb-6">Aquí encontrarás consejos de nutrición</h2>
@@ -80,7 +92,7 @@
                   <!-- Dietas -->
                   <div class="flex items-center space-x-3">
                     <svg  xmlns="http://www.w3.org/2000/svg"  width="32"  height="32"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-avocado"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M17.8 14.04a3.905 3.905 0 0 1 1.337 -2.075c1.195 -.985 1.816 -2.285 1.863 -3.902c-.047 -1.43 -.54 -2.626 -1.477 -3.586c-.96 -.938 -2.156 -1.43 -3.585 -1.477c-1.618 .047 -2.918 .668 -3.903 1.863c-.562 .68 -1.254 1.125 -2.074 1.336c-.938 .188 -1.828 .48 -2.672 .88c-.844 .398 -1.559 .878 -2.144 1.44c-1.43 1.501 -2.145 3.224 -2.145 5.169c0 1.946 .715 3.668 2.145 5.168c1.5 1.429 3.222 2.144 5.168 2.144c1.945 0 3.667 -.715 5.167 -2.145c.563 -.585 1.055 -1.3 1.477 -2.144c.398 -.844 .68 -1.723 .844 -2.637v-.035z" /><path d="M10.87 10.036c-.942 .112 -1.794 .538 -2.556 1.278c-.74 .762 -1.166 1.614 -1.278 2.556c-.135 .92 .112 1.704 .74 2.354c.65 .628 1.435 .875 2.354 .74c.942 -.112 1.794 -.538 2.556 -1.278c.74 -.762 1.166 -1.614 1.278 -2.556c.135 -.92 -.112 -1.704 -.74 -2.354c-.65 -.628 -1.435 -.875 -2.354 -.74z" /></svg>
-                    <router-link to="/nutricion/dieta" class="nav-link text-md font-semibold text-gray-600 hover:text-cyan-8000">Dietas</router-link>
+                    <router-link to="/nutricion/dietas" class="nav-link text-md font-semibold text-gray-600 hover:text-cyan-8000">Dietas</router-link>
                   </div>
 
                   <!-- Suplementación -->
@@ -100,9 +112,6 @@
             </div>
           </div>
           
-          <!-- Enlaces simples -->
-          <router-link to="/planes" class="nav-link px-1 py-2 text-gray-800 font-medium hover:text-cyan-800">Planes</router-link>
-          <router-link to="/casos-de-exito" class="nav-link px-1 py-2 text-gray-800 font-medium hover:text-cyan-800">Casos de éxito</router-link>
         </div>
         
         <!-- Grupo 3: Botones de acción -->
@@ -110,9 +119,43 @@
           <router-link to="/login" class="px-4 py-2 text-gray-800 font-medium hover:text-cyan-800">Iniciar sesión</router-link>
           <router-link to="/empezar" class="bg-cyan-800 text-white px-6 py-2 rounded-full font-medium hover:bg-cyan-900 transition-colors">Consigue tu cambio</router-link>
         </div>
+
+        <!-- Botón menú móvil -->
+        <button @click="toggleMobileMenu" class="lg:hidden text-gray-800 focus:outline-none">
+          <svg v-if="!mobileMenuOpen" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+          <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
+
     </div>
   </nav>
+
+   <!-- Menú móvil -->
+   <transition name="fade">
+  <div
+    v-if="mobileMenuOpen"
+    class="w-full bg-white lg:hidden text-center px-6 py-6 space-y-5 shadow-md border-t"
+  >
+    <router-link @click="closeMenu" to="/nosotros" class="block text-gray-800 font-medium">¿Qué es FitVue?</router-link>
+    <router-link @click="closeMenu" to="/rutinas/entrenamiento" class="block text-gray-800 font-medium">Rutinas</router-link>
+    <router-link @click="closeMenu" to="/nutricion/dieta" class="block text-gray-800 font-medium">Nutrición</router-link>
+    <router-link @click="closeMenu" to="/planes" class="block text-gray-800 font-medium">Planes</router-link>
+    <router-link @click="closeMenu" to="/casos-de-exito" class="block text-gray-800 font-medium">Casos de éxito</router-link>
+
+    <div class="pt-5 border-t border-gray-200">
+      <router-link @click="closeMenu" to="/login" class="block text-gray-800 font-medium mt-4">Iniciar sesión</router-link>
+      <router-link @click="closeMenu" to="/empezar" class="inline-block bg-cyan-800 text-white px-6 py-2 rounded-full font-medium hover:bg-cyan-900 mt-2">Consigue tu cambio</router-link>
+    </div>
+  </div>
+</transition>
+
+
 </template>
 
 <style>
@@ -148,5 +191,28 @@
     }
     .nav-link:hover:after {
       width: 100%;
+    }
+
+    .nav-link {
+      position: relative;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 2px;
+      bottom: -6px;
+      left: 0;
+      background-color: #155e75;
+      transition: width 0.3s ease;
+    }
+    .nav-link:hover::after {
+      width: 100%;
+    }
+    .fade-enter-active, .fade-leave-active {
+      transition: opacity 0.3s ease;
+    }
+    .fade-enter-from, .fade-leave-to {
+      opacity: 0;
     }
   </style>

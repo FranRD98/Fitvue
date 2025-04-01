@@ -2,32 +2,33 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 // Importamos las vistas
 import Home from '@/views/Home.vue';
-import About from '@/views/About.vue';
-import Plans from '@/views/Plans.vue';
-import SuccessStories from '@/views/SuccessStories.vue';
-import Contact from '@/views/Contact.vue';
-import Login from '@/views/Login.vue';
-import StartChange from '@/views/StartChange.vue';
-import NotFound from '@/views/NotFound.vue';
-import Routine from '@/views/Routine-list.vue';
-import Nutrition from '@/views/Nutrition-list.vue';
-import FAQ from '@/views/FAQ.vue';
+import About from '@/views/static/About.vue';
+import Contact from '@/views/static/Contact.vue';
+import Login from '@/views/auth/Login.vue';
+import StartChange from '@/views/auth/StartChange.vue';
+import NotFound from '@/views/static/NotFound.vue';
+import FAQ from '@/views/static/FAQ.vue';
 
-import PrivacyPolicy from '@/views/PrivacyPolicy.vue';
-import Terms from '@/views/Terms.vue';
+import Routines from '@/views/routines/Routines.vue';
+import Nutrition from '@/views/nutrition/Nutritions.vue';
+import Diets from '@/views/nutrition/Diets.vue';
+import Suplementation from '@/views/nutrition/Suplementation.vue';
+
+import PrivacyPolicy from '@/views/legal/PrivacyPolicy.vue';
+import Terms from '@/views/legal/Terms.vue';
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/nosotros', name: 'About', component: About },
-  { path: '/rutinas/entrenamiento', name: 'Rutinas Entrenamiento', component: Routine },
-  { path: '/rutinas/mindfulness', name: 'Rutinas Mindfulness', component: Routine },
-  { path: '/rutinas/estiramientos', name: 'Rutinas Estiramientos', component: Routine },
-  { path: '/rutinas/yoga', name: 'Rutinas Yoga', component: Routine },
-  { path: '/nutricion/dietas', name: 'Nutrición Dietas', component: Nutrition },
-  { path: '/nutricion/suplementacion', name: 'Nutrición Suplementación', component: Nutrition },
+  { path: '/rutinas', name: 'Rutinas', component: Routines },
+  { path: '/rutinas/entrenamiento', name: 'Rutinas Entrenamiento', component: Routines },
+  { path: '/rutinas/mindfulness', name: 'Rutinas Mindfulness', component: Routines },
+  { path: '/rutinas/estiramientos', name: 'Rutinas Estiramientos', component: Routines },
+  { path: '/rutinas/yoga', name: 'Rutinas Yoga', component: Routines },
+  { path: '/nutricion', name: 'Nutrición', component: Nutrition },
+  { path: '/nutricion/dietas', name: 'Nutrición Dietas', component: Diets },
+  { path: '/nutricion/suplementacion', name: 'Nutrición Suplementación', component: Suplementation },
   { path: '/nutricion/recetas', name: 'Nutrición Recetas', component: Nutrition },
-  { path: '/planes', name: 'Plans', component: Plans },
-  { path: '/casos-de-exito', name: 'Cases', component: SuccessStories },
   { path: '/contacto', name: 'Contact', component: Contact },
   { path: '/FAQ', name: 'Preguntas Frecuentes', component: FAQ },
   { path: '/login', name: 'Login', component: Login },

@@ -1,15 +1,15 @@
 <script setup>
-import HeroSection from '@/components/HeroSection.vue'
-import Goals from '@/components/Goals.vue'
-import ChallengesPrograms from '@/components/ChallengesPrograms.vue'
-import FlexiblePlans from '@/components/FlexiblePlans.vue'
-import JoinTheCommunity from '@/components/JoinTheCommunity.vue'
+import LandingHero from '@/components/Home/LandingHero.vue'
+import Features from '@/components/Home/CoreFeatures.vue'
+import ChallengesPrograms from '@/components/Home/ProgramsAndChallenges.vue'
+import PricingPlans from '@/components/Home/PricingPlans.vue'
+import UserTestimonials from '@/components/Home/UserTestimonials.vue'
 </script>
 
 <template>
-    <HeroSection />
-    <Goals />
+    <LandingHero />
+    <Features />
     <ChallengesPrograms />
-    <FlexiblePlans />
-    <JoinTheCommunity />
+    <PricingPlans />
+    <UserTestimonials />
 </template>
