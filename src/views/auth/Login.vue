@@ -1,20 +1,34 @@
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { signInWithEmailAndPassword } from 'firebase/auth'
+import { auth } from '@/firebase/config' // Asegúrate de que esta ruta es correcta
+
+const router = useRouter()
 
 const email = ref('')
 const password = ref('')
 const error = ref('')
 
-const login = () => {
+const login = async () => {
   if (!email.value || !password.value) {
     error.value = 'Todos los campos son obligatorios'
     return
   }
 
   error.value = ''
-  console.log('Iniciando sesión con:', email.value, password.value)
+
+  try {
+    await signInWithEmailAndPassword(auth, email.value, password.value)
+    // Redirecciona al dashboard (o donde quieras)
+    router.push('/dashboard')
+  } catch (err) {
+    console.error(err)
+    error.value = 'Credenciales incorrectas o usuario no registrado'
+  }
 }
 </script>
+
 
 <template>
   <div class="flex items-center justify-center min-h-screen bg-[var(--color-bg-light)]">
@@ -45,10 +59,7 @@ const login = () => {
       </form>
 
       <p class="mt-4 text-sm text-center text-[var(--color-text)]">
-        ¿No tienes cuenta? <a href="/startChange" class="text-[var(--color-accent)] hover:underline">Consigue tu cambio ya</a>
-      </p>
-      <p class="mt-4 text-xl text-center text-[var(--color-text)]">
-        <a href="/dashboard" class="text-[var(--color-accent)] hover:underline">SOY ADMINISTRADOR</a>
+        ¿No tienes cuenta? <a href="/empezar" class="text-[var(--color-accent)] hover:underline">Consigue tu cambio ya</a>
       </p>
     </div>
   </div>

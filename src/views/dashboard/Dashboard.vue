@@ -1,27 +1,27 @@
 <script setup>
 import { ref, computed, defineAsyncComponent } from 'vue'
+import { useRouter } from 'vue-router'
+import { signOut } from 'firebase/auth'
+import { auth } from '@/firebase/config'
 
-// Aquí irían tus roles reales, por ejemplo: "admin", "coach", "user"
+const router = useRouter()
 const userRole = ref('user')
 
-// Menú del panel (con control de roles)
 const menuItems = [
   { key: 'progress', label: 'Mi Progreso', icon: '📊', roles: ['user', 'coach', 'admin'] },
   { key: 'routines', label: 'Rutinas', icon: '💪', roles: ['user', 'coach'] },
   { key: 'dietas', label: 'Dietas', icon: '🥗', roles: ['user', 'coach'] },
   { key: 'usuarios', label: 'Usuarios', icon: '👥', roles: ['admin'] },
-  { key: 'config', label: 'Configuración', icon: '⚙️', roles: ['user', 'coach', 'admin'] }
+  { key: 'config', label: 'Configuración', icon: '⚙️', roles: ['user', 'coach', 'admin'] },
+  { key: 'logout', label: 'Cerrar Sesión', icon: '🚪', roles: ['user', 'coach', 'admin'] }
 ]
 
-// Filtro según rol
 const visibleMenu = computed(() =>
   menuItems.filter(item => item.roles.includes(userRole.value))
 )
 
-// Estado del panel activo
 const activeKey = ref('progress')
 
-// Componentes dinámicos (lazy-loaded)
 const componentsMap = {
   progress: defineAsyncComponent(() => import('@/components/dashboard/ProgressPanel.vue')),
   routines: defineAsyncComponent(() => import('@/components/dashboard/RoutinesPanel.vue')),
@@ -31,7 +31,23 @@ const componentsMap = {
 }
 
 const ActiveComponent = computed(() => componentsMap[activeKey.value])
+
+// Logout handler
+const handleMenuClick = async (key) => {
+  if (key === 'logout') {
+    try {
+      await signOut(auth)
+      router.push('/')
+    } catch (err) {
+      console.error('Error al cerrar sesión:', err)
+    }
+    return
+  }
+
+  activeKey.value = key
+}
 </script>
+
 
 <template>
   <section class="max-w-7xl mx-auto px-6 py-10 flex flex-col md:flex-row gap-8">
@@ -43,10 +59,10 @@ const ActiveComponent = computed(() => componentsMap[activeKey.value])
         <li
           v-for="item in visibleMenu"
           :key="item.key"
-          @click="activeKey = item.key"
+          @click="handleMenuClick(item.key)"
           :class="[
             'flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg transition',
-            activeKey === item.key
+            activeKey === item.key && item.key !== 'logout'
               ? 'bg-[var(--color-primary)] text-white'
               : 'text-gray-700 hover:bg-gray-100'
           ]"
@@ -54,6 +70,7 @@ const ActiveComponent = computed(() => componentsMap[activeKey.value])
           <span>{{ item.icon }}</span>
           {{ item.label }}
         </li>
+
       </ul>
     </aside>
 
