@@ -47,6 +47,9 @@ const login = () => {
       <p class="mt-4 text-sm text-center text-[var(--color-text)]">
         ¿No tienes cuenta? <a href="/startChange" class="text-[var(--color-accent)] hover:underline">Consigue tu cambio ya</a>
       </p>
+      <p class="mt-4 text-xl text-center text-[var(--color-text)]">
+        <a href="/dashboard" class="text-[var(--color-accent)] hover:underline">SOY ADMINISTRADOR</a>
+      </p>
     </div>
   </div>
 </template>

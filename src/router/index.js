@@ -17,6 +17,8 @@ import Suplementation from '@/views/nutrition/Suplementation.vue';
 import PrivacyPolicy from '@/views/legal/PrivacyPolicy.vue';
 import Terms from '@/views/legal/Terms.vue';
 
+import Dashboard from '@/views/dashboard/Dashboard.vue';
+
 const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/nosotros', name: 'About', component: About },
@@ -32,6 +34,7 @@ const routes = [
   { path: '/contacto', name: 'Contact', component: Contact },
   { path: '/FAQ', name: 'Preguntas Frecuentes', component: FAQ },
   { path: '/login', name: 'Login', component: Login },
+  { path: '/dashboard', name: 'Dashboard', component: Dashboard },
   { path: '/empezar', name: 'Start Change', component: StartChange },
   { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound }, // Página 404
   { path: '/politica-privacidad', name: 'Politica de privacidad', component: PrivacyPolicy }, // Página 'Terminos y condiciones'
