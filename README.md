@@ -20,6 +20,10 @@
 
 ---
 
+![Landing](./public/github/Landing.jpeg)
+
+---
+
 ## ✨ Características principales  
 ### 👤 Gestión de usuario  
 - Registro e inicio de sesión con autenticación segura.  
