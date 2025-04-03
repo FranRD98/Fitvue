@@ -1,32 +1,28 @@
 <script setup>
+import { ref, onMounted } from 'vue'
+import { collection, getDocs } from 'firebase/firestore'
+import { db } from '@/firebase/config'
 import CatalogView from '@/components/catalog/CatalogView.vue'
 
-const diets = [
-  {
-    id: 1,
-    title: 'Dieta cetogénica',
-    image: '/img/dieta-keto.jpg',
-    description: 'Alta en grasas, baja en carbohidratos'
-  },
-  {
-    id: 2,
-    title: 'Dieta mediterránea',
-    image: '/img/dieta-mediterranea.jpg',
-    description: 'Basada en alimentos frescos y saludables'
-  },
-  {
-    id: 3,
-    title: 'Dieta vegetariana',
-    image: '/img/dieta-vegetariana.jpg',
-    description: 'Sin carne, rica en vegetales y proteínas vegetales'
-  }
-]
+const guides = ref([])
 
 const filters = [
-  { label: 'Objetivo', options: ['Energía', 'Mantenimento', 'Quema grasa'] },
+  { label: 'Tipo', options: ['Vitaminas', 'Minerales', 'Ácidos grasos', 'Proteínas'] },
 ]
+
+const loadGuides = async () => {
+  const querySnapshot = await getDocs(collection(db, 'Guias')) // <- Nombre exacto de la colección
+  guides.value = querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }))
+}
+
+onMounted(() => {
+  loadGuides()
+})
 </script>
 
 <template>
-  <CatalogView title="Suplementación" :items="diets" routePrefix="/nutricion/suplementacion" :filters="filters"/>
+  <CatalogView title="Guías de suplementación" :items="guides" routePrefix="/nutricion/suplementacion" :filters="filters" />
 </template>

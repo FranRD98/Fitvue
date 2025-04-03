@@ -3,7 +3,7 @@
 
     <!-- Video de fondo -->
     <video autoplay loop muted playsinline class="absolute top-0 left-0 w-full h-full object-cover z-0">
-      <source src="/Video/Video_banner2.mp4" type="video/mp4">
+      <source src="/Video/videoBanner.mp4" type="video/mp4">
       Tu navegador no soporta videos en HTML5.
     </video>
 

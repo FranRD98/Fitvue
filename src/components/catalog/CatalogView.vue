@@ -69,26 +69,28 @@ const goToPage = (page) => {
       <h1 class="text-3xl font-bold text-[var(--color-primary)] mb-6">
         {{ contentType }}
       </h1>
-
+      
       <!-- Items -->
       <main class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div
+        <router-link
           v-for="item in paginatedItems"
           :key="item.id"
-          class="bg-white rounded-lg shadow hover:shadow-lg overflow-hidden"
+          :to="`${routePrefix}/${item.id}`"
+          class="block bg-white rounded-lg shadow hover:shadow-lg overflow-hidden transition-transform hover:scale-[1.01]"
         >
-          <img :src="item.image" alt="" class="w-full h-60 object-cover" />
+          <img :src="item.coverImage" alt="" class="w-full h-60 object-cover" />
           <div class="p-4 flex flex-col justify-between">
             <div>
               <h3 class="text-lg font-semibold text-[var(--color-primary)]">{{ item.title }}</h3>
               <p class="text-sm text-gray-500 mt-2">{{ item.description }}</p>
             </div>
-            <router-link :to="`${routePrefix}/${item.id}`" class="text-[var(--color-accent)] mt-4 font-semibold">
+            <span class="text-[var(--color-accent)] mt-4 font-semibold">
               Ver más →
-            </router-link>
+            </span>
           </div>
-        </div>
+        </router-link>
       </main>
+
     </div>
     </div>
 

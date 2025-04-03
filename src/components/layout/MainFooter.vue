@@ -1,5 +1,5 @@
 <template>
-  <footer class="bg-[#f3f6f8] text-gray-700 text-sm pt-12">
+  <footer class="bg-[#cccccc] text-gray-700 text-sm pt-12">
     <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-10 items-start pb-12">
       
       <!-- Social + descripción -->

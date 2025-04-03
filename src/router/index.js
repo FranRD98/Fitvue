@@ -13,11 +13,13 @@ import Routines from '@/views/routines/Routines.vue';
 import Nutrition from '@/views/nutrition/Nutritions.vue';
 import Diets from '@/views/nutrition/Diets.vue';
 import Suplementation from '@/views/nutrition/Suplementation.vue';
+import GuideDetail from '@/views/nutrition/GuideDetail.vue';
 
 import PrivacyPolicy from '@/views/legal/PrivacyPolicy.vue';
 import Terms from '@/views/legal/Terms.vue';
 
 import Dashboard from '@/views/dashboard/Dashboard.vue';
+import Register from '@/views/auth/Register.vue';
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
@@ -34,7 +36,9 @@ const routes = [
   { path: '/contacto', name: 'Contact', component: Contact },
   { path: '/FAQ', name: 'Preguntas Frecuentes', component: FAQ },
   { path: '/login', name: 'Login', component: Login },
+  { path: '/registrarse', name: 'Register', component: Register },
   { path: '/dashboard', name: 'Dashboard', component: Dashboard },
+  { path: '/nutricion/suplementacion/:id', name: 'Guide Detail', component: GuideDetail }, // Página 'Detalle guía'
   { path: '/empezar', name: 'Start Change', component: StartChange },
   { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound }, // Página 404
   { path: '/politica-privacidad', name: 'Politica de privacidad', component: PrivacyPolicy }, // Página 'Terminos y condiciones'

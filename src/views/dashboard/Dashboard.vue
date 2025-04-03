@@ -5,12 +5,12 @@ import { signOut } from 'firebase/auth'
 import { auth } from '@/firebase/config'
 
 const router = useRouter()
-const userRole = ref('user')
+const userRole = ref('admin')
 
 const menuItems = [
   { key: 'progress', label: 'Mi Progreso', icon: '📊', roles: ['user', 'coach', 'admin'] },
-  { key: 'routines', label: 'Rutinas', icon: '💪', roles: ['user', 'coach'] },
-  { key: 'dietas', label: 'Dietas', icon: '🥗', roles: ['user', 'coach'] },
+  { key: 'routines', label: 'Rutinas', icon: '💪', roles: ['user', 'coach', 'admin'] },
+  { key: 'dietas', label: 'Dietas', icon: '🥗', roles: ['user', 'coach', 'admin'] },
   { key: 'usuarios', label: 'Usuarios', icon: '👥', roles: ['admin'] },
   { key: 'config', label: 'Configuración', icon: '⚙️', roles: ['user', 'coach', 'admin'] },
   { key: 'logout', label: 'Cerrar Sesión', icon: '🚪', roles: ['user', 'coach', 'admin'] }
@@ -32,7 +32,7 @@ const componentsMap = {
 
 const ActiveComponent = computed(() => componentsMap[activeKey.value])
 
-// Logout handler
+// Logout Function
 const handleMenuClick = async (key) => {
   if (key === 'logout') {
     try {
@@ -50,7 +50,7 @@ const handleMenuClick = async (key) => {
 
 
 <template>
-  <section class="max-w-7xl mx-auto px-6 py-10 flex flex-col md:flex-row gap-8">
+  <section class="max-w-[100rem] mx-auto px-6 py-10 flex flex-col md:flex-row gap-8">
     
     <!-- Sidebar -->
     <aside class="w-full md:w-1/4 bg-white shadow rounded-lg p-6 space-y-4">
