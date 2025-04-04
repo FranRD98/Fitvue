@@ -2,7 +2,7 @@
   <section class="max-w-7xl mx-auto px-6 py-20 gap-4 bg-white text-center flex flex-col items-center">
     <h2 class="text-xl font-semibold mb-6 text-[var(--color-primary)]">/ Qué podemos hacer por ti</h2>
 
-    <p class="text-lg text-[var(--color-primary)] mb-12">
+    <p class="text-lg text-[var(--color-text)] mb-12">
       Ya sea que busques perder peso, ganar músculo o mejorar tu salud, FitVue tiene un plan para ti. Nuestro enfoque personalizado se adapta a todas las edades, condiciones físicas y objetivos.
     </p>
 
@@ -23,7 +23,7 @@
 
         <!-- Contenido centrado horizontal y distribuido verticalmente -->
         <div class="relative z-20 flex flex-col justify-between items-center h-full w-full px-6 py-6 text-white text-center">
-          <h3 class="text-xl font-bold">{{ card.title }}</h3>
+          <h3 class="text-xl">{{ card.title }}</h3>
           <button class="bg-white text-[var(--color-primary)] font-semibold px-4 py-2 rounded-full hover:bg-[var(--color-primary)] hover:text-white transition">
             Más información
           </button>

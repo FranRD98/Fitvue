@@ -59,7 +59,7 @@ const login = async () => {
       </form>
 
       <p class="mt-4 text-sm text-center text-[var(--color-text)]">
-        ¿No tienes cuenta? <a href="/empezar" class="text-[var(--color-accent)] hover:underline">Consigue tu cambio ya</a>
+        ¿No tienes cuenta? <a href="/empezar" class="text-[var(--color-primary)] hover:underline">Consigue tu cambio ya</a>
       </p>
     </div>
   </div>

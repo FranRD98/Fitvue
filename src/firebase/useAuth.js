@@ -5,7 +5,9 @@ import { auth } from '@/firebase/config'
 
 const user = ref(null)
 
+/* Return user information */
 export function useAuth() {
+  
   onMounted(() => {
     onAuthStateChanged(auth, (firebaseUser) => {
       user.value = firebaseUser

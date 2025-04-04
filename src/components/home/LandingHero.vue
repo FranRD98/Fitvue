@@ -18,7 +18,7 @@
       <p class="mt-4 text-lg md:text-xl">
         Planes personalizados y rutinas exclusivas para alcanzar tus metas de salud y bienestar.
       </p>
-      <button class="mt-8 bg-cyan-800 w-3/4 sm:w-1/2 md:w-1/4 px-6 py-3 rounded-full text-white text-lg font-bold transition duration-300 hover:bg-[var(--color-text-dark)] hover:text-[var(--color-primary)]">
+      <button class="mt-8 bg-[var(--color-primary)] w-3/4 sm:w-1/2 md:w-1/4 px-6 py-3 rounded-full text-white text-lg font-semibold transition duration-300 hover:bg-white hover:text-[var(--color-primary)]">
         Únete ahora
       </button>
     </div>

@@ -9,9 +9,8 @@
   --font-body: "Poppins", "Arial", sans-serif;
 
   /* Paleta de colores */
-  --color-primary: #0F3D3E; /* Azul petróleo profundo */
-  --color-secondary: #1F5F5B; /* Verde azulado sutil */
-  --color-accent: #387373; /* Color de acento principal */
+  --color-primary: #005F78; /* Color principal */
+  --color-secondary: #104e64; /* Color secundario (hovers) */
   --color-bg-light: #E8F6F3; /* Fondo claro elegante */
   
   /* Colores de texto */

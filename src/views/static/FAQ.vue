@@ -1,20 +1,27 @@
 <template>
     <div class="bg-gray-100 min-h-screen p-6">
-      <div class="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-md">
-        <h1 class="text-3xl font-bold text-cyan-800 mb-6">Preguntas Frecuentes (FAQ's)</h1>
+      <div class="max-w-3xl mx-auto bg-[var(--color-primary)] p-8 rounded-lg shadow-md">
+        <h1 class="text-3xl font-bold text-white mb-6">Preguntas Frecuentes (FAQ's)</h1>
   
-        <div v-for="(faq, index) in faqs" :key="index" class="mb-6">
-          <button
-            @click="toggleFAQ(index)"
-            class="w-full text-left flex justify-between items-center bg-cyan-100 p-4 rounded-lg"
-          >
-            <span class="text-cyan-900 font-semibold">{{ faq.question }}</span>
-            <span :class="faq.open ? 'rotate-180' : ''" class="transition-transform">
-              ▼
-            </span>
-          </button>
-          <p v-if="faq.open" class="text-gray-700 p-4 bg-gray-50 rounded-lg mt-2">{{ faq.answer }}</p>
-        </div>
+        <div v-for="(faq, index) in faqs" :key="index" class="mb-4">
+        <!-- Botón FAQ -->
+        <button
+          @click="toggleFAQ(index)"
+          class="w-full text-left flex justify-between items-center bg-white p-4 rounded-t-lg border border-b-0"
+          :class="{ 'rounded-b-lg': !faq.open }"
+        >
+          <span class="text-[var(--color-primary)] font-semibold">{{ faq.question }}</span>
+          <span :class="faq.open ? 'rotate-180' : ''" class="transition-transform">▼</span>
+        </button>
+
+        <!-- Contenido -->
+        <p
+          v-if="faq.open"
+          class="text-[var(--color-text)] p-6 bg-gray-50 rounded-b-lg border border-t-0"
+        >
+          {{ faq.answer }}
+        </p>
+      </div>
       </div>
     </div>
   </template>
@@ -43,9 +50,6 @@
   <style scoped>
   button {
     transition: background 0.2s ease-in-out;
-  }
-  button:hover {
-    background: #b2ebf2;
   }
   </style>
   
