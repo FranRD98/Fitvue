@@ -7,7 +7,7 @@
 
   import { useAuth } from '@/firebase/useAuth'
 
-  const { user } = useAuth();
+  const { user, userData, logout } = useAuth();
 
 </script>
 
@@ -126,37 +126,35 @@
         <div class="hidden lg:flex items-center justify-end flex-1">
           <div v-if="user">
 
-            <!-- Dropdown User Logued -->
-            <div class="relative dropdown">
-                <a class="px-1 py-2 text-[var(--color-text)] font-normal hover:text-[var(--color-primary)]">
-                  ¡Hola, {{ user.email }}!
-                  <svg class="w-4 h-4 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                  </svg>
-                </a>
+            <!-- Dropdown User Logged -->
+            <div class="relative group">
+              <!-- Botón avatar y nombre -->
+              <div class="flex items-center space-x-2 cursor-pointer">
+                <img
+                  :src="userData?.avatar || '/icons/default-avatar.svg'"
+                  alt="Foto usuario"
+                  class="w-8 h-8 rounded-full object-cover"
+                />
+                <span class="text-sm text-[var(--color-text)] font-medium">
+                  ¡Hola, {{ userData?.name || 'Usuario' }}!
+                </span>
+                <svg class="w-4 h-4 text-[var(--color-text)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
 
-                <!--<div class="flex items-center gap-4 mb-4">
-                  
-                  <img :src="user.avatar ? user.avatar : '/icons/default-avatar.svg'" alt="Foto usuario" class="w-8 h-8 rounded-full">
-                  <div class="text-left">
-                      <h3 class="text-md font-semibold text-[var(--color-primary)]">{{ user.name }} {{ user.last_name }}</h3>
-                      <h3 class="text-md font-semibold text-[var(--color-primary)]">{{ user.email }}</h3>
-                    </div>
-                </div>-->
-
-                <div class="dropdown-user bg-white shadow-lg mt-0 border-t border-gray-200">
-                  <div class="dropdown-content p-8">
-                    <div class="grid grid-cols-4 gap-8">
-
-                      <!-- Dashboard -->
-                      <div class="flex items-center space-x-3">
-                        <router-link to="/dashboard" class="nav-link text-md font-normal text-[var(--color-text)] hover:text-[var(--color-primary)]">Dashboard</router-link>
-                      </div>
-
-                    </div>
-                  </div>
+              <!-- Submenu -->
+              <div class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div class="p-4 border-b border-gray-100">
+                  <p class="text-sm font-medium text-gray-800">{{ userData?.name }} {{ userData?.last_name }}</p>
+                  <p class="text-xs text-gray-500">{{ user.email }}</p>
+                </div>
+                <div class="flex flex-col p-4 space-y-2">
+                  <router-link to="/dashboard" class="text-sm hover:text-[var(--color-primary)]">Dashboard</router-link>
+                  <button @click="logout" class="text-sm text-left hover:text-[var(--color-primary)]">Cerrar sesión</button>
                 </div>
               </div>
+            </div>
           </div>
           
           <div v-else>

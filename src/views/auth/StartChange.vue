@@ -6,24 +6,22 @@ const router = useRouter()
 
 const step = ref(0)
 const userData = ref({
+  uid:'',
   name:'',
   last_name:'',
   email:'',
-  password:'',
   birthday:'',
-  role:'',
-  suscriptionPlan:'',
+  role:'user',
+  suscriptionPlan:'free',
   height: '',
   weight: '',
   age: '',
   activity: 'sedentario',
-  avatar: '',
-  completedForm: '',
+  avatar: '/icons/default-avatar.svg',
+  completedForm: 'true',
   created:'',
   goal: '', 
-  dietType: '',
   gender: '',
-  allergies: '',
 });
 
 const macros = ref({ carbs: 0, proteins: 0, fats: 0 })
@@ -77,21 +75,18 @@ const calorieResult = ref(null)
       name:'',
       last_name:'',
       email:'',
-      password:'',
       birthday:'',
-      role:'',
-      suscriptionPlan:'',
+      role:'user',
+      suscriptionPlan:'free',
       height: '',
       weight: '',
       age: '',
       activity: 'sedentario',
-      avatar: '',
-      completedForm: '',
+      avatar: '/icons/default-avatar.svg',
+      completedForm: 'false',
       created:'',
       goal: '', 
-      dietType: '',
       gender: '',
-      allergies: '',
     }
   }
 
@@ -195,7 +190,7 @@ const goToRegister = () => {
               
               <div 
                 @click="selectGoal('perder_grasa')"
-                :class="{'bg-[var(--color-text-dark)] border-[var(--color-accent)]': userData.goal === 'perder_grasa'}"
+                :class="{'bg-[var(--color-text-dark)] border-[var(--color-primary)]': userData.goal === 'perder_grasa'}"
                 class="p-4 border border-gray-400 rounded-lg shadow-md flex items-center cursor-pointer transition gap-4">
                 <div>
                   <img class="w-10 h-auto" src="/icons/Perder_grasa.webp">
@@ -221,7 +216,7 @@ const goToRegister = () => {
 
               <div 
                 @click="selectGoal('mantener_peso')"
-                :class="{'bg-[var(--color-text-dark)] border-[var(--color-accent)]': userData.goal === 'mantener_peso'}"
+                :class="{'bg-[var(--color-text-dark)] border-[var(--color-primary)]': userData.goal === 'mantener_peso'}"
               class="p-4 border border-gray-400 rounded-lg shadow-md flex items-center cursor-pointer transition gap-4">
                 <div>
                   <img class="w-10 h-auto" src="/icons/Mantener_peso.webp">
@@ -316,7 +311,7 @@ const goToRegister = () => {
             <button v-if="step > 0" @click="previousStep" class="bg-gray-300 px-4 py-2 rounded-lg">
               Atrás
             </button>
-            <button @click="nextStep" class="bg-accent text-white px-4 py-2 rounded-full">
+            <button @click="nextStep" class="bg-[var(--color-primary)] text-white px-4 py-2 rounded-full">
               {{ step < 7 ? 'Siguiente' : 'Calcular' }}
             </button>
           </div>
@@ -326,7 +321,7 @@ const goToRegister = () => {
         <div v-else key="result" class="text-center space-y-6">
           <h3 class="text-xl font-semibold text-gray-800">¡Aquí tienes tu resultado!</h3>
 
-          <div class="text-3xl font-bold text-accent">
+          <div class="text-3xl font-bold text-primary">
             {{ calorieResult }} kcal / día
           </div>
 
@@ -363,7 +358,7 @@ const goToRegister = () => {
           <div class="flex flex-col sm:flex-row justify-center gap-4 mt-6">
             <button
             @click="goToRegister"
-            class="inline-block bg-[var(--color-accent)] text-white px-6 py-2 rounded-full hover:bg-[var(--color-primary)]"
+            class="inline-block bg-[var(--color-primary)] text-white px-6 py-2 rounded-full hover:bg-[var(--color-primary)]"
           >
             Crear cuenta gratuita
           </button>
@@ -380,12 +375,12 @@ const goToRegister = () => {
 </template>
 
 <style>
-.bg-accent {
-  background-color: var(--color-accent);
+.bg-primary {
+  background-color: var(--color-primary);
 }
 
-.text-accent {
-  color: var(--color-accent);
+.text-primary {
+  color: var(--color-primary);
 }
 
 .material-icons {

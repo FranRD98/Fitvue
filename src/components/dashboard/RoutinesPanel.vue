@@ -1,10 +1,10 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { getRoutines } from '@/firebase/routines.js'
-import { useAuth } from '@/firebase/useAuth'
+import { useAuth } from '@/firebase/useAuth' // Get info about logued user
 
+const { userData } = useAuth(); // Get information to obtain the rol and show the add button or no
 
-const { user, role } = useAuth() // <- Aquí recuperamos el rol
 const rutinas = ref([])
 const loading = ref(true)
 
@@ -28,9 +28,12 @@ const isAdmin = true;
       <router-link
         v-if="isAdmin"
         to="/dashboard/rutinas/nueva"
-        class="bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg"
+        class="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg shadow hover:bg-[var(--color-secondary)] transition"
       >
-        + Nueva rutina
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Nueva rutina
       </router-link>
     </div>
 
