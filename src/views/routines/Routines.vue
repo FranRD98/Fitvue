@@ -1,5 +1,5 @@
 <script setup>
-import CatalogView from '@/components/catalog/CatalogView.vue'
+import CatalogView from '@/components/Card.vue'
 
 const routines = [
   {

@@ -1,6 +1,7 @@
 import { db } from './config'
 import { collection, addDoc, getDocs, serverTimestamp } from 'firebase/firestore'
 
+// Create guide
 export async function createGuide(guideData) {
   const dataWithDate = {
     ...guideData,
@@ -9,7 +10,6 @@ export async function createGuide(guideData) {
 
   await addDoc(collection(db, 'guides'), dataWithDate)
 }
-
 
 // Get guides
 export async function getGuides() {
@@ -29,4 +29,11 @@ export async function getCategories() {
     ...doc.data()
   }))
   return categories
+}
+
+// Crear nueva categoría
+export async function createCategory(title) {
+  const newCategory = { title }
+  const docRef = await addDoc(collection(db, 'categories'), newCategory)
+  return { id: docRef.id, ...newCategory }
 }

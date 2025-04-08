@@ -30,8 +30,3 @@ body {
   color: var(--color-text);
   line-height: 1.5;
 }
-
-section {
-  padding-top: 10vh;
-  padding-bottom: 10vh;
-}

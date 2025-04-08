@@ -49,7 +49,7 @@ const plans = [
 
 <template>
   <section class="bg-[#f3f6f8]">
-    <div class="max-w-7xl mx-auto px-6 text-center">
+    <div class="max-w-7xl mx-auto px-6 py-20 text-center">
 
     <h2 class="text-4xl font-semibold text-[var(--color-primary)] mb-12">Nuestros Planes</h2>
 

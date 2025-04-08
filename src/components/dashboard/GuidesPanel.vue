@@ -45,9 +45,11 @@ onMounted(async () => {
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
       
       
-    <div
+    <router-link
         v-for="guide in guides"
         :key="guide.id"
+        :to="`/guias/${guide.category.title}/${guide.id}`"
+
         class="bg-[#e4e4e4] rounded-xl shadow-lg overflow-hidden flex flex-col"
       >
         <img
@@ -83,7 +85,7 @@ onMounted(async () => {
             
           </div>
         </div>
-      </div>
+      </router-link>
 
       
     </div>
