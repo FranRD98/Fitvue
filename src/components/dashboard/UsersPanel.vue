@@ -37,9 +37,42 @@ onMounted(async () => {
     <div v-if="loading">Cargando usuarios...</div>
     <div v-else-if="users.length === 0">No hay usuarios disponibles.</div>
 
-    <div v-else>
-      <h1>Filtros</h1>
-    </div>
+      <!-- Filtros -->
+      <div v-else class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <!-- Buscador -->
+        <div class="flex-1">
+          <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Buscar usuario</label>
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Nombre o correo..."
+            class="w-full border border-gray-300 rounded p-2 text-sm text-gray-700"
+          />
+        </div>
+
+        <!-- Filtrar por plan -->
+        <div>
+          <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Plan</label>
+          <select v-model="selectedPlan" class="w-full border border-gray-300 rounded p-2 text-sm text-gray-700">
+            <option value="">Todos</option>
+            <option value="free">Free</option>
+            <option value="premium">Premium</option>
+          </select>
+        </div>
+
+        <!-- Filtrar por rol -->
+        <div>
+          <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Rol</label>
+          <select v-model="selectedRole" class="w-full border border-gray-300 rounded p-2 text-sm text-gray-700">
+            <option value="">Todos</option>
+            <option value="user">Usuario</option>
+            <option value="coach">Coach</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+      </div>
+
+
 
     <div class="overflow-x-auto rounded-lg">
       <table class="min-w-full bg-white text-sm text-left rounded-full border border-gray-300">
