@@ -5,13 +5,13 @@ import { useAuth } from '@/firebase/useAuth'
 const { userData } = useAuth();
 
 const menuItems = [
-  { key: 'progress', label: 'Mi Progreso', icon: '📊', roles: ['user', 'coach', 'admin'] },
+  { key: 'progress', label: 'Mi Progreso', icon: '📈', roles: ['user', 'coach', 'admin'] },
+  { key: 'exercises', label: 'Ejercicios', icon: '🏋️', roles: ['user', 'coach', 'admin'] },
   { key: 'routines', label: 'Rutinas', icon: '💪', roles: ['user', 'coach', 'admin'] },
   { key: 'dietas', label: 'Dietas', icon: '🥗', roles: ['user', 'coach', 'admin'] },
   { key: 'guides', label: 'Guías', icon: '📖', roles: ['coach', 'admin'] },
   { key: 'usuarios', label: 'Usuarios', icon: '👥', roles: ['admin'] },
   { key: 'config', label: 'Configuración', icon: '⚙️', roles: ['user', 'coach', 'admin'] },
-
 ]
 
 const visibleMenu = computed(() =>
@@ -28,7 +28,8 @@ const componentsMap = {
   dietas: defineAsyncComponent(() => import('@/components/dashboard/DietsPanel.vue')),
   usuarios: defineAsyncComponent(() => import('@/components/dashboard/UsersPanel.vue')),
   config: defineAsyncComponent(() => import('@/components/dashboard/ConfigPanel.vue')),
-  guides: defineAsyncComponent(() => import('@/components/dashboard/GuidesPanel.vue'))
+  guides: defineAsyncComponent(() => import('@/components/dashboard/GuidesPanel.vue')),
+  exercises: defineAsyncComponent(() => import('@/components/dashboard/ExercisesPanel.vue'))
 
 }
 

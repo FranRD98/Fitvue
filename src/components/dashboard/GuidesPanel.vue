@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import GuideFormModal from '@/components/dashboard/GuideFormModal.vue'
+import GuideFormModal from '@/components/dashboard/modals/GuideFormModal.vue'
 import { getGuides } from '@/firebase/guides.js'
 
 const guides = ref([])
@@ -19,7 +19,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section class="max-w-7xl mx-auto px-6 py-10">
+  <section>
     <!-- Header -->
     <div class="flex justify-between items-center mb-10">
       <h1 class="text-3xl font-bold text-[var(--color-primary)]">Guías</h1>

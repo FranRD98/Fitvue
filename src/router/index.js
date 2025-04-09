@@ -11,9 +11,9 @@ import FAQ from '@/views/static/FAQ.vue';
 
 import Routines from '@/views/routines/Routines.vue';
 
-import GuideDetail from '@/views/guides/GuideDetail.vue';
-import GuideList from '@/views/guides/guide-list.vue';
+import GuideList from '@/views/guides/Guide-list.vue';
 import GuidesByCategory from '@/views/guides/GuidesByCategory.vue'
+import GuideDetail from '@/views/guides/GuideDetail.vue';
 
 import PrivacyPolicy from '@/views/legal/PrivacyPolicy.vue';
 import Terms from '@/views/legal/Terms.vue';
@@ -31,6 +31,7 @@ const routes = [
   { path: '/rutinas/estiramientos', name: 'Rutinas Estiramientos', component: Routines },
   { path: '/rutinas/yoga', name: 'Rutinas Yoga', component: Routines },
 
+  // Guías
   { path: '/guias', name: 'Guia listado', component: GuideList },
   { path: '/guias/:category', name: 'Guia por categoria', component: GuidesByCategory },
   { path: '/guias/:category/:id', name: 'Guia detalle', component: GuideDetail },

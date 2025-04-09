@@ -20,56 +20,74 @@ onMounted(async () => {
 </script>
 
 <template>
+  <section>
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-10">
+      <h1 class="text-3xl font-bold text-[var(--color-primary)]">Usuarios</h1>
+      <button class="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg shadow hover:bg-[var(--color-secondary)] transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Nuevo usuario
+      </button>
+    </div>
+
   <div>
-    <h1 class="text-2xl font-bold mb-6 text-[var(--color-primary)]">Usuarios</h1>
 
     <div v-if="loading">Cargando usuarios...</div>
     <div v-else-if="users.length === 0">No hay usuarios disponibles.</div>
 
-    <table v-else class="min-w-full bg-white shadow rounded-lg overflow-hidden">
-      <thead class="bg-[var(--color-primary)] text-white font-normal">
-        <tr>
-          <th class="text-left px-4 py-3"></th>
-          <th class="text-left px-4 py-3">Nombre</th>
-          <th class="text-left px-4 py-3">Email</th>
-          <th class="text-left px-4 py-3">Creado</th>
-          <th class="text-left px-4 py-3">Plan</th>
-          <th class="text-left px-4 py-3">Rol</th>
-          <th class="text-left px-4 py-3">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(user, index) in users" :key="user.id" class="border-t hover:bg-gray-50">
-          <td class="px-4 py-3">#{{ index + 1 }}</td>
-          <td class="px-4 py-3">{{ user.name }} {{ user.last_name }}</td>
-          <td class="px-4 py-3">{{ user.email }}</td>
-          <td class="px-4 py-3">{{ user.created?.toDate().toLocaleDateString() }}</td>
-          <td class="px-4 py-3">{{ user.suscriptionPlan }}</td>
-          <td class="px-4 py-3">{{ user.role }}</td>
-          <td class="px-4 py-3 text-right">
-            <div class="flex justify-end gap-2">
+    <div v-else>
+      <h1>Filtros</h1>
+    </div>
+
+    <div class="overflow-x-auto rounded-lg">
+      <table class="min-w-full bg-white text-sm text-left rounded-full border border-gray-300">
+        <thead class="bg-[var(--color-primary)] text-white">
+          <tr>
+            <th class="px-5 py-3 font-medium">Nombre</th>
+            <th class="px-5 py-3 font-medium">Email</th>
+            <th class="px-5 py-3 font-medium">Creado</th>
+            <th class="px-5 py-3 font-medium">Plan</th>
+            <th class="px-5 py-3 font-medium">Rol</th>
+            <th class="px-5 py-3 font-medium text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="user in users"
+            :key="user.id"
+            class="odd:bg-white even:bg-gray-300 border-b border-gray-300"
+          >
+            <td class="px-5 py-2 font-semibold text-[var(--color-primary)] whitespace-nowrap">{{ user.name }} {{ user.last_name }}</td>
+            <td class="px-5 py-2 font-medium whitespace-nowrap">{{ user.email }}</td>
+            <td class="px-5 py-2 font-medium whitespace-nowrap">{{ user.created?.toDate().toLocaleDateString() }}</td>
+            <td class="px-5 py-2 font-medium whitespace-nowrap">{{ user.suscriptionPlan }}</td>
+            <td class="px-5 py-2 font-medium whitespace-nowrap">{{ user.role }}</td>
+
+            <!-- Acciones -->
+            <td class="px-5 py-2 flex items-center justify-end gap-3">
               <!-- Edit Button -->
               <button
-                @click="editUser(user)"
-                class="p-2 text-blue-500 hover:bg-blue-100 rounded-full transition"
-                title="Editar usuario"
-              >
-              <img class="w-6 h-auto" src="/icons/edit.svg">
-            </button>
+                    @click="editUser(user)"
+                    class="text-blue-500 hover:bg-blue-100 rounded-full transition"
+                  >
+                  <img class="w-6 h-auto" src="/icons/edit.svg">
+                </button>
 
-            <!-- Delete Button -->
-            <button
-                @click="deleteUser(user)"
-                class="p-2 text-blue-500 hover:bg-blue-100 rounded-full transition"
-                title="Editar usuario"
-              >
-              <img class="w-6 h-auto" src="/icons/trash.svg">
-            </button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+                <!-- Delete Button -->
+                <button
+                    @click="deleteUser(user)"
+                    class="text-blue-500 hover:bg-blue-100 rounded-full transition"
+                  >
+                  <img class="w-6 h-auto" src="/icons/trash.svg">
+                </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
+</section>  
 </template>
   

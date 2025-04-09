@@ -1,8 +1,9 @@
-<!-- ConfigPanel.vue -->
 <template>
-    <div>
-      <h1 class="text-2xl font-bold text-[var(--color-primary)] mb-4">Configuración</h1>
-      <p>Aquí se mostrarán las configuraciones</p>
+  <section>
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-10">
+      <h1 class="text-3xl font-bold text-[var(--color-primary)]">Configuración</h1>
     </div>
-  </template>
+  </section>
+</template>
   

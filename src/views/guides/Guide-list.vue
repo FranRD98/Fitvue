@@ -45,7 +45,11 @@ const goToPage = (page) => {
 
         <div>
           <label class="block text-sm font-medium text-[var(--color-primary)] mb-2">Filtrar por categoría</label>
-          <select v-model="selectedCategory" class="w-full border border-gray-300 rounded p-2 text-gray-700">
+          <select
+            class="w-full border border-gray-300 rounded p-2 text-gray-700"
+            :value="selectedCategory"
+            @change="(e) => $router.push(`/guias/${e.target.value}`)"
+          >
             <option value="Todas">Todas</option>
             <option
               v-for="category in categories"
