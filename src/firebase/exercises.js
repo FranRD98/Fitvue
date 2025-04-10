@@ -1,5 +1,5 @@
 import { db } from './config'
-import { collection, addDoc, getDocs } from 'firebase/firestore'
+import { collection, doc, addDoc, getDocs, updateDoc, deleteDoc } from 'firebase/firestore'
 
 // Create an exercise
 export async function createExercise(exercise) {
@@ -7,13 +7,15 @@ export async function createExercise(exercise) {
 }
 
 // Edit an exercise
-export async function editExercise(exercise) {
-  await alert('Editando ejercicio: ' + exercise);
+export async function updateExercise(id, updatedData) {
+  const ref = doc(db, 'exercises', id)
+  await updateDoc(ref, updatedData)
 }
 
 // Delete an exercise
-export async function deleteExercise(exercise) {
-  await alert('Eliminando ejercicio: ' + exercise);
+export async function deleteExercise(id) {
+    const ref = doc(db, 'exercises', id)
+    await deleteDoc(ref)   
 }
 
 // Create a category

@@ -1,12 +1,27 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getExercises, editExercise, deleteExercise } from '@/firebase/exercises'
+import { getExercises, deleteExercise } from '@/firebase/exercises'
 import ExerciseFormModal from '@/components/dashboard/modals/ExerciseFormModal.vue'
 
 const exercises = ref([]) // Variable to save the exercises
 const loading = ref(true) // To detect if it's loading
 const showModal = ref(false) // Modal to add exercises
 const isAdmin = true // Detect if user it's an admin or coach
+const selectedExercise = ref(null)
+
+const openEditModal = (exercise) => {
+  selectedExercise.value = exercise
+  showModal.value = true
+}
+
+/* Logic of delete action */
+const handleDelete = async (exercise) => {
+  if (confirm(`¿Seguro que quieres eliminar el ejercicio "${exercise.name}"?`)) {
+    await deleteExercise(exercise.id)
+    await loadExercises() // 🔁 recarga después de borrar
+  }
+}
+
 
 const loadExercises = async () => {
   loading.value = true
@@ -44,7 +59,12 @@ onMounted(() => {
     </div>
 
     <!-- Modal -->
-    <ExerciseFormModal :show="showModal" @close="showModal = false" @saved="loadExercises()" />
+    <ExerciseFormModal
+      :show="showModal"
+      :initialData="selectedExercise"
+      @close="showModal = false; selectedExercise = null"
+      @saved="loadExercises()"
+    />
 
     <!-- Loading / Empty -->
     <div v-if="loading">Cargando ejercicios...</div>
@@ -76,17 +96,17 @@ onMounted(() => {
             <td class="px-5 py-2 flex items-center justify-end gap-3">
               <!-- Edit Button -->
               <button
-                    @click="editExercise(exercise)"
-                    class="text-blue-500 hover:bg-blue-100 rounded-full transition"
-                  >
-                  <img class="w-6 h-auto" src="/icons/edit.svg">
-                </button>
+                @click="openEditModal(exercise)"
+                class="text-blue-500 hover:bg-blue-100 rounded-full transition"
+              >
+                <img class="w-6 h-auto" src="/icons/edit.svg">
+              </button>
 
                 <!-- Delete Button -->
                 <button
-                    @click="deleteExercise(exercise)"
-                    class="text-blue-500 hover:bg-blue-100 rounded-full transition"
-                  >
+                  @click="handleDelete(exercise)"
+                  class="text-blue-500 hover:bg-blue-100 rounded-full transition"
+                >
                   <img class="w-6 h-auto" src="/icons/trash.svg">
                 </button>
             </td>

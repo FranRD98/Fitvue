@@ -1,3 +1,82 @@
+<script setup>
+import { ref, onMounted, watch } from 'vue'
+import { createExercise, getExerciseCategories, updateExercise } from '@/firebase/exercises'
+
+// Props y eventos
+const props = defineProps({
+  show: Boolean,
+  initialData: Object
+})
+const emit = defineEmits(['close', 'saved'])
+
+// Categorías y carga
+const exerciseCategories = ref([])
+const loading = ref(true)
+
+const exercise = ref({
+  name: '',
+  description: '',
+  category: '',
+  imageUrl: ''
+})
+
+// Cargar categorías
+onMounted(async () => {
+  try {
+    exerciseCategories.value = await getExerciseCategories()
+  } catch (error) {
+    console.error('Error al obtener categorías:', error)
+  } finally {
+    loading.value = false
+  }
+})
+
+// Escuchar cambios en initialData (edición)
+watch(
+  () => props.initialData,
+  (newVal) => {
+    if (newVal) {
+      exercise.value = { ...newVal }
+    } else {
+      resetForm()
+    }
+  },
+  { immediate: true }
+)
+
+// Guardar o actualizar
+async function submitForm() {
+  try {
+    if (exercise.value.id) {
+      await updateExercise(exercise.value.id, exercise.value)
+    } else {
+      await createExercise(exercise.value)
+    }
+    emit('saved')
+    close()
+  } catch (error) {
+    console.error('Error al guardar el ejercicio:', error)
+  }
+}
+
+// Cerrar y limpiar
+function close() {
+  resetForm()
+  emit('close')
+}
+
+// Reset form
+function resetForm() {
+  exercise.value = {
+    name: '',
+    description: '',
+    category: '',
+    imageUrl: ''
+  }
+}
+</script>
+
+
 <template>
     <div
       v-if="show"
@@ -5,11 +84,13 @@
     >
       <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-xl relative">
         <button @click="close" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-xl">✖</button>
-        <h2 class="text-xl font-semibold mb-4 text-[var(--color-primary)]">Crear nuevo ejercicio</h2>
+        <h2 class="text-xl font-semibold mb-4 text-[var(--color-primary)]">
+          {{ exercise.id ? 'Editar ejercicio' : 'Crear ejercicio' }}
+        </h2>
   
         <form @submit.prevent="submitForm" @change="handleCategoryChange" class="space-y-4">
           <input v-model="exercise.name" placeholder="Ejercicio" class="input" required />
-          <input v-model="exercise.description" placeholder="Descripción corta" class="input" required />
+          <input v-model="exercise.description" placeholder="Descripción corta" class="input" />
           
           <label class="block text-sm font-medium text-gray-700">Grupo muscular</label>
           <select v-model="exercise.category" class="w-full border border-gray-300 p-2 rounded" required>
@@ -25,52 +106,14 @@
             type="submit"
             class="bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg hover:bg-[var(--color-secondary)]"
           >
-            Guardar ejercicio
+          {{ exercise.id ? 'Guardar cambios' : 'Crear ejercicio' }}
+
           </button>
         </form>
       </div>
     </div>
 
   </template>
-  
-  <script setup>
-  import { ref, onMounted } from 'vue'
-  import { createExercise, getExerciseCategories } from '@/firebase/exercises'
-  
-  const props = defineProps({ show: Boolean })
-  const emit = defineEmits(['close', 'saved'])
-
-  const exerciseCategories = ref([])
-  const loading = ref(true)
-
-  onMounted(async () => {
-    try {
-      exerciseCategories.value = await getExerciseCategories()
-    } catch (error) {
-      console.error('Error al obtener categorias:', error)
-    } finally {
-      loading.value = false
-    }
-  })
-  
-  const exercise = ref({
-    name: '',
-    description: '',
-    category: '',
-    imageUrl: '' // Solo el path
-  })
-
-  function submitForm() {
-    createExercise(exercise.value)
-    emit('saved')
-    emit('close')
-  }
-  
-  function close() {
-    emit('close')
-  }
-
-  </script>
   
   <style scoped>
   .input {
