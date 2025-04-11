@@ -19,6 +19,9 @@ import PrivacyPolicy from '@/views/legal/PrivacyPolicy.vue';
 import Terms from '@/views/legal/Terms.vue';
 
 import Dashboard from '@/views/dashboard/Dashboard.vue';
+import NewReview from '@/components/dashboard/NewReview.vue';
+import ReviewDetail from '@/components/dashboard/ReviewDetail.vue'
+
 import Register from '@/views/auth/Register.vue';
 
 
@@ -41,6 +44,10 @@ const routes = [
   { path: '/login', name: 'Login', component: Login },
   { path: '/registrarse', name: 'Register', component: Register },
   { path: '/dashboard', name: 'Dashboard', component: Dashboard },
+  { path: '/dashboard/newReview', name: 'New Review', component: NewReview },
+  { path: '/user/:uid/:date', name: 'Review Detail', component: ReviewDetail },
+
+  
   { path: '/empezar', name: 'Start Change', component: StartChange },
   { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound }, // Página 404
   { path: '/politica-privacidad', name: 'Politica de privacidad', component: PrivacyPolicy }, // Página 'Terminos y condiciones'

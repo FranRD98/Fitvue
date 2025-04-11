@@ -1,8 +1,40 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
-import ProgressFormModal from '@/components/dashboard/modals/ProgressFormModal.vue'
+import { ref, onMounted } from 'vue'
+import { getReviewsById } from '@/firebase/progress.js'
+import { getAuth } from 'firebase/auth'
 
-const showModal = ref(false) // Modal to add exercises
+const reviews = ref([])
+const loading = ref(true)
+
+onMounted(async () => {
+  const auth = getAuth()
+  const currentUser = auth.currentUser
+
+  if (currentUser) {
+    try {
+      reviews.value = await getReviewsById(currentUser.uid)
+      console.log(reviews.value)
+    } catch (error) {
+      console.error('Error al obtener las reviews:', error)
+    } finally {
+      loading.value = false
+    }
+  } else {
+    console.warn('Usuario no autenticado')
+  }
+})
+
+function formatDate(dateString) {
+  if (!dateString) return 'Sin fecha'
+  const date = new Date(dateString)
+  return date.toLocaleString('es-ES', {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit'
+})
+}
 
 
 </script>
@@ -12,23 +44,44 @@ const showModal = ref(false) // Modal to add exercises
     <!-- Header -->
     <div class="flex justify-between items-center mb-10">
       <h1 class="text-3xl font-bold text-[var(--color-primary)]">Mi Progreso</h1>
-      <button
-        @click="showModal = true"
-        class="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg shadow hover:bg-[var(--color-secondary)] transition"
-      >
+      <router-link to="/dashboard/newReview" class="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg shadow hover:bg-[var(--color-secondary)] transition">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
         Nueva revisión
-      </button>
+      </router-link>
     </div>
 
-    <!-- Modal -->
-    <ProgressFormModal
-      :show="showModal"
-      @close="showModal = false"
-    />
+    <!-- Loading / Empty State -->
+    <div v-if="loading">Cargando revisiones...</div>
+    <div v-else-if="reviews.length === 0" class="text-gray-600">No hay revisiones disponibles.</div>
 
+    <!-- Dashboard -->
+    <div v-else class="flex justify-between items-center m-4 border">
+      <!-- Metricas -->
+      <div>
+        <h1 class="text-xl">Última revisión</h1>
+      </div>
+
+      <!-- Last reviews -->
+      <div class="flex flex-col">
+        <h1>Últimas reviews</h1>
+            <router-link
+              v-for="review in reviews"
+              :key="review.id"
+              :to="`/user/${review.uid}/${review.date}`"
+
+              class="bg-[var(--color-primary)] text-white rounded-full px-4 py-1 shadow-lg"
+            >
+            
+            <h3 class="text-lg">
+              {{ formatDate(review.date) }}
+            </h3>
+
+          </router-link>
+          </div>
+    </div>
+    
   </section>
 </template>
   

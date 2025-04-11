@@ -14,8 +14,6 @@ onMounted(async () => {
     const docRef = doc(db, 'guides', guideId)
     const docSnap = await getDoc(docRef)
 
-    console.log('Buscando guía: ' + guideId);
-    console.log(guide);
     if (docSnap.exists()) {
       guide.value = docSnap.data()
     } else {
