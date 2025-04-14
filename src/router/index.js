@@ -43,6 +43,8 @@ const routes = [
   { path: '/FAQ', name: 'Preguntas Frecuentes', component: FAQ },
   { path: '/login', name: 'Login', component: Login },
   { path: '/registrarse', name: 'Register', component: Register },
+  
+  // Dashboard
   { path: '/dashboard', name: 'Dashboard', component: Dashboard },
   { path: '/dashboard/newReview', name: 'New Review', component: NewReview },
   { path: '/user/:uid/:date', name: 'Review Detail', component: ReviewDetail },

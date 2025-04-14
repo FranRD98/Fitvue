@@ -1,13 +1,15 @@
-<!-- UsersPanel.vue -->
 <script setup>
-
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { getUsers, editUser, deleteUser } from '@/firebase/firebase-functions.js'
 
 const users = ref([])
 const loading = ref(true)
+const searchQuery = ref('')
+const selectedPlan = ref('')
+const selectedRole = ref('')
 
-onMounted(async () => {
+const loadUsers = async () => {
+  loading.value = true
   try {
     users.value = await getUsers()
   } catch (error) {
@@ -15,8 +17,24 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
-})
+}
 
+onMounted(loadUsers)
+
+// Filtro dinámico
+const filteredUsers = computed(() => {
+  return users.value.filter(user => {
+    const matchesSearch =
+      user.name?.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      user.last_name?.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchQuery.value.toLowerCase())
+
+    const matchesPlan = selectedPlan.value ? user.suscriptionPlan === selectedPlan.value : true
+    const matchesRole = selectedRole.value ? user.role === selectedRole.value : true
+
+    return matchesSearch && matchesPlan && matchesRole
+  })
+})
 </script>
 
 <template>
@@ -32,50 +50,44 @@ onMounted(async () => {
       </button>
     </div>
 
-  <div>
-
+    <!-- Loading -->
     <div v-if="loading">Cargando usuarios...</div>
-    <div v-else-if="users.length === 0">No hay usuarios disponibles.</div>
 
-      <!-- Filtros -->
-      <div v-else class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <!-- Buscador -->
-        <div class="flex-1">
-          <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Buscar usuario</label>
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="Nombre o correo..."
-            class="w-full border border-gray-300 rounded p-2 text-sm text-gray-700"
-          />
-        </div>
-
-        <!-- Filtrar por plan -->
-        <div>
-          <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Plan</label>
-          <select v-model="selectedPlan" class="w-full border border-gray-300 rounded p-2 text-sm text-gray-700">
-            <option value="">Todos</option>
-            <option value="free">Free</option>
-            <option value="premium">Premium</option>
-          </select>
-        </div>
-
-        <!-- Filtrar por rol -->
-        <div>
-          <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Rol</label>
-          <select v-model="selectedRole" class="w-full border border-gray-300 rounded p-2 text-sm text-gray-700">
-            <option value="">Todos</option>
-            <option value="user">Usuario</option>
-            <option value="coach">Coach</option>
-            <option value="admin">Admin</option>
-          </select>
-        </div>
+    <!-- Filtros -->
+    <div v-else class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div class="flex-1">
+        <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Buscar usuario</label>
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Correo electrónico..."
+          class="w-full border border-gray-300 rounded p-2 text-sm text-gray-700"
+        />
       </div>
 
+      <div>
+        <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Plan</label>
+        <select v-model="selectedPlan" class="w-full border border-gray-300 rounded p-2 text-sm text-gray-700">
+          <option value="">Todos</option>
+          <option value="free">Free</option>
+          <option value="premium">Premium</option>
+        </select>
+      </div>
 
+      <div>
+        <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Rol</label>
+        <select v-model="selectedRole" class="w-full border border-gray-300 rounded p-2 text-sm text-gray-700">
+          <option value="">Todos</option>
+          <option value="user">Usuario</option>
+          <option value="coach">Coach</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+    </div>
 
-    <div class="overflow-x-auto rounded-lg">
-      <table class="min-w-full bg-white text-sm text-left rounded-full border border-gray-300">
+    <!-- Tabla -->
+    <div v-if="filteredUsers.length" class="overflow-x-auto rounded-lg">
+      <table class="min-w-full bg-white text-sm text-left border border-gray-300 rounded-full">
         <thead class="bg-[var(--color-primary)] text-white">
           <tr>
             <th class="px-5 py-3 font-medium">Nombre</th>
@@ -88,39 +100,33 @@ onMounted(async () => {
         </thead>
         <tbody>
           <tr
-            v-for="user in users"
+            v-for="user in filteredUsers"
             :key="user.id"
-            class="odd:bg-white even:bg-gray-300 border-b border-gray-300"
+            class="odd:bg-white even:bg-gray-100 border-b border-gray-300"
           >
-            <td class="px-5 py-2 font-semibold text-[var(--color-primary)] whitespace-nowrap">{{ user.name }} {{ user.last_name }}</td>
-            <td class="px-5 py-2 font-medium whitespace-nowrap">{{ user.email }}</td>
-            <td class="px-5 py-2 font-medium whitespace-nowrap">{{ user.created?.toDate().toLocaleDateString() }}</td>
-            <td class="px-5 py-2 font-medium whitespace-nowrap">{{ user.suscriptionPlan }}</td>
-            <td class="px-5 py-2 font-medium whitespace-nowrap">{{ user.role }}</td>
-
-            <!-- Acciones -->
+            <td class="px-5 py-2 font-semibold text-[var(--color-primary)] whitespace-nowrap">
+              {{ user.name }} {{ user.last_name }}
+            </td>
+            <td class="px-5 py-2 whitespace-nowrap">{{ user.email }}</td>
+            <td class="px-5 py-2 whitespace-nowrap">{{ user.created?.toDate().toLocaleDateString() }}</td>
+            <td class="px-5 py-2 whitespace-nowrap capitalize">{{ user.suscriptionPlan }}</td>
+            <td class="px-5 py-2 whitespace-nowrap capitalize">{{ user.role }}</td>
             <td class="px-5 py-2 flex items-center justify-end gap-3">
-              <!-- Edit Button -->
-              <button
-                    @click="editUser(user)"
-                    class="text-blue-500 hover:bg-blue-100 rounded-full transition"
-                  >
-                  <img class="w-6 h-auto" src="/icons/edit.svg">
-                </button>
-
-                <!-- Delete Button -->
-                <button
-                    @click="deleteUser(user)"
-                    class="text-blue-500 hover:bg-blue-100 rounded-full transition"
-                  >
-                  <img class="w-6 h-auto" src="/icons/trash.svg">
-                </button>
+              <button @click="editUser(user)" class="text-blue-500 hover:bg-blue-100 rounded-full transition">
+                <img class="w-6 h-auto" src="/icons/edit.svg" />
+              </button>
+              <button @click="deleteUser(user)" class="text-blue-500 hover:bg-blue-100 rounded-full transition">
+                <img class="w-6 h-auto" src="/icons/trash.svg" />
+              </button>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
-  </div>
-</section>  
+
+    <!-- Sin resultados -->
+    <div v-else class="text-center text-gray-500 mt-10">
+      No se encontraron usuarios con esos criterios.
+    </div>
+  </section>
 </template>
-  

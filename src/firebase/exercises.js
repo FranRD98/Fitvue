@@ -1,5 +1,5 @@
 import { db } from './config'
-import { collection, doc, addDoc, getDocs, updateDoc, deleteDoc } from 'firebase/firestore'
+import { collection, doc, addDoc, getDocs, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore'
 
 // Create an exercise
 export async function createExercise(exercise) {
@@ -31,7 +31,8 @@ export async function getExercises() {
 
 // Obtain all the exercises categories
 export async function getExerciseCategories() {
-  const snapshot = await getDocs(collection(db, 'exercise_categories'))
+  const q = query(collection(db, 'exercise_categories'), orderBy('name')) // orden alfabético
+  const snapshot = await getDocs(q)
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
 }
 

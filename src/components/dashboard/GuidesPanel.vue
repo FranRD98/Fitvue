@@ -1,20 +1,43 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import GuideFormModal from '@/components/dashboard/modals/GuideFormModal.vue'
-import { getGuides } from '@/firebase/guides.js'
+import { getGuides, getCategories, deleteGuide  } from '@/firebase/guides.js'
 
 const guides = ref([])
+const categories = ref([])
 const loading = ref(true)
 const showModal = ref(false)
+const selectedGuide = ref(null)
 
-onMounted(async () => {
+const searchQuery = ref('')
+const selectedCategory = ref('')
+
+const loadGuides = async () => {
+  loading.value = true
   try {
     guides.value = await getGuides()
+    categories.value = await getCategories()
   } catch (error) {
-    console.error('Error al obtener las guías:', error)
+    console.error('Error al obtener guías:', error)
   } finally {
     loading.value = false
   }
+}
+
+onMounted(loadGuides)
+
+const filteredGuides = computed(() => {
+  return guides.value.filter(guide => {
+    const matchSearch =
+      guide.title?.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      guide.description?.toLowerCase().includes(searchQuery.value.toLowerCase())
+
+    const matchCategory = selectedCategory.value
+      ? guide.category?.title === selectedCategory.value
+      : true
+
+    return matchSearch && matchCategory
+  })
 })
 </script>
 
@@ -35,21 +58,39 @@ onMounted(async () => {
     </div>
 
     <!-- Modal -->
-    <GuideFormModal :show="showModal" @close="showModal = false" @saved="console.log('Guía guardada')" />
+    <GuideFormModal
+      :show="showModal"
+      :initialData="selectedGuide"
+      @close="showModal = false; selectedGuide = null"
+      @saved="loadGuides()"
+    />
 
-    <!-- Loading / Empty State -->
+    <!-- Filtros -->
+    <div v-if="!loading && guides.length" class="mb-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <input
+        v-model="searchQuery"
+        placeholder="Buscar por título o descripción"
+        class="w-full border border-gray-300 rounded p-2 text-sm text-gray-700"
+      />
+
+      <select v-model="selectedCategory" class="w-full border border-gray-300 rounded p-2 text-sm text-gray-700">
+        <option value="">Todas las categorías</option>
+        <option v-for="cat in categories" :key="cat.id" :value="cat.title">{{ cat.title }}</option>
+      </select>
+    </div>
+
+    <!-- Loading -->
     <div v-if="loading">Cargando guías...</div>
-    <div v-else-if="guides.length === 0" class="text-gray-600">No hay guías disponibles.</div>
 
-    <!-- Grid de tarjetas -->
+    <!-- Sin resultados -->
+    <div v-else-if="filteredGuides.length === 0" class="text-center text-gray-500">No hay resultados.</div>
+
+    <!-- Cards -->
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-      
-      
-    <router-link
-        v-for="guide in guides"
+      <router-link
+        v-for="guide in filteredGuides"
         :key="guide.id"
         :to="`/guias/${guide.category.title}/${guide.id}`"
-
         class="bg-[#e4e4e4] rounded-xl shadow-lg overflow-hidden flex flex-col"
       >
         <img
@@ -70,24 +111,23 @@ onMounted(async () => {
             <p class="text-xs text-gray-600 mt-auto"><strong>Categoría:</strong> {{ guide.category.title }}</p>
 
             <div class="flex gap-1">
-                <button
-              @click="console.log('Editar guía', guide)"
-              class="bg-[#999999] hover:bg-[var(--color-primary)] p-2 rounded-full transition duration-200 hover:-translate-y-1"
-            >
-            <svg  xmlns="http://www.w3.org/2000/svg"  width="20"  height="20"  viewBox="0 0 24 24"  fill="none"  stroke="white"  stroke-width="1.5"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-pencil"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" /><path d="M13.5 6.5l4 4" /></svg>
-            </button>
-            <button
-              @click="console.log('Eliminar guía', guide)"
-              class="bg-[#999999] hover:bg-red-600 p-2 rounded-full transition duration-200 hover:-translate-y-1"
-            >
-            <svg  xmlns="http://www.w3.org/2000/svg"  width="20"  height="20"  viewBox="0 0 24 24"  fill="none"  stroke="white"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-trash"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 7l16 0" /><path d="M10 11l0 6" /><path d="M14 11l0 6" /><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" /><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" /></svg>            </button>
+              <button
+                @click.prevent.stop="selectedGuide = guide; showModal = true"
+                class="bg-[#999999] hover:bg-[var(--color-primary)] p-2 rounded-full transition duration-200 hover:-translate-y-1"
+              >
+                ✏️
+              </button>
+
+              <button
+                @click.prevent.stop="deleteGuide(guide.id)"
+                class="bg-[#999999] hover:bg-red-600 p-2 rounded-full transition duration-200 hover:-translate-y-1"
+              >
+                🗑️
+              </button>
             </div>
-            
           </div>
         </div>
       </router-link>
-
-      
     </div>
   </section>
 </template>
