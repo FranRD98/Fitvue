@@ -1,32 +1,49 @@
-// rutinaService.js
-import { db } from '@/firebase/config'
-import { collection, getDocs, getDoc, doc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore'
+import { db } from './config'
+import { collection, addDoc, getDocs, doc, updateDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 
-const rutinasRef = collection(db, 'Rutinas')
+// Crear nueva rutina
+export async function createRoutine(routineData) {
+  const dataWithDate = {
+    ...routineData,
+    created: serverTimestamp()
+  }
 
-export const getRoutines = async () => {
-  const snapshot = await getDocs(rutinasRef)
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+  const docRef = await addDoc(collection(db, 'routines'), dataWithDate)
+  return { id: docRef.id, ...dataWithDate }
 }
 
-export const obtenerRutinaPorId = async (id) => {
-  const docRef = doc(db, 'Rutinas', id)
-  const docSnap = await getDoc(docRef)
-  if (!docSnap.exists()) throw new Error('Rutina no encontrada')
-  return { id: docSnap.id, ...docSnap.data() }
+// Obtener todas las rutinas
+export async function getRoutines() {
+  const snapshot = await getDocs(collection(db, 'routines'))
+  return snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }))
 }
 
-export const crearRutina = async (rutinaData) => {
-  const docRef = await addDoc(rutinasRef, rutinaData)
-  return docRef.id
+// Actualizar una rutina existente
+export async function updateRoutine(id, routineData) {
+  const docRef = doc(db, 'routines', id)
+  await updateDoc(docRef, {
+    ...routineData,
+    updated: serverTimestamp()
+  })
 }
 
-export const modificarRutina = async (id, newData) => {
-  const docRef = doc(db, 'Rutinas', id)
-  await updateDoc(docRef, newData)
+// Asignar rutina a usuario
+export async function assignRoutineToUser(userId, routineId) {
+  const ref = doc(db, 'users', userId)
+  await setDoc(ref, { assignedRoutine: routineId }, { merge: true })
 }
 
-export const eliminarRutina = async (id) => {
-  const docRef = doc(db, 'Rutinas', id)
-  await deleteDoc(docRef)
+// Obtener rutina asignada actual
+export async function getAssignedRoutine(userId) {
+  const ref = doc(db, 'users', userId)
+  const snap = await getDoc(ref)
+  return snap.exists() ? snap.data().assignedRoutine : null
+}
+
+export async function unassignRoutineFromUser(userId) {
+  const ref = doc(db, 'users', userId)
+  await setDoc(ref, { assignedRoutine: null }, { merge: true })
 }
