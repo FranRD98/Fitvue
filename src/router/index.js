@@ -18,7 +18,7 @@ import GuideDetail from '@/views/guides/GuideDetail.vue';
 import PrivacyPolicy from '@/views/legal/PrivacyPolicy.vue';
 import Terms from '@/views/legal/Terms.vue';
 
-import Dashboard from '@/views/dashboard/Dashboard.vue';
+import Dashboard from '@/components/layout/dashboard/DashboardLayout.vue';
 import NewReview from '@/components/dashboard/NewReview.vue';
 import ReviewDetail from '@/components/dashboard/ReviewDetail.vue'
 

@@ -107,7 +107,6 @@ onMounted(loadExercises)
     </div>
 
     <!-- Grid -->
-    <!-- Grid de ejercicios tipo cards -->
 <div v-if="filteredExercises.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
   <div
     v-for="exercise in filteredExercises"
