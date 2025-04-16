@@ -60,40 +60,54 @@ onMounted(() => {
     <div v-if="loading">Cargando dietas...</div>
     <div v-else-if="diets.length === 0" class="text-gray-500">No hay dietas registradas.</div>
 
-    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div
-        v-for="diet in diets"
-        :key="diet.id"
-        class="bg-white shadow rounded-lg p-5 hover:shadow-md transition flex flex-col justify-between gap-3"
-      >
-        <div>
-          <h3 class="text-lg font-semibold text-[var(--color-primary)] mb-1">
-            {{ diet.title }}
-          </h3>
-          <p class="text-sm text-gray-600 mb-2 line-clamp-2">{{ diet.description }}</p>
-          <div class="text-xs text-gray-500">
-            <p>Comidas: {{ diet.meals?.length || 0 }}</p>
-            <p>Última edición: {{ diet.created?.toDate().toLocaleDateString() || '—' }}</p>
-          </div>
-        </div>
+    <!-- Cards estilo guías -->
+<div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+  <div
+    v-for="diet in diets"
+    :key="diet.id"
+    class="bg-[#e4e4e4] rounded-xl shadow-lg overflow-hidden flex flex-col hover:shadow-md transition cursor-pointer"
+  >
+    <!-- Imagen de portada o placeholder -->
+    <img
+      :src="diet.imageUrl || `https://placehold.co/600x400?text=${encodeURIComponent(diet.title)}`"
+      alt="Imagen de la dieta"
+      class="w-full h-48 object-cover"
+    />
 
-        <!-- Acciones -->
-        <div class="flex justify-end gap-3 mt-2">
+    <div class="p-5 flex flex-col flex-grow">
+      <h3 class="text-lg font-semibold text-[var(--color-primary)] mb-1">{{ diet.title }}</h3>
+      <p class="text-sm text-gray-600 mb-2 line-clamp-3">{{ diet.description }}</p>
+
+      <div class="text-xs text-gray-500 mt-auto">
+        <p><strong>Comidas:</strong> {{ diet.meals?.length || 0 }}</p>
+        <p><strong>Última edición:</strong> {{ diet.created?.toDate().toLocaleDateString() || '—' }}</p>
+      </div>
+
+      <!-- Acciones -->
+      <div class="mt-4 flex justify-between items-center">
+        <span class="text-xs text-gray-600">ID: {{ diet.id.slice(0, 6) }}...</span>
+
+        <div class="flex gap-1">
           <button
-            @click="openEditModal(diet)"
-            class="text-sm bg-[var(--color-primary)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition"
+            @click.prevent.stop="openEditModal(diet)"
+            class="bg-[#999999] hover:bg-[var(--color-primary)] p-2 rounded-full transition duration-200 hover:-translate-y-1"
+            title="Editar"
           >
-            Editar
+            ✏️
           </button>
+
           <button
-            @click="handleDelete(diet)"
-            class="text-sm bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition"
+            @click.prevent.stop="handleDelete(diet)"
+            class="bg-[#999999] hover:bg-red-600 p-2 rounded-full transition duration-200 hover:-translate-y-1"
+            title="Eliminar"
           >
-            Eliminar
+            🗑️
           </button>
         </div>
       </div>
-
     </div>
+  </div>
+</div>
+
   </section>
 </template>

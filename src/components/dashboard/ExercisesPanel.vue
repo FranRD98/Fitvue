@@ -107,42 +107,55 @@ onMounted(loadExercises)
     </div>
 
     <!-- Grid -->
-    <div class="overflow-x-auto rounded-lg">
-      <table class="min-w-full bg-white text-sm text-left rounded-full border border-gray-300" v-if="filteredExercises.length > 0">
-        <thead class="bg-[var(--color-primary)] text-white">
-          <tr>
-            <th class="px-5 py-3 font-medium">Nombre</th>
-            <th class="px-5 py-3 font-medium">Descripción</th>
-            <th class="px-5 py-3 font-medium">Grupo Muscular</th>
-            <th class="px-5 py-3 font-medium text-right">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="exercise in filteredExercises"
-            :key="exercise.id"
-            class="odd:bg-white even:bg-gray-300 border-b border-gray-300"
-          >
-            <td class="px-5 py-2 font-semibold text-[var(--color-primary)] whitespace-nowrap">{{ exercise.name }}</td>
-            <td class="px-5 py-2 text-gray-600 max-w-sm truncate">{{ exercise.description }}</td>
-            <td class="px-5 py-2 font-semibold text-[var(--color-primary)] whitespace-nowrap">{{ exercise.category.name }}</td>
-            <td class="px-5 py-2 flex items-center justify-end gap-3">
-              <button @click="openEditModal(exercise)" class="text-blue-500 hover:bg-blue-100 rounded-full transition">
-                <img class="w-6 h-auto" src="/icons/edit.svg">
-              </button>
-              <button @click="handleDelete(exercise)" class="text-blue-500 hover:bg-blue-100 rounded-full transition">
-                <img class="w-6 h-auto" src="/icons/trash.svg">
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- Grid de ejercicios tipo cards -->
+<div v-if="filteredExercises.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+  <div
+    v-for="exercise in filteredExercises"
+    :key="exercise.id"
+    class="bg-[#e4e4e4] rounded-xl shadow-lg overflow-hidden flex flex-col"
+  >
+    <img
+      :src="exercise.imageUrl || `https://placehold.co/600x400?text=${encodeURIComponent(exercise.name)}`"
+      alt="Imagen del ejercicio"
+      class="w-full h-48 object-cover"
+    />
 
-      <!-- Si no hay coincidencias -->
-      <div v-else class="text-center text-gray-500 py-6">
-        No se encontraron ejercicios que coincidan con tu búsqueda.
+    <div class="p-5 flex flex-col flex-grow">
+      <h3 class="text-lg font-semibold text-[var(--color-primary)] mb-1">{{ exercise.name }}</h3>
+      <p class="text-sm text-gray-500 mb-3 line-clamp-3">{{ exercise.description }}</p>
+
+      <div class="text-xs text-gray-400 mt-auto">
+        <p><strong>Grupo muscular:</strong> {{ exercise.category?.name || '—' }}</p>
+      </div>
+
+      <div class="mt-4 flex justify-between items-center">
+        <span class="text-xs text-gray-600 mt-auto">ID: {{ exercise.id.slice(0, 6) }}...</span>
+
+        <div class="flex gap-1">
+          <button
+            @click.prevent.stop="openEditModal(exercise)"
+            class="bg-[#999999] hover:bg-[var(--color-primary)] p-2 rounded-full transition duration-200 hover:-translate-y-1"
+            title="Editar"
+          >
+            ✏️
+          </button>
+          <button
+            @click.prevent.stop="handleDelete(exercise)"
+            class="bg-[#999999] hover:bg-red-600 p-2 rounded-full transition duration-200 hover:-translate-y-1"
+            title="Eliminar"
+          >
+            🗑️
+          </button>
+        </div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- Si no hay coincidencias -->
+<div v-else class="text-center text-gray-500 py-6">
+  No se encontraron ejercicios que coincidan con tu búsqueda.
+</div>
 
 
   </section>
