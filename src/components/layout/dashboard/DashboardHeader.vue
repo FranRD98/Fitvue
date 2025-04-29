@@ -6,9 +6,9 @@ const { userData } = useAuth()
 <template>
   <header class="bg-white shadow-sm px-10 py-6 flex gap-4 items-center">
     <img
-        :src='"https://i.pravatar.cc/80" || userData?.avatar'
+        :src='"https://i.pravatar.cc/256" || userData?.avatar'
         alt="avatar"
-        class="w-10 h-10 rounded-full border"
+        class="w-12 h-12 rounded-full"
       />
     <div>
 

@@ -111,7 +111,7 @@ onMounted(loadExercises)
   <div
     v-for="exercise in filteredExercises"
     :key="exercise.id"
-    class="bg-[#e4e4e4] rounded-xl shadow-lg overflow-hidden flex flex-col"
+    class="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col"
   >
     <img
       :src="exercise.imageUrl || `https://placehold.co/600x400?text=${encodeURIComponent(exercise.name)}`"
