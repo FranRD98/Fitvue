@@ -10,6 +10,7 @@
 
   /* Paleta de colores */
   --color-primary: #005F78; /* Color principal */
+  --color-primary-rgb: 0, 95, 120;
   --color-secondary: #104e64; /* Color secundario (hovers) */
   --color-bg-light: #E8F6F3; /* Fondo claro elegante */
   

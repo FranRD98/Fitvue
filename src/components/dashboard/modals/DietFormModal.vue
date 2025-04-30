@@ -158,7 +158,7 @@ function close() {
 <template>
 <div
   v-if="show"
-  class="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50 px-4"
+  class="fixed inset-0 bg-[rgba(0,0,0,0.6)] backdrop-blur-sm flex justify-center items-center z-50 px-4"
 >
 
     <div

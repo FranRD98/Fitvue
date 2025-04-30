@@ -9,6 +9,15 @@ const showModal = ref(false)
 const newHabit = ref({ name: '', emoji: '🔥' })
 const currentUser = ref(null)
 
+  // Icons
+  import {
+    IconPlus,
+    IconLayoutGrid,
+    IconLayoutList,
+    IconEdit,
+    IconTrash
+  } from '@tabler/icons-vue'
+
 onMounted(async () => {
   const auth = getAuth()
   currentUser.value = auth.currentUser
@@ -37,8 +46,17 @@ const handleCreateHabit = async () => {
 }
 
 const handleToggle = async (habit) => {
-  await toggleHabitCompletion(habit.id, !habit.completed)
-  loadHabits()
+  // Cambia visualmente primero
+  const index = habits.value.findIndex(h => h.id === habit.id)
+  if (index !== -1) {
+    habits.value[index] = {
+      ...habits.value[index],
+      completed: !habits.value[index].completed
+    }
+  }
+
+  // Luego actualiza en la base de datos (sin esperar recarga)
+  await toggleHabitCompletion(habit.id, habits.value[index].completed)
 }
 
 const handleDelete = async (habitId) => {
@@ -47,6 +65,7 @@ const handleDelete = async (habitId) => {
     loadHabits()
   }
 }
+
 </script>
 
 <template>
@@ -57,9 +76,8 @@ const handleDelete = async (habitId) => {
         @click="showModal = true"
         class="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg shadow hover:bg-[var(--color-secondary)] transition"
       >
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>Añadir hábito
+      <IconPlus class="w-5 h-5"/>
+      Añadir hábito
       </button>
     </div>
 
@@ -71,17 +89,37 @@ const handleDelete = async (habitId) => {
         v-for="habit in habits"
         :key="habit.id"
         @click="handleToggle(habit)"
-        :class="['cursor-pointer px-6 py-4 rounded-full border shadow transition-all', 
+        :class="['cursor-pointer px-6 py-4 rounded-full border border-[var(--color-primary)] shadow transition-all duration-500', 
                   habit.completed ? 'bg-[var(--color-primary)] text-white' : 'bg-white text-[var(--color-primary)]']"
       >
         <span class="text-lg mr-2">{{ habit.emoji }}</span>
         <span class="font-semibold">{{ habit.name }}</span>
         <button @click.stop="handleDelete(habit.id)" class="ml-3 text-sm text-red-500 hover:underline">Eliminar</button>
       </div>
+
+</div>
+
+  <h1>Redondos</h1>
+  <div class="flex flex-wrap gap-4">
+
+    <div
+    v-for="habit in habits"
+    :key="habit.id"
+    @click="handleToggle(habit)"
+    :class="[
+      'w-20 h-20 rounded-full flex items-center justify-center text-2xl cursor-pointer shadow transition-all duration-300',
+      habit.completed ? 'bg-[var(--color-primary)] text-white' : 'bg-white text-[var(--color-primary)] border'
+    ]"
+  >
+    {{ habit.emoji }}
+  </div>
+
     </div>
 
-    <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50">
-      <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative">
+    <div
+  v-if="showModal"
+  class="fixed inset-0 bg-[rgba(0,0,0,0.6)] backdrop-blur-sm flex justify-center items-center z-50 px-4"
+>      <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative">
         <button @click="showModal = false" class="absolute top-3 right-3 text-gray-400 text-xl">✖</button>
         <h2 class="text-xl font-bold mb-4 text-[var(--color-primary)]">Nuevo Hábito</h2>
         <form @submit.prevent="handleCreateHabit" class="space-y-4">

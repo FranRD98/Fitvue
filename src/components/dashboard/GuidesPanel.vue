@@ -1,7 +1,14 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import { getGuides, getCategories, deleteGuide } from '@/firebase/guides.js'
 import GuideFormModal from '@/components/dashboard/modals/GuideFormModal.vue'
-import { getGuides, getCategories, deleteGuide  } from '@/firebase/guides.js'
+
+import {
+  IconPlus,
+  IconLayoutGrid,
+  IconLayoutList,
+  IconTrash
+} from '@tabler/icons-vue'
 
 const guides = ref([])
 const categories = ref([])
@@ -11,6 +18,7 @@ const selectedGuide = ref(null)
 
 const searchQuery = ref('')
 const selectedCategory = ref('')
+const viewMode = ref('grid')
 
 const loadGuides = async () => {
   loading.value = true
@@ -39,20 +47,30 @@ const filteredGuides = computed(() => {
     return matchSearch && matchCategory
   })
 })
+
+const openEditModal = (guide) => {
+  selectedGuide.value = guide
+  showModal.value = true
+}
+
+const handleDelete = async (guide) => {
+  if (confirm(`¿Eliminar la guía "${guide.title}"?`)) {
+    await deleteGuide(guide.id)
+    await loadGuides()
+  }
+}
 </script>
 
 <template>
   <section>
     <!-- Header -->
-    <div class="flex justify-between items-center mb-10">
+    <div class="flex justify-between items-center mb-6">
       <h1 class="text-3xl font-bold text-[var(--color-primary)]">Guías</h1>
       <button
         @click="showModal = true"
         class="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg shadow hover:bg-[var(--color-secondary)] transition"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
+        <IconPlus class="w-5 h-5" />
         Nueva guía
       </button>
     </div>
@@ -66,68 +84,116 @@ const filteredGuides = computed(() => {
     />
 
     <!-- Filtros -->
-    <div v-if="!loading && guides.length" class="mb-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-      <input
-        v-model="searchQuery"
-        placeholder="Buscar por título o descripción"
-        class="w-full border border-gray-300 rounded p-2 text-sm text-gray-700"
-      />
+    <div class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4" v-if="!loading && guides.length">
+      <div class="flex-1">
+        <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Buscar guía</label>
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Buscar por título o descripción"
+          class="w-full border border-gray-300 rounded p-2 text-sm text-gray-700 focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
+        />
+      </div>
 
-      <select v-model="selectedCategory" class="w-full border border-gray-300 rounded p-2 text-sm text-gray-700">
-        <option value="">Todas las categorías</option>
-        <option v-for="cat in categories" :key="cat.id" :value="cat.title">{{ cat.title }}</option>
-      </select>
+      <div>
+        <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Categoría</label>
+        <select v-model="selectedCategory" class="w-full border border-gray-300 p-2 rounded text-sm text-gray-700">
+          <option value="">Todas</option>
+          <option v-for="cat in categories" :key="cat.id" :value="cat.title">{{ cat.title }}</option>
+        </select>
+      </div>
+
+      <div class="flex items-center gap-1">
+        <button @click="viewMode = 'grid'" :class="['p-2 rounded', viewMode === 'grid' ? 'bg-[var(--color-primary)] text-white' : 'bg-gray-200']" title="Vista de tarjetas">
+          <IconLayoutGrid />
+        </button>
+        <button @click="viewMode = 'table'" :class="['p-2 rounded', viewMode === 'table' ? 'bg-[var(--color-primary)] text-white' : 'bg-gray-200']" title="Vista de tabla">
+          <IconLayoutList />
+        </button>
+      </div>
     </div>
 
     <!-- Loading -->
     <div v-if="loading">Cargando guías...</div>
 
     <!-- Sin resultados -->
-    <div v-else-if="filteredGuides.length === 0" class="text-center text-gray-500">No hay resultados.</div>
+    <div v-else-if="filteredGuides.length === 0" class="text-center text-gray-500 py-12">
+      <p class="text-lg font-semibold">Sin resultados</p>
+      <p class="text-sm">No se encontraron guías que coincidan con los filtros aplicados.</p>
+    </div>
 
-    <!-- Cards -->
-    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-      <router-link
+    <!-- Grid View -->
+    <div v-if="viewMode === 'grid' && filteredGuides.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div
         v-for="guide in filteredGuides"
         :key="guide.id"
-        :to="`/guias/${guide.category.title}/${guide.id}`"
-        class="bg-[#e4e4e4] rounded-xl shadow-lg overflow-hidden flex flex-col"
+        class="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col hover:shadow-md transition cursor-pointer"
+        @click="openEditModal(guide)"
       >
         <img
           :src="guide.imageUrl || 'https://placehold.co/600x400?text=Sin+Portada&font=poppins'"
-          alt="Imagen portada"
-          class="w-full h-48 object-cover"
+          alt="Portada"
+          class="w-full aspect-video object-cover"
         />
-        <div class="p-5 flex flex-col flex-grow">
-          <h3 class="text-lg font-semibold text-[var(--color-primary)] mb-1">{{ guide.title }}</h3>
-          <p class="text-sm text-gray-500 mb-3 line-clamp-3">{{ guide.description }}</p>
 
-          <div class="text-xs text-gray-400 mt-auto">
+        <div class="p-5 flex flex-col flex-grow justify-between">
+          <h3 class="text-xl font-bold text-gray-800 mb-1 truncate">{{ guide.title }}</h3>
+          <p class="text-sm text-gray-600 mb-2 line-clamp-2">{{ guide.description }}</p>
+
+          <div class="text-xs text-gray-500 mt-auto">
+            <p><strong>Categoría:</strong> {{ guide.category?.title || '—' }}</p>
             <p><strong>Autor:</strong> {{ guide.author }}</p>
-            <p><strong>Fecha:</strong> {{ guide.created?.toDate().toLocaleDateString() || 'N/A' }}</p>
+            <p><strong>Fecha:</strong> {{ guide.created?.toDate().toLocaleDateString() || '—' }}</p>
           </div>
 
-          <div class="mt-4 flex justify-between items-center">
-            <p class="text-xs text-gray-600 mt-auto"><strong>Categoría:</strong> {{ guide.category.title }}</p>
-
-            <div class="flex gap-1">
-              <button
-                @click.prevent.stop="selectedGuide = guide; showModal = true"
-                class="bg-[#999999] hover:bg-[var(--color-primary)] p-2 rounded-full transition duration-200 hover:-translate-y-1"
-              >
-                ✏️
-              </button>
-
-              <button
-                @click.prevent.stop="deleteGuide(guide.id)"
-                class="bg-[#999999] hover:bg-red-600 p-2 rounded-full transition duration-200 hover:-translate-y-1"
-              >
-                🗑️
-              </button>
-            </div>
+          <div class="mt-4 flex justify-end items-center">
+            <button
+              @click.stop="handleDelete(guide)"
+              class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full transition duration-200"
+              title="Eliminar"
+            >
+              <IconTrash class="w-5 h-5" />
+            </button>
           </div>
         </div>
-      </router-link>
+      </div>
     </div>
+
+    <!-- Table View -->
+    <table v-else-if="viewMode === 'table' && filteredGuides.length" class="w-full text-left text-sm">
+      <thead class="bg-gray-200 text-gray-600 font-medium">
+        <tr>
+          <th class="py-3 px-2">Título</th>
+          <th class="px-2">Categoría</th>
+          <th class="px-2">Autor</th>
+          <th class="px-2">Fecha</th>
+          <th class="px-2">Descripción</th>
+          <th class="px-2 text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white">
+        <tr
+          v-for="guide in filteredGuides"
+          :key="guide.id"
+          class="border-t border-gray-200 hover:bg-gray-100 transition"
+          @click="openEditModal(guide)"
+        >
+          <td class="py-3 px-2 font-semibold text-[var(--color-primary)]">{{ guide.title }}</td>
+          <td class="py-3 px-2">{{ guide.category?.title || '—' }}</td>
+          <td class="py-3 px-2">{{ guide.author }}</td>
+          <td class="py-3 px-2">{{ guide.created?.toDate().toLocaleDateString() || '—' }}</td>
+          <td class="py-3 px-2 line-clamp-2 text-gray-600">{{ guide.description }}</td>
+          <td class="py-3 px-2 text-right">
+            <button
+                @click.prevent.stop="handleDelete(guide)"
+                class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full transition duration-200"
+                title="Eliminar"
+              >
+                <IconTrash class="w-5 h-5" />
+              </button> 
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 </template>

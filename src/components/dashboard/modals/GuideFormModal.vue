@@ -122,7 +122,10 @@ function close() {
 
 <template>
   <!-- Modal guía -->
-  <div v-if="show" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50">
+  <div
+  v-if="show"
+  class="fixed inset-0 bg-[rgba(0,0,0,0.6)] backdrop-blur-sm flex justify-center items-center z-50 px-4"
+>
     <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-xl relative">
       <button @click="close" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-xl">✖</button>
 

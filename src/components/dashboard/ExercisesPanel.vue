@@ -1,53 +1,64 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { getExercises, deleteExercise, getExerciseCategories } from '@/firebase/exercises'
-import ExerciseFormModal from '@/components/dashboard/modals/ExerciseFormModal.vue'
+  import { ref, computed, onMounted } from 'vue'
+  import { getExercises, deleteExercise, getExerciseCategories } from '@/firebase/exercises'
+  import ExerciseFormModal from '@/components/dashboard/modals/ExerciseFormModal.vue'
 
-const exercises = ref([])
-const exerciseCategories = ref([])
-const loading = ref(true)
-const showModal = ref(false)
-const isAdmin = true
-const selectedExercise = ref(null)
+  const exercises = ref([])
+  const exerciseCategories = ref([])
+  const loading = ref(true)
+  const showModal = ref(false)
+  const isAdmin = true
+  const selectedExercise = ref(null)
+  const viewMode = ref('grid') // 'grid' o 'table'
 
-// 🔍 Filtros
-const searchQuery = ref('')
-const selectedCategory = ref('')
+  // Filters
+  const searchQuery = ref('')
+  const selectedCategory = ref('')
 
-const openEditModal = (exercise) => {
-  selectedExercise.value = exercise
-  showModal.value = true
-}
+  // Icons
+  import {
+    IconPlus,
+    IconLayoutGrid,
+    IconLayoutList,
+    IconTrash
+  } from '@tabler/icons-vue'
 
-const handleDelete = async (exercise) => {
-  if (confirm(`¿Seguro que quieres eliminar el ejercicio "${exercise.name}"?`)) {
-    await deleteExercise(exercise.id)
-    await loadExercises()
+  const openEditModal = (exercise) => {
+    selectedExercise.value = exercise
+    showModal.value = true
   }
-}
 
-// Computed: ejercicios filtrados
-const filteredExercises = computed(() => {
-  return exercises.value.filter(ex => {
-    const matchesSearch = ex.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-    const matchesCategory = !selectedCategory.value || ex.category?.name === selectedCategory.value
-    return matchesSearch && matchesCategory
+  const handleDelete = async (exercise) => {
+    if (confirm(`¿Seguro que quieres eliminar el ejercicio "${exercise.name}"?`)) {
+      await deleteExercise(exercise.id)
+      await loadExercises()
+    }
+  }
+
+  // Computed: ejercicios filtrados
+  const filteredExercises = computed(() => {
+    return exercises.value.filter(ex => {
+      const matchesSearch = ex.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+      const matchesCategory = !selectedCategory.value || ex.category?.name === selectedCategory.value
+      return matchesSearch && matchesCategory
+    })
   })
-})
 
-const loadExercises = async () => {
-  loading.value = true
-  try {
-    exercises.value = await getExercises()
-    exerciseCategories.value = await getExerciseCategories()
-  } catch (error) {
-    console.error('Error al cargar ejercicios:', error)
-  } finally {
-    loading.value = false
+  const loadExercises = async () => {
+    loading.value = true
+
+    try {
+      const rawExercises = await getExercises()
+      exercises.value = rawExercises.map(ex => ({ ...ex, showMenu: false }))
+      exerciseCategories.value = await getExerciseCategories()
+    } catch (error) {
+      console.error('Error al cargar ejercicios:', error)
+    } finally {
+      loading.value = false
+    }
   }
-}
 
-onMounted(loadExercises)
+  onMounted(loadExercises)
 
 </script>
 
@@ -61,11 +72,10 @@ onMounted(loadExercises)
         @click="showModal = true"
         class="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg shadow hover:bg-[var(--color-secondary)] transition"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
+        <IconPlus class="w-5 h-5"/>
         Nuevo ejercicio
       </button>
+
     </div>
 
     <!-- Modal -->
@@ -90,7 +100,7 @@ onMounted(loadExercises)
           v-model="searchQuery"
           type="text"
           placeholder="Nombre del ejercicio..."
-          class="w-full border border-gray-300 rounded p-2 text-sm text-gray-700"
+          class="w-full border border-gray-300 rounded p-2 focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
         />
       </div>
 
@@ -104,58 +114,121 @@ onMounted(loadExercises)
           </option>
         </select>
       </div>
+
+      <!-- View Mode -->
+      <div class="flex items-center gap-1">
+        <button
+          @click="viewMode = 'grid'"
+          :class="['p-2 rounded', viewMode === 'grid' ? 'bg-[var(--color-primary)] text-white' : 'bg-gray-200']"
+          title="Vista de tarjetas"
+          >
+          <IconLayoutGrid/>
+        </button>
+        <button
+          @click="viewMode = 'table'"
+          :class="['p-2 rounded', viewMode === 'table' ? 'bg-[var(--color-primary)] text-white' : 'bg-gray-200']"
+          title="Vista de tabla"
+          >
+          <IconLayoutList/>
+        </button>
+      </div>
     </div>
 
     <!-- Grid -->
-<div v-if="filteredExercises.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-  <div
-    v-for="exercise in filteredExercises"
-    :key="exercise.id"
-    class="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col"
-  >
-    <img
-      :src="exercise.imageUrl || `https://placehold.co/600x400?text=${encodeURIComponent(exercise.name)}`"
-      alt="Imagen del ejercicio"
-      class="w-full h-48 object-cover"
-    />
+    <div v-if="viewMode === 'grid' && filteredExercises.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div
+          v-for="exercise in filteredExercises"
+          :key="exercise.id"
+          class="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col transition cursor-pointer"
+          @click="openEditModal(exercise)"
+        >
+        <img
+          :src="exercise.imageUrl || `https://placehold.co/600x400?text=${encodeURIComponent(exercise.name)}`"
+          alt="Imagen del ejercicio"
+          class="w-full aspect-video object-cover"
+        />
 
-    <div class="p-5 flex flex-col flex-grow">
-      <h3 class="text-lg font-semibold text-[var(--color-primary)] mb-1">{{ exercise.name }}</h3>
-      <p class="text-sm text-gray-500 mb-3 line-clamp-3">{{ exercise.description }}</p>
+        <div class="p-5 flex flex-col flex-grow justify-between">
+            
+          <!-- Nombre -->
+          <h3 class="text-xl font-bold text-gray-800 mb-1 truncate">{{ exercise.name }}</h3>
+          
+          <!-- Descripción con espacio reservado aunque esté vacía -->
+          <p v-if="exercise.description" class="text-sm text-gray-600 mb-2 line-clamp-2">
+            {{ exercise.description }}
+          </p>
 
-      <div class="text-xs text-gray-400 mt-auto">
-        <p><strong>Grupo muscular:</strong> {{ exercise.category?.name || '—' }}</p>
-      </div>
+          <!-- Badge + acciones -->
+          <div class="mt-2 flex justify-between items-center">
+            <p
+              class="inline-block px-2 py-1 rounded text-xs font-bold w-fit"
+              style="background-color: rgba(var(--color-primary-rgb), 0.2); color: var(--color-primary);"
+            >
+              {{ exercise.category?.name || '—' }}
+            </p>
 
-      <div class="mt-4 flex justify-between items-center">
-        <span class="text-xs text-gray-600 mt-auto">ID: {{ exercise.id.slice(0, 6) }}...</span>
+              <button
+                @click.prevent.stop="handleDelete(exercise)"
+                class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full transition duration-200"
+                title="Eliminar"
+              >
+                <IconTrash class="w-5 h-5" />
+              </button>
 
-        <div class="flex gap-1">
-          <button
-            @click.prevent.stop="openEditModal(exercise)"
-            class="bg-[#999999] hover:bg-[var(--color-primary)] p-2 rounded-full transition duration-200 hover:-translate-y-1"
-            title="Editar"
-          >
-            ✏️
-          </button>
-          <button
-            @click.prevent.stop="handleDelete(exercise)"
-            class="bg-[#999999] hover:bg-red-600 p-2 rounded-full transition duration-200 hover:-translate-y-1"
-            title="Eliminar"
-          >
-            🗑️
-          </button>
+            </div>
+          </div>
         </div>
       </div>
+
+    <!-- Table view mode -->
+    <table v-else-if="viewMode === 'table' && filteredExercises.length" class="w-full text-left text-sm">
+      <thead class="bg-gray-200 text-gray-600 font-medium">
+        <tr>
+          <th class="py-3 px-2">Nombre</th>
+          <th class="px-2">Grupo muscular</th>
+          <th class="px-2">Descripción</th>
+          <th class="px-2 text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white">
+        <tr
+          v-for="exercise in filteredExercises"
+          :key="exercise.id"
+          @click="openEditModal(exercise)"
+          class="border-t border-gray-200 hover:bg-gray-100 transition"
+        >
+          <td class="py-3 px-2 text-[var(--color-primary)]">{{ exercise.name }}</td>
+          <td class="py-3 px-2">
+            <p
+              class="inline-block px-2 py-1 rounded-full text-xs font-bold w-fit"
+              style="background-color: rgba(var(--color-primary-rgb), 0.2); color: var(--color-primary);"
+            >
+              {{ exercise.category?.name || '—' }}
+            </p>
+          </td>
+          <td class="py-3 px-2 text-gray-600 line-clamp-2">{{ exercise.description }}</td>
+          <td class="py-3 px-2 text-right relative">
+            <button
+                @click.prevent.stop="handleDelete(exercise)"
+                class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full transition duration-200"
+                title="Eliminar"
+              >
+                <IconTrash class="w-5 h-5" />
+              </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+
+    <!-- Si no hay coincidencias -->
+    <div v-else class="flex flex-col items-center justify-center py-12 text-gray-500">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0z" />
+      </svg>
+      <p class="text-lg font-semibold">Sin resultados</p>
+      <p class="text-sm">No se encontraron ejercicios que coincidan con los filtros aplicados.</p>
     </div>
-  </div>
-</div>
-
-<!-- Si no hay coincidencias -->
-<div v-else class="text-center text-gray-500 py-6">
-  No se encontraron ejercicios que coincidan con tu búsqueda.
-</div>
-
 
   </section>
 </template>

@@ -4,19 +4,33 @@ import { useAuth } from '@/firebase/useAuth'
 import DashboardSidebar from './DashboardSidebar.vue'
 import DashboardHeader from './DashboardHeader.vue'
 
+// Icons
+import {
+  IconChartBar,
+  IconBarbell,
+  IconTreadmill,
+  IconLeaf,
+  IconSoup,
+  IconToolsKitchen2,
+  IconCarrot,
+  IconBook,
+  IconUsers,
+  IconSettings
+} from '@tabler/icons-vue'
+
 const { userData } = useAuth()
 
 const menuItems = [
-  { key: 'progress', label: 'Mi Progreso', icon: '📈', roles: ['user', 'coach', 'admin'] },
-  { key: 'exercises', label: 'Ejercicios', icon: '🏋️', roles: ['user', 'coach', 'admin'] },
-  { key: 'routines', label: 'Rutinas', icon: '💪', roles: ['user', 'coach', 'admin'] },
-  { key: 'habits', label: 'Hábitos', icon: '🌱', roles: ['user', 'coach', 'admin'] },
-  { key: 'diets', label: 'Dietas', icon: '🥗', roles: ['user', 'coach', 'admin'] },
-  { key: 'plates', label: 'Platos', icon: '🍽️', roles: ['user', 'coach', 'admin'] },
-  { key: 'ingredients', label: 'Ingredientes', icon: '🍗', roles: ['user', 'coach', 'admin'] },
-  { key: 'guides', label: 'Guías', icon: '📖', roles: ['coach', 'admin'] },
-  { key: 'users', label: 'Usuarios', icon: '👥', roles: ['admin'] },
-  { key: 'config', label: 'Configuración', icon: '⚙️', roles: ['user', 'coach', 'admin'] }
+  { key: 'progress', label: 'Mi Progreso', icon: IconChartBar, roles: ['user', 'coach', 'admin'] },
+  { key: 'exercises', label: 'Ejercicios', icon: IconBarbell, roles: ['user', 'coach', 'admin'] },
+  { key: 'routines', label: 'Rutinas', icon: IconTreadmill, roles: ['user', 'coach', 'admin'] },
+  { key: 'habits', label: 'Hábitos', icon: IconLeaf, roles: ['user', 'coach', 'admin'] },
+  { key: 'diets', label: 'Dietas', icon: IconToolsKitchen2, roles: ['user', 'coach', 'admin'] },
+  { key: 'plates', label: 'Platos', icon: IconSoup, roles: ['user', 'coach', 'admin'] },
+  { key: 'ingredients', label: 'Ingredientes', icon: IconCarrot, roles: ['user', 'coach', 'admin'] },
+  { key: 'guides', label: 'Guías', icon: IconBook, roles: ['coach', 'admin'] },
+  { key: 'users', label: 'Usuarios', icon: IconUsers, roles: ['admin'] },
+  { key: 'config', label: 'Configuración', icon: IconSettings, roles: ['user', 'coach', 'admin'] }
 ]
 
 const visibleMenu = computed(() =>

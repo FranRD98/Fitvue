@@ -68,7 +68,7 @@ function handleNext() {
 </script>
 
 <template>
-    <div v-if="show" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50">
+    <div v-if="show" class="fixed inset-0 bg-[var(--color-primary)] bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50">
       <div class="bg-white rounded-xl shadow-xl p-8 w-full max-w-3xl relative overflow-hidden transition-all">
   
         <!-- Encabezado y paso actual -->

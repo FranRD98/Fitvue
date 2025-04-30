@@ -12,6 +12,14 @@ const searchQuery = ref('')
 const selectedPlan = ref('')
 const selectedRole = ref('')
 
+import {
+  IconPlus,
+  IconLayoutGrid,
+  IconLayoutList,
+  IconTrash
+} from '@tabler/icons-vue'
+
+
 const loadUsers = async () => {
   loading.value = true
   try {
@@ -63,9 +71,7 @@ const filteredUsers = computed(() => {
     <div class="flex justify-between items-center mb-10">
       <h1 class="text-3xl font-bold text-[var(--color-primary)]">Usuarios</h1>
       <button @click="openCreateModal" class="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg shadow hover:bg-[var(--color-secondary)] transition">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
+        <IconPlus class="w-5 h-5"/>
         Nuevo usuario
       </button>
     </div>
@@ -80,72 +86,84 @@ const filteredUsers = computed(() => {
 
     <!-- Filtros -->
     <div class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
-      <div class="flex-1">
-        <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Buscar</label>
-        <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="Correo, nombre..."
-          class="w-full border border-gray-300 rounded p-2 text-sm text-gray-700"
-        />
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Plan</label>
-        <select v-model="selectedPlan" class="w-full border border-gray-300 rounded p-2 text-sm">
-          <option value="">Todos</option>
-          <option value="free">Free</option>
-          <option value="premium">Premium</option>
-        </select>
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Rol</label>
-        <select v-model="selectedRole" class="w-full border border-gray-300 rounded p-2 text-sm">
-          <option value="">Todos</option>
-          <option value="user">Usuario</option>
-          <option value="coach">Coach</option>
-          <option value="admin">Admin</option>
-        </select>
-      </div>
-    </div>
+  <!-- Buscador -->
+  <div class="flex-1">
+    <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Buscar</label>
+    <input
+      v-model="searchQuery"
+      type="text"
+      placeholder="Correo, nombre..."
+      class="w-full border border-gray-300 rounded p-2 text-sm text-gray-700 focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
+    />
+  </div>
+
+  <!-- Plan -->
+  <div>
+    <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Plan</label>
+    <select
+      v-model="selectedPlan"
+      class="w-full border border-gray-300 p-2 rounded text-sm text-gray-700 focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
+    >
+      <option value="">Todos</option>
+      <option value="free">Free</option>
+      <option value="premium">Premium</option>
+    </select>
+  </div>
+
+  <!-- Rol -->
+  <div>
+    <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Rol</label>
+    <select
+      v-model="selectedRole"
+      class="w-full border border-gray-300 p-2 rounded text-sm text-gray-700 focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
+    >
+      <option value="">Todos</option>
+      <option value="user">Usuario</option>
+      <option value="coach">Coach</option>
+      <option value="admin">Admin</option>
+    </select>
+  </div>
+</div>
+
 
     <!-- Tabla -->
-    <div v-if="filteredUsers.length" class="overflow-x-auto rounded-lg">
-      <table class="min-w-full bg-white text-sm text-left border border-gray-300 rounded-full">
-        <thead class="bg-[var(--color-primary)] text-white">
-          <tr>
-            <th class="px-5 py-3 font-medium">Nombre</th>
-            <th class="px-5 py-3 font-medium">Email</th>
-            <th class="px-5 py-3 font-medium">Creado</th>
-            <th class="px-5 py-3 font-medium">Plan</th>
-            <th class="px-5 py-3 font-medium">Rol</th>
-            <th class="px-5 py-3 font-medium text-right">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="user in filteredUsers"
-            :key="user.id"
-            class="odd:bg-white even:bg-gray-100 border-b border-gray-300"
-          >
-            <td class="px-5 py-2 font-semibold text-[var(--color-primary)] whitespace-nowrap">
-              {{ user.name }} {{ user.last_name }}
-            </td>
-            <td class="px-5 py-2 whitespace-nowrap">{{ user.email }}</td>
-            <td class="px-5 py-2 whitespace-nowrap">{{ user.created?.toDate().toLocaleDateString() || '—' }}</td>
-            <td class="px-5 py-2 capitalize">{{ user.suscriptionPlan }}</td>
-            <td class="px-5 py-2 capitalize">{{ user.role }}</td>
-            <td class="px-5 py-2 flex items-center justify-end gap-3">
-              <button @click="openEditModal(user)" class="text-blue-500 hover:bg-blue-100 rounded-full transition">
-                <img class="w-6 h-auto" src="/icons/edit.svg" />
-              </button>
-              <button @click="handleDelete(user)" class="text-red-500 hover:bg-red-100 rounded-full transition">
-                <img class="w-6 h-auto" src="/icons/trash.svg" />
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+<table v-if="filteredUsers.length" class="w-full text-left text-sm">
+  <thead class="bg-gray-200 text-gray-600 font-medium">
+    <tr>
+      <th class="py-3 px-2">Nombre</th>
+      <th class="px-2">Email</th>
+      <th class="px-2">Creado</th>
+      <th class="px-2">Plan</th>
+      <th class="px-2">Rol</th>
+      <th class="px-2 text-right">Acciones</th>
+    </tr>
+  </thead>
+  <tbody class="bg-white">
+    <tr
+      v-for="user in filteredUsers"
+      :key="user.id"
+      class="border-t border-gray-200 hover:bg-gray-100 transition"
+      @click="openEditModal(user)"
+    >
+      <td class="py-3 px-2 font-semibold text-[var(--color-primary)] whitespace-nowrap">
+        {{ user.name }} {{ user.last_name }}
+      </td>
+      <td class="py-3 px-2 whitespace-nowrap">{{ user.email }}</td>
+      <td class="py-3 px-2 whitespace-nowrap">{{ user.created?.toDate().toLocaleDateString() || '—' }}</td>
+      <td class="py-3 px-2 capitalize">{{ user.suscriptionPlan || '—' }}</td>
+      <td class="py-3 px-2 capitalize">{{ user.role || '—' }}</td>
+      <td class="py-3 px-2 text-right">
+        <button
+                @click.prevent.stop="handleDelete(user)"
+                class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full transition duration-200"
+                title="Eliminar"
+              >
+                <IconTrash class="w-5 h-5" />
+              </button> 
+      </td>
+    </tr>
+  </tbody>
+</table>
 
     <!-- Sin resultados -->
     <div v-else class="text-center text-gray-500 mt-10">No se encontraron usuarios con esos criterios.</div>

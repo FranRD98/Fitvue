@@ -107,7 +107,7 @@ function resetForm() {
 
 <div
   v-if="show"
-  class="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center px-2"
+  class="fixed inset-0 bg-[rgba(0,0,0,0.6)] backdrop-blur-sm flex justify-center items-center z-50 px-4"
 >
   <!-- CONTENEDOR INTERIOR DEL MODAL -->
   <div
