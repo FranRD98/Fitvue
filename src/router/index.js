@@ -9,10 +9,9 @@ import StartChange from '@/views/auth/StartChange.vue';
 import NotFound from '@/views/static/NotFound.vue';
 import FAQ from '@/views/static/FAQ.vue';
 
-import Routines from '@/views/routines/Routines.vue';
+import RoutineList from '@/views/routines/Routine-list.vue';
 
 import GuideList from '@/views/guides/Guide-list.vue';
-import GuidesByCategory from '@/views/guides/GuidesByCategory.vue'
 import GuideDetail from '@/views/guides/GuideDetail.vue';
 
 import PrivacyPolicy from '@/views/legal/PrivacyPolicy.vue';
@@ -28,15 +27,13 @@ import Register from '@/views/auth/Register.vue';
 const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/nosotros', name: 'About', component: About },
-  { path: '/rutinas', name: 'Rutinas', component: Routines },
-  { path: '/rutinas/entrenamiento', name: 'Rutinas Entrenamiento', component: Routines },
-  { path: '/rutinas/mindfulness', name: 'Rutinas Mindfulness', component: Routines },
-  { path: '/rutinas/estiramientos', name: 'Rutinas Estiramientos', component: Routines },
-  { path: '/rutinas/yoga', name: 'Rutinas Yoga', component: Routines },
+  { path: '/rutinas', name: 'Rutinas', component: RoutineList },
+  { path: '/rutinas/:routine', name: 'Rutinas por categoria', component: RoutineList },
+  { path: '/rutinas/:routine/:id', name: 'Rutina Detalle', component: RoutineList },
 
   // Guías
   { path: '/guias', name: 'Guia listado', component: GuideList },
-  { path: '/guias/:category', name: 'Guia por categoria', component: GuidesByCategory },
+  { path: '/guias/:category', name: 'Guia por categoria', component: GuideList },
   { path: '/guias/:category/:id', name: 'Guia detalle', component: GuideDetail },
 
   { path: '/contacto', name: 'Contact', component: Contact },

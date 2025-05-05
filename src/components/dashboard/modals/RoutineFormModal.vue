@@ -1,17 +1,20 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
 import { getExercises } from '@/firebase/exercises'
-import { createRoutine, updateRoutine } from '@/firebase/routines'
+import { getRoutineCategories, createRoutine, updateRoutine } from '@/firebase/routines'
 
 const props = defineProps({ show: Boolean, initialData: Object })
 const emit = defineEmits(['close', 'saved'])
 
 const exercises = ref([])
+const categories = ref([])
+
 const loading = ref(true)
 
 const routine = ref({
   title: '',
   description: '',
+  type: '',
   days: []
 })
 
@@ -26,6 +29,10 @@ const selectedDays = ref(defaultDays.map(day => ({
 
 onMounted(async () => {
   exercises.value = await getExercises()
+  categories.value = await getRoutineCategories()
+
+  console.log('RUTINA');
+  console.log(routine.value);
 })
 
 watch(() => props.initialData, (newVal) => {
@@ -132,6 +139,10 @@ function resetForm() {
       <div class="grid grid-cols-1 grid-rows-2 gap-4">
         <input v-model="routine.title" placeholder="Título de la rutina" class="input" required />
         <input v-model="routine.description" placeholder="Descripción" class="input" />
+        <select v-model="routine.type" class="input">
+          <option disabled value="">Selecciona un tipo</option>
+          <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+        </select>
       </div>
 
       <!-- Días -->

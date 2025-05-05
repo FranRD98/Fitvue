@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import {
   getRoutines,
   assignRoutineToUser,
@@ -13,16 +13,15 @@ const loading = ref(true)
 const showModal = ref(false)
 const selectedRoutine = ref(null)
 const assignedRoutineId = ref(null)
-const currentUserId = ref('uid_del_usuario') // Reemplazar con el UID actual del usuario
+const currentUserId = ref('uid_del_usuario') 
 const viewMode = ref('grid')
 const searchQuery = ref('')
 
   // Icons
   import {
     IconPlus,
-  IconLayoutGrid,
-  IconLayoutList,
-  IconTrash
+    IconLayoutGrid,
+    IconLayoutList
   } from '@tabler/icons-vue'
 
 const loadRoutines = async () => {

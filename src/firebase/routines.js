@@ -21,6 +21,15 @@ export async function getRoutines() {
   }))
 }
 
+// Obtener categorias de las rutinas
+export async function getRoutineCategories() {
+  const snapshot = await getDocs(collection(db, 'routines_categories'))
+  return snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }))
+}
+
 // Actualizar una rutina existente
 export async function updateRoutine(id, routineData) {
   const docRef = doc(db, 'routines', id)
