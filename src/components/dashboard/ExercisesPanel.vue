@@ -1,6 +1,6 @@
 <script setup>
-  import { ref, computed, onMounted } from 'vue'
-  import { getExercises, deleteExercise, getExerciseCategories } from '@/firebase/exercises'
+  import { ref, computed, onMounted } from 'vue';
+  import { getExercises, deleteExercise, getExerciseCategories } from '@/supabase/services/exercises';
   import ExerciseFormModal from '@/components/dashboard/modals/ExerciseFormModal.vue'
 
   const exercises = ref([])
@@ -10,18 +10,29 @@
   const isAdmin = true
   const selectedExercise = ref(null)
   const viewMode = ref('grid') // 'grid' o 'table'
+  
+  // Icons
+  import { IconPlus, IconLayoutGrid, IconLayoutList, IconTrash } from '@tabler/icons-vue'
+
+  /* OnMounted Function */
+  const loadExercises = async () => {
+    loading.value = true
+
+    try {
+      exercises.value = await getExercises() // Load the exercises
+      exerciseCategories.value = await getExerciseCategories() // Load the exercises categories
+    } catch (error) {
+      console.error('Error al cargar ejercicios:', error)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  onMounted(loadExercises)
 
   // Filters
   const searchQuery = ref('')
   const selectedCategory = ref('')
-
-  // Icons
-  import {
-    IconPlus,
-    IconLayoutGrid,
-    IconLayoutList,
-    IconTrash
-  } from '@tabler/icons-vue'
 
   const openEditModal = (exercise) => {
     selectedExercise.value = exercise
@@ -43,22 +54,6 @@
       return matchesSearch && matchesCategory
     })
   })
-
-  const loadExercises = async () => {
-    loading.value = true
-
-    try {
-      const rawExercises = await getExercises()
-      exercises.value = rawExercises.map(ex => ({ ...ex, showMenu: false }))
-      exerciseCategories.value = await getExerciseCategories()
-    } catch (error) {
-      console.error('Error al cargar ejercicios:', error)
-    } finally {
-      loading.value = false
-    }
-  }
-
-  onMounted(loadExercises)
 
 </script>
 
@@ -88,7 +83,6 @@
 
     <!-- Loading / Empty -->
     <div v-if="loading">Cargando ejercicios...</div>
-    <div v-else-if="exercises.length === 0">No hay ejercicios disponibles.</div>
 
     <!-- Panel -->
     <div v-else class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
