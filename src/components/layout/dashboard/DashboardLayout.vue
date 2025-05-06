@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, defineAsyncComponent } from 'vue'
-import { useAuth } from '@/firebase/useAuth'
+import { useAuth } from '@/supabase/useAuth'
 import DashboardSidebar from './DashboardSidebar.vue'
 import DashboardHeader from './DashboardHeader.vue'
 

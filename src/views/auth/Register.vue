@@ -1,9 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { auth, db } from '@/firebase/config'
-import { createUserWithEmailAndPassword } from 'firebase/auth'
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore'
+import { supabase } from '@/supabase/config'
 
 const router = useRouter()
 const userData = ref({})
@@ -19,27 +17,41 @@ onMounted(() => {
 })
 
 const registerUser = async () => {
-  try {
-    // Crear usuario en Firebase Auth
-    const cred = await createUserWithEmailAndPassword(auth, email.value, password.value)
+  error.value = ''
+  const { data, error: signUpError } = await supabase.auth.signUp({
+    email: email.value,
+    password: password.value,
+  })
 
-    // Guardar en Firestore (colección "users")
-    await setDoc(doc(db, 'users', cred.user.uid), {
-      ...userData.value,
-      uid: cred.user.uid,
-      email: email.value,
-      role: 'user',
-      created: serverTimestamp()
-    })
-
-    localStorage.removeItem('userData') // Limpiamos localStorage
-    router.push('/dashboard') // Redirigir a dashboard o lo que prefieras
-
-  } catch (err) {
-    error.value = err.message
+  if (signUpError) {
+    error.value = signUpError.message
+    return
   }
+
+  const userId = data.user?.id
+
+  // Guardar datos adicionales del usuario en la tabla 'users' (si quieres)
+  if (userId) {
+    const { error: insertError } = await supabase.from('users').insert([
+      {
+        ...userData.value,
+        uid: userId,
+        email: email.value,
+        role: 'user',
+        created_at: new Date().toISOString()
+      }
+    ])
+    if (insertError) {
+      error.value = insertError.message
+      return
+    }
+  }
+
+  localStorage.removeItem('userData')
+  router.push('/dashboard')
 }
 </script>
+
 
 
 <template>

@@ -1,25 +1,51 @@
 <script setup>
   import { ref, onMounted } from 'vue'
-import { collection, getDocs } from 'firebase/firestore'
-import { db } from '@/firebase/config'
 
   const mobileMenuOpen = ref(false)
   const toggleMobileMenu = () => mobileMenuOpen.value = !mobileMenuOpen.value
   const closeMenu = () => mobileMenuOpen.value = false
 
-  import { useAuth } from '@/firebase/useAuth'
+  const categories = ref([])
+
+  /* SUPABASE */
+  import { supabase } from '@/supabase/config'; 
+  import { useAuth } from '@/supabase/useAuth';
 
   const { user, userData, logout } = useAuth();
 
-  const categories = ref([])
+  onMounted(async () => {
+    const { data, error } = await supabase
+      .from('guide_categories') 
+      .select('*');
 
-onMounted(async () => {
-  const snapshot = await getDocs(collection(db, 'categories'))
-  categories.value = snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  }))
-})
+    if (error) {
+      console.error('Error al obtener las categories de las guías:', error);
+      categories.value = [];  // En caso de error, asignamos un array vacío
+      return;
+    }
+    
+    // Obtener la URL pública de las imágenes asociadas a cada categoría
+    const categoriesWithImages = await Promise.all(
+      data.map(async (category) => {
+        // Asumimos que category.icon_path tiene la ruta relativa de la imagen, como "icons/guides/diets.svg"
+        const { data: imageData, error: imageError } = await supabase
+          .storage
+          .from('fitvue') // Nombre del bucket donde están las imágenes
+          .getPublicUrl(`${category.icon_path}`);  // Ruta de la imagen en el bucket
+        
+        if (imageError) {
+          console.error('Error al obtener la URL de la imagen:', imageError);
+          category.icon_path = '/icons/default-icon.svg';  // Imagen por defecto si ocurre un error
+        } else {
+          category.icon_path = imageData.publicUrl;  // Asignamos la URL pública de la imagen
+        }
+
+        return category;  // Devolvemos la categoría con la URL de la imagen
+      })
+    );
+
+    categories.value = categoriesWithImages;  // Asignamos las categorías con las URLs de las imágenes
+  });
 
 </script>
 
@@ -114,7 +140,7 @@ onMounted(async () => {
         class="flex items-center space-x-3"
       >
         <img
-          :src="category.iconURL || '/icons/default-icon.svg'"
+          :src="category.icon_path || '/icons/default-icon.svg'"
           alt="Icono"
           class="w-8 h-8 object-contain"
         />
@@ -141,7 +167,7 @@ onMounted(async () => {
               <!-- Botón avatar y nombre -->
               <div class="flex items-center space-x-2 cursor-pointer">
                 <img
-                  :src="userData?.avatar || '/icons/default-avatar.svg'"
+                  :src="userData?.profile_image|| '/icons/default-avatar.svg'"
                   alt="Foto usuario"
                   class="w-8 h-8 rounded-full object-cover"
                 />

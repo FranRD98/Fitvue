@@ -1,5 +1,5 @@
 <script setup>
-import { useAuth } from '@/firebase/useAuth'
+import { useAuth } from '@/supabase/useAuth'
 const { userData } = useAuth()
 </script>
 
