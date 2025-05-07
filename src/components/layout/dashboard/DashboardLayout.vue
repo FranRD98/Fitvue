@@ -38,6 +38,9 @@ const visibleMenu = computed(() =>
 )
 
 const activeKey = ref('progress')
+const ActiveComponent = computed(() => componentsMap[activeKey.value])
+const currentUserId = computed(() => userData.value?.id || null)
+
 const componentsMap = {
   progress: defineAsyncComponent(() => import('@/components/dashboard/ProgressPanel.vue')),
   exercises: defineAsyncComponent(() => import('@/components/dashboard/ExercisesPanel.vue')),
@@ -51,7 +54,6 @@ const componentsMap = {
   config: defineAsyncComponent(() => import('@/components/dashboard/ConfigPanel.vue'))
 }
 
-const ActiveComponent = computed(() => componentsMap[activeKey.value])
 </script>
 
 <template>
@@ -63,7 +65,7 @@ const ActiveComponent = computed(() => componentsMap[activeKey.value])
     <div class="flex flex-col flex-1 h-screen overflow-hidden">
       <DashboardHeader />
       <main class="flex-1 overflow-y-auto p-6">
-        <component :is="ActiveComponent" />
+        <component :is="ActiveComponent" :current-user-id="currentUserId" />
       </main>
     </div>
   </div>

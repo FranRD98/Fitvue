@@ -1,7 +1,7 @@
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'
-import { getExercises } from '@/firebase/exercises'
-import { getRoutineCategories, createRoutine, updateRoutine } from '@/firebase/routines'
+import { ref, onMounted, watch } from 'vue'
+import { getExercises } from '@/supabase/services/exercises'
+import { getRoutineCategories, createRoutine, updateRoutine } from '@/supabase/services/routines'
 
 const props = defineProps({ show: Boolean, initialData: Object })
 const emit = defineEmits(['close', 'saved'])
@@ -9,40 +9,35 @@ const emit = defineEmits(['close', 'saved'])
 const exercises = ref([])
 const categories = ref([])
 
-const loading = ref(true)
-
 const routine = ref({
   title: '',
   description: '',
-  type: '',
+  id_category: '',
   days: []
 })
 
 const defaultDays = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
-
-const selectedDays = ref(defaultDays.map(day => ({
-  name: day,
-  enabled: false,
-  exercises: [],
-  selectedExercise: ''
-})))
+const selectedDays = ref([])
 
 onMounted(async () => {
   exercises.value = await getExercises()
   categories.value = await getRoutineCategories()
-
-  console.log('RUTINA');
-  console.log(routine.value);
 })
 
 watch(() => props.initialData, (newVal) => {
   if (newVal) {
-    routine.value = { ...newVal }
+    routine.value = {
+      id: newVal.id,
+      title: newVal.title || '',
+      description: newVal.description || '',
+      id_category: newVal.id_category || '',
+      days: []
+    }
 
     selectedDays.value = defaultDays.map(dayName => {
-      const existing = newVal.days?.find(d => d.name === dayName)
+      const existing = newVal.days?.find(d => d.day === dayName || d.name === dayName)
       return {
-        name: dayName,
+        day: dayName,
         enabled: !!existing,
         exercises: existing?.exercises || [],
         selectedExercise: ''
@@ -72,13 +67,28 @@ function removeExercise(day, index) {
 }
 
 async function submitForm() {
+  // Validación
+  if (!routine.value.title || !routine.value.id_category) {
+    alert('El título y tipo de rutina son obligatorios.')
+    return
+  }
+
+  // Asegúrate de mapear correctamente los días seleccionados
   routine.value.days = selectedDays.value
     .filter(d => d.enabled && d.exercises.length)
     .map(d => ({
-      name: d.name,
-      exercises: d.exercises
+      day: d.day,
+      exercises: d.exercises.map(exercise => ({
+        id: exercise.id,
+        name: exercise.name,
+        sets: exercise.sets,
+        reps: exercise.reps
+      }))
     }))
 
+  console.log('Objeto de rutina a enviar:', routine.value)  // Para debug
+
+  // Actualizar o crear la rutina
   if (routine.value.id) {
     await updateRoutine(routine.value.id, routine.value)
   } else {
@@ -89,6 +99,7 @@ async function submitForm() {
   close()
 }
 
+
 function close() {
   resetForm()
   emit('close')
@@ -98,11 +109,12 @@ function resetForm() {
   routine.value = {
     title: '',
     description: '',
+    id_category: '',
     days: []
   }
 
   selectedDays.value = defaultDays.map(day => ({
-    name: day,
+    day: day,
     enabled: false,
     exercises: [],
     selectedExercise: ''
@@ -111,109 +123,95 @@ function resetForm() {
 </script>
 
 <template>
-
-<div
-  v-if="show"
-  class="fixed inset-0 bg-[rgba(0,0,0,0.6)] backdrop-blur-sm flex justify-center items-center z-50 px-4"
->
-  <!-- CONTENEDOR INTERIOR DEL MODAL -->
   <div
-    class="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-screen overflow-y-auto p-4 relative"
+    v-if="show"
+    class="fixed inset-0 bg-[rgba(0,0,0,0.6)] backdrop-blur-sm flex justify-center items-center z-50 px-4"
   >
-    <!-- HEADER -->
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-xl font-bold text-[var(--color-primary)]">
-        {{ routine.id ? 'Editar rutina' : 'Crear nueva rutina' }}
-      </h2>
-      <button
-        @click="close"
-        class="text-gray-500 hover:text-gray-800 text-sm"
-      >
-        ✖ Cerrar
-      </button>
-    </div>
-
-    <!-- CONTENIDO SCROLLABLE -->
-    <form @submit.prevent="submitForm" class="space-y-8">
-      <!-- Título + descripción -->
-      <div class="grid grid-cols-1 grid-rows-2 gap-4">
-        <input v-model="routine.title" placeholder="Título de la rutina" class="input" required />
-        <input v-model="routine.description" placeholder="Descripción" class="input" />
-        <select v-model="routine.type" class="input">
-          <option disabled value="">Selecciona un tipo</option>
-          <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
-        </select>
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-screen overflow-y-auto p-4 relative">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-[var(--color-primary)]">
+          {{ routine.id ? 'Editar rutina' : 'Crear nueva rutina' }}
+        </h2>
+        <button @click="close" class="text-gray-500 hover:text-gray-800 text-sm">✖ Cerrar</button>
       </div>
 
-      <!-- Días -->
-      <div v-for="day in selectedDays" :key="day.name" class="border rounded-lg p-4 space-y-4">
-        <!-- Día header -->
-        <div class="justify-between sm:items-center gap-2">
-          <label class="flex items-center gap-2">
-            <input type="checkbox" v-model="day.enabled" />
-            <span class="text-xl font-semibold text-[var(--color-primary)]">{{ day.name }}</span>
-          </label>
-
-          <div v-if="day.enabled" class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <select v-model="day.selectedExercise" class="input">
-              <option disabled selected value="">Selecciona un ejercicio</option>
-              <option v-for="ex in exercises" :key="ex.id" :value="ex.id">{{ ex.name }}</option>
-            </select>
-            <button
-              type="button"
-              @click="addExerciseToDay(day)"
-              class="bg-[var(--color-primary)] text-white rounded px-3 py-1 text-sm"
-            >
-              +
-            </button>
-          </div>
+      <form @submit.prevent="submitForm" class="space-y-8">
+        <!-- Título, descripción y tipo -->
+        <div class="grid grid-cols-1 gap-4">
+          <input v-model="routine.title" placeholder="Título de la rutina" class="input" required />
+          <input v-model="routine.description" placeholder="Descripción" class="input" />
+          <select v-model="routine.id_category" class="input">
+            <option disabled value="">Selecciona un tipo</option>
+            <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+          </select>
         </div>
 
-        <!-- Lista ejercicios -->
-        <div v-if="day.enabled && day.exercises.length">
-          <div
-            v-for="(exercise, index) in day.exercises"
-            :key="index"
-            class="bg-gray-50 border rounded px-3 py-2 mb-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-          >
-            <div class="text-sm font-medium text-[var(--color-text)] w-full sm:w-auto">
-              {{ exercise.name }}
-            </div>
+        <!-- Días -->
+        <div v-for="day in selectedDays" :key="day.day" class="border rounded-lg p-4 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+            <label class="flex items-center gap-2">
+              <input type="checkbox" v-model="day.enabled" />
+              <span class="text-xl font-semibold text-[var(--color-primary)]">{{ day.day }}</span>
+            </label>
 
-            <div class="flex gap-2 items-center">
-              <input
-                v-model.number="exercise.sets"
-                type="number"
-                placeholder="Series"
-                class="border rounded px-2 py-1 w-20 text-center"
-              />
-              <input
-                v-model.number="exercise.reps"
-                type="number"
-                placeholder="Reps"
-                class="border rounded px-2 py-1 w-20 text-center"
-              />
-              <button @click="removeExercise(day, index)" class="text-red-500 text-xs hover:underline">
-                Quitar
+            <div v-if="day.enabled" class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <select v-model="day.selectedExercise" class="input">
+                <option disabled selected value="">Selecciona un ejercicio</option>
+                <option v-for="ex in exercises" :key="ex.id" :value="ex.id">{{ ex.name }}</option>
+              </select>
+              <button
+                type="button"
+                @click="addExerciseToDay(day)"
+                class="bg-[var(--color-primary)] text-white rounded px-3 py-1 text-sm"
+              >
+                +
               </button>
             </div>
           </div>
+
+          <div v-if="day.enabled && day.exercises.length">
+            <div
+              v-for="(exercise, index) in day.exercises"
+              :key="index"
+              class="bg-gray-50 border rounded px-3 py-2 mb-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+            >
+              <div class="text-sm font-medium text-[var(--color-text)] w-full sm:w-auto">
+                {{ exercise.name }}
+              </div>
+
+              <div class="flex gap-2 items-center">
+                <input
+                  v-model.number="exercise.sets"
+                  type="number"
+                  placeholder="Series"
+                  class="border rounded px-2 py-1 w-20 text-center"
+                />
+                <input
+                  v-model.number="exercise.reps"
+                  type="number"
+                  placeholder="Reps"
+                  class="border rounded px-2 py-1 w-20 text-center"
+                />
+                <button @click="removeExercise(day, index)" class="text-red-500 text-xs hover:underline">
+                  Quitar
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <!-- Botón -->
-      <div class="flex justify-end">
-        <button
-          type="submit"
-          class="bg-[var(--color-primary)] text-white px-6 py-2 rounded-lg hover:bg-[var(--color-secondary)]"
-        >
-          Guardar rutina
-        </button>
-      </div>
-    </form>
+        <!-- Guardar -->
+        <div class="flex justify-end">
+          <button
+            type="submit"
+            class="bg-[var(--color-primary)] text-white px-6 py-2 rounded-lg hover:bg-[var(--color-secondary)]"
+          >
+            Guardar rutina
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
-</div>
-
 </template>
 
 <style scoped>

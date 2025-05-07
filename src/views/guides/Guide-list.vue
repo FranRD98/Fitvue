@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+/*import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'  // Importar useRoute y useRouter
 import { getGuides, getCategories } from '@/firebase/guides'
 import Card from '@/components/Card.vue'
@@ -52,11 +52,11 @@ const goToPage = (page) => {
 watch(selectedCategory, (newVal) => {
   const categoryPath = newVal === 'Todas' ? '/guias' : `/guias/${encodeURIComponent(newVal)}`
   router.push(categoryPath)  // Cambiar la URL sin redirigir
-})
+})*/
 </script>
 
 <template>
-  <section class="max-w-7xl mx-auto px-6 py-10">
+  <section v-if="false" class="max-w-7xl mx-auto px-6 py-10">
     <div class="flex flex-col md:flex-row gap-6">
       
       <!-- Filters Aside -->

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+/*import { ref, computed, onMounted } from 'vue'
 import { getRoutines } from '@/firebase/routines'
 import Card from '@/components/Card.vue'
 
@@ -20,11 +20,11 @@ const totalPages = computed(() => Math.ceil(items.value.length / itemsPerPage))
 
 const goToPage = (page) => {
   if (page >= 1 && page <= totalPages.value) currentPage.value = page
-}
+}*/
 </script>
 
 <template>
-  <section class="max-w-7xl mx-auto px-6 py-10">
+  <section v-if="false" class="max-w-7xl mx-auto px-6 py-10">
     <div class="flex flex-col gap-6">
       <h1 class="text-3xl font-bold text-[var(--color-primary)]">Rutinas</h1>
 

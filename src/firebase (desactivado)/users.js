@@ -45,3 +45,4 @@ export async function updateUser(id, userData) {
 export async function deleteUser(id) {
   await deleteDoc(doc(db, 'users', id))
 }
+

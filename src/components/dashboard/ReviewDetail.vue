@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+/*import { ref, onMounted } from 'vue'
 import { getReviewById } from '@/firebase/progress.js'
 import { getAuth } from 'firebase/auth'
 import router from '@/router'
@@ -27,13 +27,13 @@ onMounted(async () => {
         console.warn('No tienes permisos para ver esta revisión')
         loading.value = false
   }
-})
+})*/
 </script>
 
 <template>
-    <!-- Loading / Empty State -->
+    <!-- Loading / Empty State 
     <div v-if="loading">Cargando revisión...</div>
     <div v-else>
         <h1>Peso: {{ review.weight }}</h1>
-    </div>
+    </div>-->
 </template>

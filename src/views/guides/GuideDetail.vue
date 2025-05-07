@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+/*import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '@/firebase/config'
@@ -23,11 +23,12 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
-})
+})*/
 </script>
 
 <template>
-  <section class="max-w-6xl mx-auto px-6 py-12">
+  
+  <section v-if="false" class="max-w-6xl mx-auto px-6 py-12">
     <div v-if="loading" class="text-center text-gray-500">Cargando guía...</div>
 
     <div v-else-if="guide" class="bg-white rounded-lg shadow-lg overflow-hidden">

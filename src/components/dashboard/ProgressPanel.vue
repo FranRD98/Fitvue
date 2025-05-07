@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+/*import { ref, onMounted } from 'vue'
 import { getReviewsById } from '@/firebase/progress.js'
 import { getAuth } from 'firebase/auth'
 
@@ -34,13 +34,12 @@ function formatDate(dateString) {
   hour: '2-digit',
   minute: '2-digit'
 })
-}
-
+}*/
 
 </script>
 
 <template>
-  <section>
+  <section v-if="false">
     <!-- Header -->
     <div class="flex justify-between items-center mb-10">
       <h1 class="text-3xl font-bold text-[var(--color-primary)]">Mi Progreso</h1>

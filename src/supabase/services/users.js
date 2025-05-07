@@ -1,4 +1,4 @@
-import { supabase } from '@/supabase'
+import { supabase } from '@/supabase/config'
 
 // Obtener todos los usuarios
 export async function getUsers() {
@@ -21,7 +21,7 @@ export async function createUser({ email, password, ...profile }) {
 
   const { error: insertError } = await supabase.from('users').insert([
     {
-      uid: user.id,
+      id: user.id,
       email,
       ...profile,
       created_at: new Date().toISOString()
@@ -50,3 +50,33 @@ export async function deleteUser(uid) {
 
   if (error) throw error
 }
+
+/* USERS PROFILE*/
+
+export async function uploadProfileImage(file, userId) {
+  const fileName = `${userId}_${Date.now()}.${file.name.split('.').pop()}`
+  const { error: uploadError } = await supabase.storage
+    .from('profile_images')
+    .upload(fileName, file, {
+      cacheControl: '3600',
+      upsert: true
+    })
+
+  if (uploadError) throw uploadError
+
+  const { data } = supabase.storage
+    .from('profile_images')
+    .getPublicUrl(fileName)
+
+  return data.publicUrl
+}
+
+export async function updateUserData(userId, updates) {
+  const { error } = await supabase
+    .from('users')
+    .update(updates)
+    .eq('id', userId)
+
+  if (error) throw error
+}
+

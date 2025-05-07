@@ -21,6 +21,7 @@
     try {
       exercises.value = await getExercises() // Load the exercises
       exerciseCategories.value = await getExerciseCategories() // Load the exercises categories
+
     } catch (error) {
       console.error('Error al cargar ejercicios:', error)
     } finally {
@@ -50,7 +51,7 @@
   const filteredExercises = computed(() => {
     return exercises.value.filter(ex => {
       const matchesSearch = ex.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-      const matchesCategory = !selectedCategory.value || ex.category?.name === selectedCategory.value
+      const matchesCategory = !selectedCategory.value || ex.exercises_categories?.category_name === selectedCategory.value
       return matchesSearch && matchesCategory
     })
   })
@@ -103,8 +104,8 @@
         <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Grupo muscular</label>
         <select v-model="selectedCategory" class="w-full border border-gray-300 p-2 rounded text-sm text-gray-700">
           <option value="">Todos</option>
-          <option v-for="category in exerciseCategories" :key="category.id" :value="category.name">
-            {{ category.name }}
+          <option v-for="category in exerciseCategories" :key="category.id" :value="category.category_name">
+            {{ category.category_name }}
           </option>
         </select>
       </div>
@@ -137,7 +138,7 @@
           @click="openEditModal(exercise)"
         >
         <img
-          :src="exercise.imageUrl || `https://placehold.co/600x400?text=${encodeURIComponent(exercise.name)}`"
+          :src="exercise.image || `https://placehold.co/600x400?text=${encodeURIComponent(exercise.name)}`"
           alt="Imagen del ejercicio"
           class="w-full aspect-video object-cover"
         />
@@ -158,7 +159,7 @@
               class="inline-block px-2 py-1 rounded text-xs font-bold w-fit"
               style="background-color: rgba(var(--color-primary-rgb), 0.2); color: var(--color-primary);"
             >
-              {{ exercise.category?.name || '—' }}
+              {{ exercise?.exercises_categories.category_name || '—' }}
             </p>
 
               <button
@@ -197,7 +198,8 @@
               class="inline-block px-2 py-1 rounded-full text-xs font-bold w-fit"
               style="background-color: rgba(var(--color-primary-rgb), 0.2); color: var(--color-primary);"
             >
-              {{ exercise.category?.name || '—' }}
+            {{ exercise?.exercises_categories.category_name || '—' }}
+
             </p>
           </td>
           <td class="py-3 px-2 text-gray-600 line-clamp-2">{{ exercise.description }}</td>

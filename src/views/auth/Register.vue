@@ -1,14 +1,14 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { supabase } from '@/supabase/config'
+import { useAuth } from '@/supabase/useAuth';
 
-const router = useRouter()
-const userData = ref({})
-const error = ref('')
+const { register, authError } = useAuth()
+
 const email = ref('')
 const password = ref('')
+const userData = ref({})
 
+// Cargar posibles datos temporales desde localStorage
 onMounted(() => {
   const storedData = localStorage.getItem('userData')
   if (storedData) {
@@ -17,42 +17,15 @@ onMounted(() => {
 })
 
 const registerUser = async () => {
-  error.value = ''
-  const { data, error: signUpError } = await supabase.auth.signUp({
+  await register({
     email: email.value,
     password: password.value,
+    ...userData.value
   })
 
-  if (signUpError) {
-    error.value = signUpError.message
-    return
-  }
-
-  const userId = data.user?.id
-
-  // Guardar datos adicionales del usuario en la tabla 'users' (si quieres)
-  if (userId) {
-    const { error: insertError } = await supabase.from('users').insert([
-      {
-        ...userData.value,
-        uid: userId,
-        email: email.value,
-        role: 'user',
-        created_at: new Date().toISOString()
-      }
-    ])
-    if (insertError) {
-      error.value = insertError.message
-      return
-    }
-  }
-
   localStorage.removeItem('userData')
-  router.push('/dashboard')
 }
 </script>
-
-
 
 <template>
   <div class="flex items-center justify-center min-h-screen bg-[var(--color-bg-light)]">

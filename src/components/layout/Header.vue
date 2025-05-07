@@ -15,7 +15,7 @@
 
   onMounted(async () => {
     const { data, error } = await supabase
-      .from('guide_categories') 
+      .from('guides_categories') 
       .select('*');
 
     if (error) {
@@ -45,6 +45,7 @@
     );
 
     categories.value = categoriesWithImages;  // Asignamos las categorías con las URLs de las imágenes
+
   });
 
 </script>
@@ -167,10 +168,11 @@
               <!-- Botón avatar y nombre -->
               <div class="flex items-center space-x-2 cursor-pointer">
                 <img
-                  :src="userData?.profile_image|| '/icons/default-avatar.svg'"
-                  alt="Foto usuario"
-                  class="w-8 h-8 rounded-full object-cover"
+                  :src="userData.profile_image || 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/profile/default-profile.svg'"
+                  alt="profile-icon"
+                  class="rounded-full w-12 h-12"
                 />
+
                 <span class="text-sm text-[var(--color-text)] font-medium">
                   ¡Hola, {{ userData?.name || 'Usuario' }}!
                 </span>
