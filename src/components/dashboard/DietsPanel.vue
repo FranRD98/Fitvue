@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { getDiets, deleteDiet } from '@/firebase/diets'
+import { getDiets, deleteDiet } from '@/supabase/services/diets'
 import DietFormModal from '@/components/dashboard/modals/DietFormModal.vue'
 
 const diets = ref([])
@@ -175,7 +175,7 @@ onMounted(() => {
     </table>
 
     <!-- Sin resultados -->
-    <div v-else class="flex flex-col items-center justify-center py-12 text-gray-500">
+    <div v-if="diets.length > 0 && filteredDiets.length === 0" class="flex flex-col items-center justify-center py-12 text-gray-500">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0z" />
       </svg>

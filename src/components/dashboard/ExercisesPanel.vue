@@ -190,9 +190,9 @@
           v-for="exercise in filteredExercises"
           :key="exercise.id"
           @click="openEditModal(exercise)"
-          class="border-t border-gray-200 hover:bg-gray-100 transition"
+          class="border-t border-gray-200 hover:bg-gray-100 transition cursor-pointer"
         >
-          <td class="py-3 px-2 text-[var(--color-primary)]">{{ exercise.name }}</td>
+          <td class="py-3 px-2 font-semibold  text-[var(--color-primary)]">{{ exercise.name }}</td>
           <td class="py-3 px-2">
             <p
               class="inline-block px-2 py-1 rounded-full text-xs font-bold w-fit"
@@ -218,7 +218,7 @@
 
 
     <!-- Si no hay coincidencias -->
-    <div v-else class="flex flex-col items-center justify-center py-12 text-gray-500">
+    <div v-if="filteredExercises.length === 0" class="flex flex-col items-center justify-center py-12 text-gray-500">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0z" />
       </svg>

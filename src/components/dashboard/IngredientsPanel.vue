@@ -1,6 +1,12 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { getIngredients, createIngredient, updateIngredient, deleteIngredient } from '@/firebase/ingredients'
+import IngredientModal from '@/components/dashboard/modals/IngredientModal.vue'
+import {
+  getIngredients,
+  createIngredient,
+  updateIngredient,
+  deleteIngredient
+} from '@/supabase/services/ingredients'
 
 const ingredients = ref([])
 const loading = ref(true)
@@ -10,7 +16,6 @@ const selectedIngredient = ref(null)
 const viewMode = ref('grid')
 const searchQuery = ref('')
 
-
 // Icons
 import {
   IconPlus,
@@ -18,26 +23,6 @@ import {
   IconLayoutList,
   IconTrash
 } from '@tabler/icons-vue'
-
-const form = ref({
-  name: '',
-  calories: '',
-  protein: '',
-  carbs: '',
-  fats: ''
-})
-
-function resetForm() {
-  form.value = {
-    name: '',
-    calories: '',
-    protein: '',
-    carbs: '',
-    fats: ''
-  }
-  selectedIngredient.value = null
-  isEditing.value = false
-}
 
 async function loadIngredients() {
   loading.value = true
@@ -48,23 +33,35 @@ async function loadIngredients() {
   }
 }
 
-async function saveIngredient() {
-  const payload = { ...form.value }
-  if (isEditing.value) {
+function openEditModal(ingredient) {
+  selectedIngredient.value = ingredient
+  isEditing.value = true
+  showModal.value = true
+}
+
+function openNewModal() {
+  selectedIngredient.value = null
+  isEditing.value = false
+  showModal.value = true
+}
+
+function handleCloseModal() {
+  showModal.value = false
+  selectedIngredient.value = null
+  isEditing.value = false
+}
+
+async function handleSaveFromModal(data) {
+  const payload = { ...data }
+
+  if (isEditing.value && selectedIngredient.value) {
     await updateIngredient(selectedIngredient.value.id, payload)
   } else {
     await createIngredient(payload)
   }
-  await loadIngredients()
-  resetForm()
-  showModal.value = false
-}
 
-function openEditModal(ingredient) {
-  selectedIngredient.value = ingredient
-  Object.assign(form.value, ingredient)
-  isEditing.value = true
-  showModal.value = true
+  await loadIngredients()
+  handleCloseModal()
 }
 
 async function removeIngredient(ingredient) {
@@ -87,33 +84,21 @@ onMounted(loadIngredients)
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-3xl font-bold text-[var(--color-primary)]">Ingredientes</h1>
       <button
-        @click="showModal = true"
+        @click="openNewModal"
         class="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg shadow hover:bg-[var(--color-secondary)] transition"
       >
-      <IconPlus class="w-5 h-5"/>  
-      Nuevo ingrediente
+        <IconPlus class="w-5 h-5"/>  
+        Nuevo ingrediente
       </button>
     </div>
 
-    <!-- Modal -->
-    <div
-  v-if="showModal"
-  class="fixed inset-0 bg-[rgba(0,0,0,0.6)] backdrop-blur-sm flex justify-center items-center z-50 px-4"
->      <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md space-y-4">
-        <h2 class="text-xl font-bold text-[var(--color-primary)]">{{ isEditing ? 'Editar' : 'Nuevo' }} ingrediente</h2>
-
-        <input v-model="form.name" placeholder="Nombre" class="input" />
-        <input v-model="form.calories" type="number" placeholder="Calorías (por 100g)" class="input" />
-        <input v-model="form.protein" type="number" placeholder="Proteínas" class="input" />
-        <input v-model="form.carbs" type="number" placeholder="Carbohidratos" class="input" />
-        <input v-model="form.fats" type="number" placeholder="Grasas" class="input" />
-
-        <div class="flex justify-between">
-          <button @click="showModal = false" class="text-gray-600 hover:underline">Cancelar</button>
-          <button @click="saveIngredient" class="bg-[var(--color-primary)] text-white px-4 py-2 rounded">Guardar</button>
-        </div>
-      </div>
-    </div>
+    <!-- Ingredient Modal -->
+    <IngredientModal
+      :show="showModal"
+      :initialData="isEditing && selectedIngredient ? selectedIngredient : { name: '', calories: '', protein: '', carbs: '', fats: '' }"
+      @save="handleSaveFromModal"
+      @close="handleCloseModal"
+    />
 
     <!-- Filtro y vista -->
     <div class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -133,13 +118,13 @@ onMounted(loadIngredients)
           :class="['p-2 rounded', viewMode === 'grid' ? 'bg-[var(--color-primary)] text-white' : 'bg-gray-200']"
           title="Vista de tarjetas"
         ><IconLayoutGrid/>
-      </button>
+        </button>
         <button
           @click="viewMode = 'table'"
           :class="['p-2 rounded', viewMode === 'table' ? 'bg-[var(--color-primary)] text-white' : 'bg-gray-200']"
           title="Vista de tabla"
         > <IconLayoutList/>
-      </button>
+        </button>
       </div>
     </div>
 
@@ -163,8 +148,8 @@ onMounted(loadIngredients)
           class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full transition duration-200 self-end"
           title="Eliminar"
         >
-        <IconTrash class="w-5 h-5" />
-      </button>
+          <IconTrash class="w-5 h-5" />
+        </button>
       </div>
     </div>
 
@@ -184,7 +169,7 @@ onMounted(loadIngredients)
         <tr
           v-for="ingredient in filteredIngredients"
           :key="ingredient.id"
-          class="border-t border-gray-200 hover:bg-gray-100 transition"
+          class="border-t border-gray-200 hover:bg-gray-100 transition cursor-pointer"
           @click="openEditModal(ingredient)"
         >
           <td class="py-3 px-2 font-semibold text-[var(--color-primary)]">{{ ingredient.name }}</td>
@@ -194,12 +179,12 @@ onMounted(loadIngredients)
           <td class="py-3 px-2">{{ ingredient.fats }}</td>
           <td class="py-3 px-2 text-right">
             <button
-                @click.prevent.stop="removeIngredient(ingredient)"
-                class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full transition duration-200"
-                title="Eliminar"
-              >
-                <IconTrash class="w-5 h-5" />
-              </button>  
+              @click.prevent.stop="removeIngredient(ingredient)"
+              class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full"
+              title="Eliminar"
+            >
+              <IconTrash class="w-5 h-5" />
+            </button>  
           </td>
         </tr>
       </tbody>

@@ -3,13 +3,6 @@ import { ref, computed, onMounted } from 'vue'
 import { getRoutines, assignRoutineToUser, getAssignedRoutine, unassignRoutineFromUser } from '@/supabase/services/routines.js'
 import RoutineFormModal from '@/components/dashboard/modals/RoutineFormModal.vue'
 
-const { currentUserId } = defineProps({
-  currentUserId: {
-    type: String,
-    required: true
-  }
-})
-
 const routines = ref([]) 
 const loading = ref(true)
 const showModal = ref(false)
@@ -34,7 +27,7 @@ const loadRoutines = async () => {
   loading.value = true
   try {
     routines.value = await getRoutines()
-    assignedRoutineId.value = await getAssignedRoutine(currentUserId)
+    //assignedRoutineId.value = await getAssignedRoutine(currentUserId)
   } catch (error) {
     console.error('Error al cargar rutinas:', error)
   } finally {
@@ -179,7 +172,7 @@ onMounted(loadRoutines)
             v-for="routine in filteredRoutines"
             :key="routine.id"
             @click="openEditModal(routine)"
-            class="border-t border-gray-200 hover:bg-gray-100 transition"
+            class="border-t border-gray-200 hover:bg-gray-100 transition cursor-pointer"
           >
             <td class="py-3 px-2 font-semibold text-[var(--color-primary)]">{{ routine.title }}</td>
             <td class="py-3 px-2 text-gray-600 line-clamp-2">{{ routine.description }}</td>

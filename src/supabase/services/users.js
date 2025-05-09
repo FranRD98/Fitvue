@@ -52,24 +52,30 @@ export async function deleteUser(uid) {
 }
 
 /* USERS PROFILE*/
-
 export async function uploadProfileImage(file, userId) {
-  const fileName = `${userId}_${Date.now()}.${file.name.split('.').pop()}`
+  // Crear el nombre del archivo, concatenando el userId y la fecha actual
+  const fileName = `icons/profile-images/${userId}_${Date.now()}.${file.name.split('.').pop()}`
+
+  // Subir la imagen al bucket 'fitvue', en la carpeta 'icons/profile-images'
   const { error: uploadError } = await supabase.storage
-    .from('profile_images')
+    .from('fitvue')  // El bucket 'fitvue'
     .upload(fileName, file, {
       cacheControl: '3600',
-      upsert: true
+      upsert: true  // Permite reemplazar el archivo si ya existe
     })
 
+  // Si hay algún error al subir la imagen, lanzamos el error
   if (uploadError) throw uploadError
 
+  // Obtener la URL pública del archivo recién subido
   const { data } = supabase.storage
-    .from('profile_images')
+    .from('fitvue')  // El bucket 'fitvue'
     .getPublicUrl(fileName)
 
+  // Devolver la URL pública del archivo
   return data.publicUrl
 }
+
 
 export async function updateUserData(userId, updates) {
   const { error } = await supabase

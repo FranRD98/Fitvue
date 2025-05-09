@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
-import { getPlates } from '@/firebase/plates.js'
-import { createDiet, updateDiet } from '@/firebase/diets.js'
+import { getPlates } from '@/supabase/services/plates'
+import { createDiet, updateDiet } from '@/supabase/services/diets'
 
 const props = defineProps({ show: Boolean, initialData: Object })
 const emit = defineEmits(['close', 'saved'])
@@ -14,7 +14,7 @@ const showCustomMealInput = ref(false)
 const diet = ref({
   title: '',
   description: '',
-  userId: '',
+  user_id: '2',
   meals: []
 })
 
@@ -26,6 +26,24 @@ const selectedMeals = ref([
   { name: 'Merienda', enabled: false, items: [] },
   { name: 'Cena', enabled: false, items: [] },
 ])
+
+// Función de reset
+function resetForm() {
+  diet.value = {
+    title: '',
+    description: '',
+    user_id: '',
+    meals: []
+  }
+
+  selectedMeals.value = [
+    { name: 'Desayuno', enabled: false, items: [] },
+    { name: 'Almuerzo', enabled: false, items: [] },
+    { name: 'Comida', enabled: false, items: [] },
+    { name: 'Merienda', enabled: false, items: [] },
+    { name: 'Cena', enabled: false, items: [] }
+  ]
+}
 
 watch(
   () => props.initialData,

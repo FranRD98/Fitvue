@@ -1,12 +1,12 @@
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useAuth } from '@/supabase/useAuth'
 import { uploadProfileImage, updateUserData } from '@/supabase/services/users'
 
 const { userData, logout } = useAuth()
 
 const name = ref(userData?.name || '')
-const surname = ref(userData?.surname || '')
+const lastName = ref(userData?.last_name || '')
 const email = ref(userData?.email || '')
 const password = ref('')
 const profileImage = ref(userData?.profile_image || '')
@@ -35,9 +35,9 @@ const handleSave = async () => {
 
     const updates = {
       name: name.value,
-      surname: surname.value,
+      lastName: lastName.value,
       email: email.value,
-      profile_image: imageUrl
+      profileImage: imageUrl
     }
 
     if (password.value) {
@@ -47,17 +47,34 @@ const handleSave = async () => {
     await updateUserData(userData.id, updates)
     alert('Datos actualizados correctamente.')
   } catch (err) {
-    console.error(err)
-    alert('Error al guardar los cambios.')
+    // Mostrar el error de manera detallada
+    console.error('Error al guardar los cambios:', err)  // Mejor para depuración
+    alert(`Error al guardar los cambios: ${err.message || 'Error desconocido'}`)
   } finally {
     updating.value = false
   }
 }
 
+
+
 const handleLogout = async () => {
   await logout()
   location.reload()
 }
+
+onMounted(async () => {
+  try {
+    if (userData.value) {
+      name.value = userData.value.name || ''
+      lastName.value = userData.value.last_name || ''
+      email.value = userData.value.email || ''
+      profileImage.value = userData.value.profile_image || ''
+    }
+  } catch (error) {
+    console.error('Error al montar el componente:', error)
+  }
+})
+
 </script>
 
 <template>
@@ -68,15 +85,33 @@ const handleLogout = async () => {
 
     <div class="bg-white shadow rounded-xl p-6 max-w-3xl space-y-6">
       <!-- Imagen de perfil -->
-      <div class="flex items-center gap-4">
-        <img
-          :src="profileImage"
-          alt="profile"
-          class="w-20 h-20 rounded-full object-cover border"
-        />
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Imagen de perfil</label>
-          <input type="file" accept="image/*" @change="handleImageChange" />
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Imagen de perfil</label>
+        <div class="image-upload-container">
+          <input
+            type="file"
+            accept="image/*"
+            @change="handleImageChange"
+            class="hidden"
+            id="profile-image-upload"
+          />
+          <label
+            for="profile-image-upload"
+            class="cursor-pointer border-dashed border-2 border-gray-300 p-4 w-full text-center rounded-lg hover:border-gray-400 flex flex-col items-center justify-center"
+          >
+            <span v-if="!profileImage" class="text-gray-600">Haz clic para subir una imagen</span>
+            <div v-else class="relative w-32 h-32">
+              <img :src="profileImage" alt="Imagen de perfil" class="w-full h-full object-cover rounded-full border" />
+              <!-- Botón de eliminar (opcional) -->
+              <button
+                @click.prevent="profileImage = null"
+                class="absolute top-1 right-1 w-6 h-6 bg-white bg-opacity-75 rounded-full flex items-center justify-center shadow hover:bg-opacity-100"
+                title="Eliminar imagen"
+              >
+                ✖
+              </button>
+            </div>
+          </label>
         </div>
       </div>
 
@@ -87,7 +122,7 @@ const handleLogout = async () => {
 
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Apellidos</label>
-        <input v-model="surname" type="text" class="w-full border rounded p-2 text-sm" />
+        <input v-model="lastName" type="text" class="w-full border rounded p-2 text-sm" />
       </div>
 
       <div>

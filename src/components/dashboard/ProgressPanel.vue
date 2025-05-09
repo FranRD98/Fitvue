@@ -1,40 +1,43 @@
 <script setup>
-/*import { ref, onMounted } from 'vue'
-import { getReviewsById } from '@/firebase/progress.js'
-import { getAuth } from 'firebase/auth'
+import { ref, onMounted } from 'vue'
+import { getReviewsById } from '@/supabase/services/progress'
+import { useAuth } from '@/supabase/useAuth'
 
+const { userData } = useAuth()
 const reviews = ref([])
 const loading = ref(true)
 
 onMounted(async () => {
-  const auth = getAuth()
-  const currentUser = auth.currentUser
 
-  if (currentUser) {
+  if (userData) {
+
     try {
-      reviews.value = await getReviewsById(currentUser.uid)
+      reviews.value = await getReviewsById()
+
+      console.log("=== REVIEWS ===")
       console.log(reviews.value)
     } catch (error) {
       console.error('Error al obtener las reviews:', error)
     } finally {
       loading.value = false
     }
-  } else {
-    console.warn('Usuario no autenticado')
-  }
-})
+    } else {
+      console.warn('Usuario no autenticado o sin ID válido')
+      loading.value = false
+    }
+  })
 
-function formatDate(dateString) {
-  if (!dateString) return 'Sin fecha'
-  const date = new Date(dateString)
-  return date.toLocaleString('es-ES', {
-  day: '2-digit',
-  month: '2-digit',
-  year: 'numeric',
-  hour: '2-digit',
-  minute: '2-digit'
-})
-}*/
+  function formatDate(dateString) {
+    if (!dateString) return 'Sin fecha'
+      const date = new Date(dateString)
+      return date.toLocaleString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
 
 </script>
 
