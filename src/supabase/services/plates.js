@@ -1,20 +1,46 @@
 // src/supabase/services/plates.js
 import { supabase } from '@/supabase/config'
 
-// Obtener todos los platos
+// Obtener todos los platos con los ingredientes completos
 export async function getPlates() {
   const { data, error } = await supabase
     .from('plates')
-    .select('*')
-    .order('created_at', { ascending: false }) // Opcional, si tienes un campo `created`
-
+    .select('id, name, items') // Obtienes el id y nombre del plato, y los items (que contienen ingredientId y quantity)
+  
   if (error) {
     console.error('Error al obtener platos:', error)
     return []
   }
 
-  return data
+  // Para cada plato, obtienes los detalles de los ingredientes desde la tabla ingredients
+  const platesWithIngredients = await Promise.all(data.map(async (plate) => {
+    const ingredientIds = plate.items.map(item => item.ingredientId)
+    const { data: ingredients, error: ingredientsError } = await supabase
+      .from('ingredients')
+      .select('*')
+      .in('id', ingredientIds)
+
+    if (ingredientsError) {
+      console.error('Error al obtener ingredientes:', ingredientsError)
+      return plate
+    }
+
+    // Añades los detalles de los ingredientes al plato
+    const detailedItems = plate.items.map(item => ({
+      ...item,
+      ingredient: ingredients.find(ing => ing.id === item.ingredientId)
+    }))
+    
+    return {
+      ...plate,
+      items: detailedItems
+    }
+  }))
+
+  return platesWithIngredients
 }
+
+
 
 // Crear nuevo plato
 export async function createPlate(plateData) {

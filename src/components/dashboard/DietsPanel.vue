@@ -3,6 +3,8 @@ import { ref, onMounted, computed } from 'vue'
 import { getDiets, deleteDiet } from '@/supabase/services/diets'
 import DietFormModal from '@/components/dashboard/modals/DietFormModal.vue'
 
+const props = defineProps({ currentUserId: String })
+
 const diets = ref([])
 const showModal = ref(false)
 const selectedDiet = ref(null)
@@ -15,7 +17,6 @@ import {
   IconPlus,
   IconLayoutGrid,
   IconLayoutList,
-  IconEdit,
   IconTrash
 } from '@tabler/icons-vue'
 
@@ -71,6 +72,7 @@ onMounted(() => {
     <DietFormModal
       :show="showModal"
       :initialData="selectedDiet"
+      :current-user-id="currentUserId"
       @close="showModal = false; selectedDiet = null"
       @saved="loadDiets"
     />
@@ -163,7 +165,7 @@ onMounted(() => {
           <td class="py-3 px-2">{{ diet.created?.toDate().toLocaleDateString() || '—' }}</td>
           <td class="py-3 px-2 text-right">
             <button
-                @click.prevent.stop="handleDelete(exercise)"
+                @click.prevent.stop="handleDelete(diet)"
                 class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full transition duration-200"
                 title="Eliminar"
               >

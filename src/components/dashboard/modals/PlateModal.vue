@@ -1,6 +1,8 @@
+// PlateModal.vue
 <script setup>
 import { ref, watch, computed } from 'vue'
 import { createPlate, updatePlate } from '@/supabase/services/plates'
+import { getIngredients } from '@/supabase/services/ingredients'
 
 const props = defineProps({
   show: Boolean,
@@ -41,6 +43,13 @@ function removeIngredientRow(index) {
 
 async function save() {
   const payload = { ...form.value }
+  
+  // Verifica si los ingredientes están bien seleccionados
+  payload.items = payload.items.map(item => ({
+    ingredient_id: item.ingredientId,
+    quantity: item.quantity
+  }));
+
   if (isEditing.value) {
     await updatePlate(props.plate.id, payload)
   } else {
@@ -51,6 +60,7 @@ async function save() {
   resetForm()
   emit('close')
 }
+
 </script>
 
 <template>

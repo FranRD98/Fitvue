@@ -3,7 +3,7 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { getPlates } from '@/supabase/services/plates'
 import { createDiet, updateDiet } from '@/supabase/services/diets'
 
-const props = defineProps({ show: Boolean, initialData: Object })
+const props = defineProps({ show: Boolean, initialData: Object, currentUserId: String })
 const emit = defineEmits(['close', 'saved'])
 
 const plates = ref([])
@@ -14,7 +14,7 @@ const showCustomMealInput = ref(false)
 const diet = ref({
   title: '',
   description: '',
-  user_id: '2',
+  user_id: props.currentUserId,
   meals: []
 })
 
@@ -32,7 +32,7 @@ function resetForm() {
   diet.value = {
     title: '',
     description: '',
-    user_id: '',
+    user_id: props.currentUserId ?? null,
     meals: []
   }
 
@@ -49,7 +49,7 @@ watch(
   () => props.initialData,
   async (newData) => {
     if (newData) {
-      diet.value = { ...newData }
+      diet.value = { ...newData };
 
       // Reiniciar comidas por defecto + personalizadas
       selectedMeals.value = [
@@ -58,33 +58,33 @@ watch(
         { name: 'Comida', enabled: false, items: [] },
         { name: 'Merienda', enabled: false, items: [] },
         { name: 'Cena', enabled: false, items: [] }
-      ]
+      ];
 
       // Restaurar las comidas de la dieta
       newData.meals?.forEach((meal) => {
-        const existing = selectedMeals.value.find(m => m.name === meal.name)
+        const existing = selectedMeals.value.find(m => m.name === meal.name);
         if (existing) {
-          existing.enabled = true
-          existing.items = meal.items || []
+          existing.enabled = true;
+          existing.items = meal.items || [];
         } else {
           selectedMeals.value.push({
             name: meal.name,
             enabled: true,
             items: meal.items || []
-          })
+          });
         }
-      })
+      });
     } else {
-      resetForm()
+      resetForm();
     }
   },
   { immediate: true }
-)
-
+);
 
 // Carga inicial
 onMounted(async () => {
-  plates.value = await getPlates()
+  plates.value = await getPlates();
+  console.log("Platos disponibles:", plates.value); // Verifica si los platos están cargados correctamente
 
   if (props.initialData) {
     diet.value = { ...props.initialData }
@@ -104,9 +104,24 @@ onMounted(async () => {
 
 // Añadir plato
 function addPlateToMeal(meal, plate) {
-  if (!plate) return
+  if (!plate) return;
+
+  // Asegúrate de que 'items' es un array vacío si no está definido
+  if (!Array.isArray(meal.items)) {
+    meal.items = [];
+  }
+
   if (!meal.items.find(p => p.id === plate.id)) {
-    meal.items.push(plate)
+    meal.items.push(plate);
+    console.log("Plato añadido:", plate, "a la comida:", meal.name);
+  }
+}
+
+// Eliminar comida personalizada
+function removeCustomMeal(mealName) {
+  const index = selectedMeals.value.findIndex(meal => meal.name === mealName);
+  if (index !== -1) {
+    selectedMeals.value.splice(index, 1);
   }
 }
 
@@ -137,6 +152,11 @@ function calculateMacros(meal) {
   )
 }
 
+// Función para formatear los valores de los macros
+function formatMacroValue(value) {
+  return isNaN(value) || value === null ? 0 : value.toFixed(1);
+}
+
 // Total del día
 const totalMacros = computed(() => {
   return selectedMeals.value.reduce((acc, meal) => {
@@ -155,6 +175,11 @@ const totalMacros = computed(() => {
 async function submitForm() {
   diet.value.meals = selectedMeals.value.filter(m => m.enabled && m.items.length > 0)
 
+  if (!diet.value.user_id || typeof diet.value.user_id !== 'string') {
+    alert('Error: no se ha podido determinar el usuario. Intenta recargar la página.');
+    return;
+  }
+
   if (diet.value.id) {
     await updateDiet(diet.value.id, diet.value)
   } else {
@@ -172,95 +197,56 @@ function close() {
 
 </script>
 
-
 <template>
-<div
-  v-if="show"
-  class="fixed inset-0 bg-[rgba(0,0,0,0.6)] backdrop-blur-sm flex justify-center items-center z-50 px-4"
->
-
-    <div
-        class="bg-white rounded-xl shadow-xl p-6 w-full max-w-3xl relative overflow-y-auto max-h-[90vh]"
-      >
-        <!-- Cierre -->
-        <button @click="close" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-lg">
-          ✕
-        </button>
-
+  <div v-if="show" class="fixed inset-0 bg-[rgba(0,0,0,0.6)] backdrop-blur-sm flex justify-center items-center z-50 px-4">
+    <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-3xl relative overflow-y-auto max-h-[90vh]">
+      <button @click="close" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-lg">✕</button>
       <h2 class="text-2xl font-bold text-[var(--color-primary)] mb-6">
         {{ diet.id ? 'Editar dieta' : 'Crear nueva dieta' }}
       </h2>
-
       <form @submit.prevent="submitForm" class="space-y-6">
-
-        <!-- Título y descripción alineados -->
         <div class="grid md:grid-cols-2 gap-4">
           <input v-model="diet.title" placeholder="Título de la dieta" class="input" required />
           <input v-model="diet.description" placeholder="Descripción" class="input" />
         </div>
-
-        <!-- Sección de comidas -->
         <div v-for="meal in selectedMeals" :key="meal.name" class="border rounded p-4 space-y-2">
           <label class="flex items-center gap-2">
             <input type="checkbox" v-model="meal.enabled" />
             <span class="font-medium text-[var(--color-primary)]">{{ meal.name }}</span>
           </label>
-
           <div v-if="meal.enabled" class="space-y-2">
-            <select
-              @change="e => addPlateToMeal(meal, plates.find(p => p.id === e.target.value))"
-              class="input bg-white"
-            >
+            <select @change="e => addPlateToMeal(meal, plates.find(p => p.id === Number(e.target.value)))" class="input bg-white">
               <option disabled selected>Selecciona un plato</option>
               <option v-for="plate in plates" :key="plate.id" :value="plate.id">{{ plate.name }}</option>
             </select>
-
             <div v-for="(plate, index) in meal.items" :key="index" class="flex justify-between items-center mt-1">
-              <div class="text-sm">
-                {{ plate.name }}
-              </div>
+              <div class="text-sm">{{ plate.name }}</div>
               <button @click="meal.items.splice(index, 1)" class="text-red-500 hover:underline text-xs">Quitar</button>
             </div>
-
             <div class="text-xs mt-1 text-gray-500">
               <strong>Macros totales:</strong>
-              {{
-                (() => {
-                  const m = calculateMacros(meal)
-                  return `${m.calories.toFixed(0)} kcal - ${m.protein.toFixed(1)}P / ${m.carbs.toFixed(1)}C / ${m.fat.toFixed(1)}F`
-                })()
-              }}
+              {{ formatMacroValue(calculateMacros(meal).calories) }} kcal - 
+              {{ formatMacroValue(calculateMacros(meal).protein) }}P / 
+              {{ formatMacroValue(calculateMacros(meal).carbs) }}C / 
+              {{ formatMacroValue(calculateMacros(meal).fat) }}F
             </div>
           </div>
         </div>
 
         <!-- Comida personalizada -->
         <div class="text-sm mt-4">
-          <button
-            @click="showCustomMealInput = true"
-            v-if="!showCustomMealInput"
-            type="button"
-            class="text-[var(--color-primary)] hover:underline"
-          >
+          <button @click="showCustomMealInput = true" v-if="!showCustomMealInput" type="button" class="text-[var(--color-primary)] hover:underline">
             + Añadir comida personalizada
           </button>
-
           <div v-if="showCustomMealInput" class="flex gap-2 mt-2">
             <input v-model="customMealName" placeholder="Nombre (Ej. Tentempié)" class="input" />
-            <button @click="addCustomMeal" type="button" class="bg-[var(--color-primary)] text-white px-4 rounded">
-              Agregar
-            </button>
+            <button @click="addCustomMeal" type="button" class="bg-[var(--color-primary)] text-white px-4 rounded">Agregar</button>
           </div>
         </div>
 
         <!-- Acciones -->
         <div class="flex justify-end mt-6">
-          <button
-            type="submit"
-            class="bg-[var(--color-primary)] text-white px-6 py-2 rounded-lg hover:bg-[var(--color-secondary)]"
-          >
-            Guardar dieta
-          </button>
+          <button type="submit" class="bg-[var(--color-primary)] text-white px-6 py-2 rounded-lg hover:bg-[var(--color-secondary)]">Guardar dieta</button>
         </div>
       </form>
 
@@ -279,20 +265,20 @@ function close() {
 </template>
 
 <style scoped>
-.input {
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  font-size: 0.95rem;
-  background-color: white;
-  color: #374151;
-  transition: all 0.2s ease;
-}
+  .input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-size: 0.95rem;
+    background-color: white;
+    color: #374151;
+    transition: all 0.2s ease;
+  }
 
-.input:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 1px var(--color-primary);
-  outline: none;
-}
+  .input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 1px var(--color-primary);
+    outline: none;
+  }
 </style>

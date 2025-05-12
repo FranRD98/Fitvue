@@ -25,6 +25,8 @@ async function loadPlates() {
   try {
     plates.value = await getPlates()
     ingredients.value = await getIngredients()
+  
+    console.log(plates.value)
   } finally {
     loading.value = false
   }
@@ -57,6 +59,15 @@ function getIngredientName(id) {
   const ing = ingredients.value.find(i => i.id === id)
   return ing ? ing.name : 'Desconocido'
 }
+
+function getTotal(plate, nutrient) {
+  return plate.items.reduce((total, item) => {
+    if (!item.ingredient || item.quantity == null) return total
+    const per100g = parseFloat(item.ingredient[nutrient]) || 0
+    return total + (per100g * item.quantity) / 100
+  }, 0).toFixed(1)
+}
+
 </script>
 
 <template>
@@ -106,8 +117,17 @@ function getIngredientName(id) {
       >
         <h3 class="text-lg font-bold truncate text-[var(--color-primary)]">{{ plate.name }}</h3>
         <p class="text-sm text-gray-600">{{ plate.items.length }} ingrediente{{ plate.items.length !== 1 ? 's' : '' }}</p>
-        <div class="flex justify-between items-center mt-2">
-          <span class="text-xs text-gray-500">ID: {{ String(plate.id).slice(0, 6) }}...</span>
+
+        <!-- Totales nutricionales -->
+        <div class="mt-2 text-sm text-gray-700 space-y-1">
+          <p>Calorías: {{ getTotal(plate, 'calories') }} kcal</p>
+          <p>Proteínas: {{ getTotal(plate, 'protein') }} g</p>
+          <p>Carbohidratos: {{ getTotal(plate, 'carbs') }} g</p>
+          <p>Grasas: {{ getTotal(plate, 'fats') }} g</p>
+        </div>
+
+        <div class="flex justify-between items-center mt-4">
+          <span class="text-xs text-gray-500">ID: {{ plate.id }}</span>
           <button @click.stop="removePlate(plate)" class="text-red-600 hover:text-white hover:bg-red-600 p-2 rounded-full">
             <IconTrash class="w-5 h-5" />
           </button>
