@@ -3,6 +3,9 @@ import { ref, onMounted, computed } from 'vue'
 import { getPlates, deletePlate } from '@/supabase/services/plates'
 import { getIngredients } from '@/supabase/services/ingredients'
 
+// Importamos la función getMacros desde plates.js
+import { getMacros } from '@/supabase/services/plates'
+
 import PlateModal from '@/components/dashboard/modals/PlateModal.vue'
 import {
   IconPlus,
@@ -60,14 +63,6 @@ function getIngredientName(id) {
   return ing ? ing.name : 'Desconocido'
 }
 
-function getTotal(plate, nutrient) {
-  return plate.items.reduce((total, item) => {
-    if (!item.ingredient || item.quantity == null) return total
-    const per100g = parseFloat(item.ingredient[nutrient]) || 0
-    return total + (per100g * item.quantity) / 100
-  }, 0).toFixed(1)
-}
-
 </script>
 
 <template>
@@ -107,7 +102,7 @@ function getTotal(plate, nutrient) {
       </div>
     </div>
 
-    <!-- Vista GRID -->
+        <!-- VISTA GRID -->
     <div v-if="viewMode === 'grid' && filteredPlates.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       <div
         v-for="plate in filteredPlates"
@@ -120,47 +115,58 @@ function getTotal(plate, nutrient) {
 
         <!-- Totales nutricionales -->
         <div class="mt-2 text-sm text-gray-700 space-y-1">
-          <p>Calorías: {{ getTotal(plate, 'calories') }} kcal</p>
-          <p>Proteínas: {{ getTotal(plate, 'protein') }} g</p>
-          <p>Carbohidratos: {{ getTotal(plate, 'carbs') }} g</p>
-          <p>Grasas: {{ getTotal(plate, 'fats') }} g</p>
+          <p>Proteínas: {{ getMacros(plate).protein }} g</p>
+          <p>Carbohidratos: {{ getMacros(plate).carbs }} g</p>
+          <p>Grasas: {{ getMacros(plate).fats }} g</p>
         </div>
 
-        <div class="flex justify-between items-center mt-4">
-          <span class="text-xs text-gray-500">ID: {{ plate.id }}</span>
-          <button @click.stop="removePlate(plate)" class="text-red-600 hover:text-white hover:bg-red-600 p-2 rounded-full">
+        <!-- Divisor -->
+        <div class="border-t border-gray-200 my-3"></div>
+
+        <!-- Calorías + botón eliminar -->
+        <div class="flex justify-between items-center mt-auto">
+          <span
+            class="inline-block px-2 py-1 rounded-full text-xs font-bold w-fit"
+            style="background-color: rgba(var(--color-primary-rgb), 0.2); color: var(--color-primary);"
+          >
+            {{ getMacros(plate).calories }} kcal
+          </span>
+          <button
+            @click.stop="removePlate(plate)"
+            class="text-red-600 hover:text-white hover:bg-red-600 p-2 rounded-full transition"
+          >
             <IconTrash class="w-5 h-5" />
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Vista TABLE -->
+    <!-- VISTA TABLE -->
     <table v-else-if="viewMode === 'table' && filteredPlates.length" class="w-full text-left text-sm">
-      <thead class="bg-gray-200 text-gray-600 font-medium">
+      <thead class="bg-gray-100 text-gray-600 font-semibold">
         <tr>
           <th class="px-4 py-2">Nombre</th>
-          <th class="px-4 py-2">Ingredientes</th>
-          <th class="text-right px-4 py-2">Acciones</th>
+          <th class="px-4 py-2 text-center">Calorías</th>
+          <th class="px-4 py-2 text-center">Proteínas</th>
+          <th class="px-4 py-2 text-center">Carbohidratos</th>
+          <th class="px-4 py-2 text-center">Grasas</th>
+          <th class="px-4 py-2 text-right">Acciones</th>
         </tr>
       </thead>
-      <tbody class="bg-white">
+      <tbody class="bg-white divide-y divide-gray-100">
         <tr
           v-for="plate in filteredPlates"
           :key="plate.id"
-          class="border-t border-gray-200 hover:bg-gray-100 transition cursor-pointer"
+          class="hover:bg-gray-50 transition cursor-pointer"
           @click="openEditModal(plate)"
         >
-          <td class="px-4 py-2 font-semibold text-[var(--color-primary)]">{{ plate.name }}</td>
-          <td class="px-4 py-2">
-            <ul>
-              <li v-for="item in plate.items" :key="item.ingredientId">
-                {{ getIngredientName(item.ingredientId) }} - {{ item.quantity }}g
-              </li>
-            </ul>
-          </td>
-          <td class="px-4 py-2 text-right">
-            <button @click.prevent.stop="removePlate(plate)" class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full">
+          <td class="px-4 py-3 font-medium text-[var(--color-primary)]">{{ plate.name }}</td>
+          <td class="px-4 py-3 text-center">{{ getTotal(plate, 'calories') }} kcal</td>
+          <td class="px-4 py-3 text-center">{{ getTotal(plate, 'protein') }} g</td>
+          <td class="px-4 py-3 text-center">{{ getTotal(plate, 'carbs') }} g</td>
+          <td class="px-4 py-3 text-center">{{ getTotal(plate, 'fats') }} g</td>
+          <td class="px-4 py-3 text-right">
+            <button @click.prevent.stop="removePlate(plate)" class="text-red-500 hover:bg-red-500 hover:text-white p-2 rounded-full transition">
               <IconTrash class="w-5 h-5" />
             </button>
           </td>

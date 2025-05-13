@@ -16,6 +16,20 @@ export async function getIngredients() {
   return data
 }
 
+// Obtener datos de un ingrediente
+export async function getIngredientById(id) {
+  const { data, error } = await supabase
+    .from('ingredients')
+    .select('*')
+    .eq('id', id)
+  if (error) {
+    console.error('Error al obtener ingrediente:', error)
+    return []
+  }
+
+  return data
+}
+
 // Crear nuevo ingrediente
 export async function createIngredient(data) {
   const { error } = await supabase

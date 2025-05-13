@@ -1,12 +1,12 @@
-// src/supabase/services/diets.js
 import { supabase } from '@/supabase/config'
 
-// Obtener todas las dietas
-export async function getDiets() {
+// Obtener todas las dietas de un usuario
+export async function getDiets(userId) {
   const { data, error } = await supabase
     .from('diets')
     .select('*')
-    .order('created_at', { ascending: false }) // Si tienes un campo de timestamp
+    .eq('user_id', userId) // Asegúrate de que este campo exista
+    .order('created_at', { ascending: false })
 
   if (error) {
     console.error('Error al obtener las dietas:', error)

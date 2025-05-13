@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, defineAsyncComponent, onMounted, watch } from 'vue'
+import { ref, computed, defineAsyncComponent } from 'vue'
 import { useAuth } from '@/supabase/useAuth'
 import DashboardSidebar from './DashboardSidebar.vue'
 import DashboardHeader from './DashboardHeader.vue'
@@ -18,22 +18,8 @@ import {
   IconSettings
 } from '@tabler/icons-vue'
 
-const { userData } = useAuth() // Get de userdata from useAuth supabase
+const { userData } = useAuth()
 const currentUserId = computed(() => userData.value?.uid || null)
-
-onMounted(() => {
-  // Si ya está cargado al montar, usarlo directamente
-  if (userData.value?.uid) {
-    currentUserId.value = userData.value.uid
-  }
-})
-
-// Si cambia (por carga async), lo capturamos también
-watch(userData, (newVal) => {
-  if (newVal?.uid) {
-    currentUserId.value = newVal.uid
-  }
-})
 
 const menuItems = [
   { key: 'progress', label: 'Mi Progreso', icon: IconChartBar, roles: ['user', 'coach', 'admin'] },
@@ -67,9 +53,6 @@ const componentsMap = {
   users: defineAsyncComponent(() => import('@/components/dashboard/UsersPanel.vue')),
   config: defineAsyncComponent(() => import('@/components/dashboard/ConfigPanel.vue'))
 }
-
-console.log('El usuario es: ' + currentUserId.value)
-
 </script>
 
 <template>
@@ -86,4 +69,3 @@ console.log('El usuario es: ' + currentUserId.value)
     </div>
   </div>
 </template>
-

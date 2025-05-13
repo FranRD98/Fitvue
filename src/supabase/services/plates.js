@@ -14,7 +14,7 @@ export async function getPlates() {
 
   // Para cada plato, obtienes los detalles de los ingredientes desde la tabla ingredients
   const platesWithIngredients = await Promise.all(data.map(async (plate) => {
-    const ingredientIds = plate.items.map(item => item.ingredientId)
+    const ingredientIds = plate.items.map(item => item.ingredient_id)
     const { data: ingredients, error: ingredientsError } = await supabase
       .from('ingredients')
       .select('*')
@@ -25,10 +25,9 @@ export async function getPlates() {
       return plate
     }
 
-    // Añades los detalles de los ingredientes al plato
     const detailedItems = plate.items.map(item => ({
       ...item,
-      ingredient: ingredients.find(ing => ing.id === item.ingredientId)
+      ingredient: ingredients.find(ing => ing.id === item.ingredient_id)
     }))
     
     return {
@@ -40,7 +39,33 @@ export async function getPlates() {
   return platesWithIngredients
 }
 
+export function getMacros(plate) {
+  return {
+    calories: plate.items.reduce((total, item) => {
+      if (!item.ingredient || item.quantity == null) return total
+      const per100g = parseFloat(item.ingredient.calories) || 0
+      return total + (per100g * item.quantity) / 100
+    }, 0).toFixed(1),
 
+    protein: plate.items.reduce((total, item) => {
+      if (!item.ingredient || item.quantity == null) return total
+      const per100g = parseFloat(item.ingredient.protein) || 0
+      return total + (per100g * item.quantity) / 100
+    }, 0).toFixed(1),
+
+    carbs: plate.items.reduce((total, item) => {
+      if (!item.ingredient || item.quantity == null) return total
+      const per100g = parseFloat(item.ingredient.carbs) || 0
+      return total + (per100g * item.quantity) / 100
+    }, 0).toFixed(1),
+
+    fats: plate.items.reduce((total, item) => {
+      if (!item.ingredient || item.quantity == null) return total
+      const per100g = parseFloat(item.ingredient.fats) || 0
+      return total + (per100g * item.quantity) / 100
+    }, 0).toFixed(1)
+  }
+}
 
 // Crear nuevo plato
 export async function createPlate(plateData) {

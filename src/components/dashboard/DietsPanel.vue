@@ -1,11 +1,16 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { getDiets, deleteDiet } from '@/supabase/services/diets'
+import { getIngredients, getIngredientById } from '@/supabase/services/ingredients'
 import DietFormModal from '@/components/dashboard/modals/DietFormModal.vue'
 
-const props = defineProps({ currentUserId: String })
+const props = defineProps({
+  currentUserId: String,
+  planId: Number // nuevo
+})
 
 const diets = ref([])
+const allIngredients = ref([])
 const showModal = ref(false)
 const selectedDiet = ref(null)
 const loading = ref(true)
@@ -20,12 +25,106 @@ import {
   IconTrash
 } from '@tabler/icons-vue'
 
+const calculateTotalNutrients = (diet) => {
+  
+  let totalCalories = 0;
+  let totalProtein = 0;
+  let totalCarbs = 0;
+  let totalFats = 0;
+
+  // Aquí suponemos que `getIngredientById` es una función que recibe el `ingredientId` 
+  // y devuelve el ingrediente con sus propiedades nutricionales.
+  const getIngredientById = (id) => {
+    // Aquí debería ir tu lógica para recuperar el ingrediente desde tu base de datos,
+    // posiblemente usando un API o alguna otra consulta.
+    return allIngredients.value.find(ingredient => ingredient.id === id);
+  };
+
+  // Recorremos todas las comidas
+  diet.meals?.forEach(meal => {
+    meal.items?.forEach(plate => {
+      plate.items?.forEach(item => {
+
+        // Verificamos si el item tiene un `ingredientId`
+        if (item.ingredientId) {
+          const ingredient = getIngredientById(item.ingredientId);
+          
+          if (ingredient) {
+            const quantity = item.quantity || 0;  // Cantidad en gramos
+
+            // Acumulamos los nutrientes multiplicando por la cantidad
+            totalCalories += (ingredient.calories || 0) * (quantity / 100);
+            totalProtein += (ingredient.protein || 0) * (quantity / 100);
+            totalCarbs += (ingredient.carbs || 0) * (quantity / 100);
+            totalFats += (ingredient.fats || 0) * (quantity / 100);
+          } else {
+            console.warn(`Ingrediente con ID ${item.ingredientId} no encontrado.`);
+          }
+        }
+      });
+    });
+  });
+
+  // Devolvemos los totales calculados
+  return {
+    totalCalories,
+    totalProtein,
+    totalCarbs,
+    totalFats
+  };
+};
+
+const enrichDietItems = (dietList, ingredients) => {
+  return dietList.map(diet => {
+    const enrichedMeals = diet.meals?.map(meal => {
+      const enrichedPlates = meal.items?.map(plate => {
+        const enrichedPlateItems = plate.items?.map(item => {
+          const ingredient = ingredients.find(i => i.id === item.ingredientId)
+          return {
+            ...item,
+            ingredient: ingredient || null
+          }
+        }) || []
+
+        return {
+          ...plate,
+          items: enrichedPlateItems
+        }
+      }) || []
+
+      return {
+        ...meal,
+        items: enrichedPlates
+      }
+    }) || []
+
+    // Calcular los totales para esta dieta
+    const { totalCalories, totalProtein, totalCarbs, totalFats } = calculateTotalNutrients(diet)
+
+    return {
+      ...diet,
+      meals: enrichedMeals,
+      totalCalories,
+      totalProtein,
+      totalCarbs,
+      totalFats
+    }
+  })
+}
+
 const loadDiets = async () => {
+  if (!props.currentUserId) return
   loading.value = true
   try {
-    diets.value = await getDiets()
+    const [dietsRaw, ingredients] = await Promise.all([
+      getDiets(props.currentUserId),
+      getIngredients()
+    ])
+
+    allIngredients.value = ingredients
+    diets.value = enrichDietItems(dietsRaw, ingredients)
   } catch (e) {
-    console.error('Error al cargar dietas:', e)
+    console.error('Error al cargar dietas o ingredientes:', e)
   } finally {
     loading.value = false
   }
@@ -48,12 +147,18 @@ const handleDelete = async (diet) => {
 }
 
 const filteredDiets = computed(() => {
-  return diets.value.filter(diet => diet.title.toLowerCase().includes(searchQuery.value.toLowerCase()))
+  return diets.value.filter(diet =>
+    diet.title.toLowerCase().includes(searchQuery.value.toLowerCase())
+  )
 })
 
-onMounted(() => {
-  loadDiets()
-})
+watch(
+  () => props.currentUserId,
+  (id) => {
+    if (id) loadDiets()
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
@@ -72,7 +177,7 @@ onMounted(() => {
     <DietFormModal
       :show="showModal"
       :initialData="selectedDiet"
-      :current-user-id="currentUserId"
+      :current-user-id="props.currentUserId"
       @close="showModal = false; selectedDiet = null"
       @saved="loadDiets"
     />
@@ -114,39 +219,51 @@ onMounted(() => {
       <div
         v-for="diet in filteredDiets"
         :key="diet.id"
-        class="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col hover:shadow-md transition cursor-pointer"
+        class="bg-white rounded-xl shadow-lg p-5 hover:shadow-md transition flex flex-col justify-between cursor-pointer"
         @click="openEditModal(diet)"
       >
+        <div class="flex justify-between items-center mb-2">
+          <h3 class="text-xl font-bold text-[var(--color-primary)] truncate">{{ diet.title }}</h3>
+          <span class="inline-block px-2 py-1 rounded-full text-xs font-bold w-fit"
+            style="background-color: rgba(var(--color-primary-rgb), 0.2); color: var(--color-primary);">
+            {{ diet.totalCalories.toFixed(0) }} kcal
+          </span>
+        </div>
 
-        <div class="p-5 flex flex-col flex-grow justify-between">
-          <h3 class="text-xl font-bold text-gray-800 mb-1 truncate">{{ diet.title }}</h3>
-          <p v-if="diet.description" class="text-sm text-gray-600 mb-2 line-clamp-2">{{ diet.description }}</p>
+        <div class="mt-4">
+          <p><strong>Proteínas:</strong> {{ diet.totalProtein.toFixed(1) }} g</p>
+          <p><strong>Carbohidratos:</strong> {{ diet.totalCarbs.toFixed(1) }} g</p>
+          <p><strong>Grasas:</strong> {{ diet.totalFats.toFixed(1) }} g</p>
+        </div>
 
-          <div class="text-xs text-gray-500 mt-auto">
-            <p><strong>Comidas:</strong> {{ diet.meals?.length || 0 }}</p>
-            <p><strong>Última edición:</strong> {{ diet.created?.toDate().toLocaleDateString() || '—' }}</p>
-          </div>
+        <div class="border-t border-gray-200 my-3"></div>
 
-          <div class="mt-4 flex justify-right items-center">
-
-              <button
-                @click.prevent.stop="handleDelete(diet)"
-                class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full transition duration-200"
-                title="Eliminar"
-              >
-                <IconTrash class="w-5 h-5" />
-              </button>
-          </div>
+        <div class="flex justify-between items-center">
+          <span class="inline-block px-2 py-1 rounded-full text-xs font-bold w-fit"
+            style="background-color: rgba(var(--color-primary-rgb), 0.2); color: var(--color-primary);">
+            {{ diet.meals?.length || 0 }} comida{{ diet.meals?.length === 1 ? '' : 's' }}
+          </span>
+          <button
+            @click.prevent.stop="handleDelete(diet)"
+            class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full transition duration-200"
+            title="Eliminar"
+          >
+            <IconTrash class="w-5 h-5" />
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- Table view mode -->
+    <!-- Table view -->
     <table v-else-if="viewMode === 'table' && filteredDiets.length" class="w-full text-left text-sm">
       <thead class="bg-gray-200 text-gray-600 font-medium">
         <tr>
           <th class="py-3 px-2">Nombre</th>
           <th class="px-2">Descripción</th>
+          <th class="px-2">Calorías</th>
+          <th class="px-2">Proteínas</th>
+          <th class="px-2">Carbohidratos</th>
+          <th class="px-2">Grasas</th>
           <th class="px-2">Comidas</th>
           <th class="px-2">Fecha</th>
           <th class="px-2 text-right">Acciones</th>
@@ -161,28 +278,25 @@ onMounted(() => {
         >
           <td class="py-3 px-2 text-[var(--color-primary)]">{{ diet.title }}</td>
           <td class="py-3 px-2 text-gray-600 line-clamp-2">{{ diet.description }}</td>
+          <td class="py-3 px-2">{{ diet.totalCalories.toFixed(0) }} kcal</td>
+          <td class="py-3 px-2">{{ diet.totalProtein.toFixed(1) }} g</td>
+          <td class="py-3 px-2">{{ diet.totalCarbs.toFixed(1) }} g</td>
+          <td class="py-3 px-2">{{ diet.totalFats.toFixed(1) }} g</td>
           <td class="py-3 px-2">{{ diet.meals?.length || 0 }}</td>
-          <td class="py-3 px-2">{{ diet.created?.toDate().toLocaleDateString() || '—' }}</td>
+          <td class="py-3 px-2">
+            {{ new Date(diet.created).toLocaleDateString() || '—' }}
+          </td>
           <td class="py-3 px-2 text-right">
             <button
-                @click.prevent.stop="handleDelete(diet)"
-                class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full transition duration-200"
-                title="Eliminar"
-              >
-                <IconTrash class="w-5 h-5" />
-              </button>
+              @click.prevent.stop="handleDelete(diet)"
+              class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full transition duration-200"
+              title="Eliminar"
+            >
+              <IconTrash class="w-5 h-5" />
+            </button>
           </td>
         </tr>
       </tbody>
     </table>
-
-    <!-- Sin resultados -->
-    <div v-if="diets.length > 0 && filteredDiets.length === 0" class="flex flex-col items-center justify-center py-12 text-gray-500">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0z" />
-      </svg>
-      <p class="text-lg font-semibold">Sin resultados</p>
-      <p class="text-sm">No se encontraron dietas que coincidan con los filtros aplicados.</p>
-    </div>
   </section>
 </template>

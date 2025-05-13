@@ -130,26 +130,38 @@ onMounted(loadIngredients)
 
     <!-- Grid View -->
     <div v-if="viewMode === 'grid' && filteredIngredients.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div
+     <div
         v-for="ingredient in filteredIngredients"
         :key="ingredient.id"
         class="bg-white rounded-xl shadow-lg p-5 hover:shadow-md transition flex flex-col justify-between cursor-pointer"
         @click="openEditModal(ingredient)"
       >
-        <h3 class="text-xl font-bold text-[var(--color-primary)] mb-2 truncate">{{ ingredient.name }}</h3>
-        <ul class="text-sm text-gray-700 mb-4">
-          <li><strong>Calorías:</strong> {{ ingredient.calories }} kcal</li>
-          <li><strong>Proteínas:</strong> {{ ingredient.protein }}g</li>
-          <li><strong>Carbs:</strong> {{ ingredient.carbs }}g</li>
-          <li><strong>Grasas:</strong> {{ ingredient.fats }}g</li>
+        <!-- Nombre -->
+        <h3 class="text-xl font-bold text-[var(--color-primary)] mb-2 truncate">
+          {{ ingredient.name }}
+        </h3>
+
+        <!-- Macronutrientes -->
+        <ul class="text-sm text-gray-700 mb-4 space-y-1">
+          <li><strong>Proteínas:</strong> {{ ingredient.protein }} g</li>
+          <li><strong>Carbohidratos:</strong> {{ ingredient.carbs }} g</li>
+          <li><strong>Grasas:</strong> {{ ingredient.fats }} g</li>
         </ul>
-        <button
-          @click.stop="removeIngredient(ingredient)"
-          class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full transition duration-200 self-end"
-          title="Eliminar"
-        >
-          <IconTrash class="w-5 h-5" />
-        </button>
+
+        <!-- Separador -->
+        <div class="border-t border-gray-200 my-2"></div>
+
+        <!-- Calorías + botón eliminar -->
+        <div class="flex justify-between items-center mt-auto">
+          
+          <button
+            @click.stop="removeIngredient(ingredient)"
+            class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full transition duration-200"
+            title="Eliminar"
+          >
+            <IconTrash class="w-5 h-5" />
+          </button>
+        </div>
       </div>
     </div>
 
