@@ -1,7 +1,7 @@
 import { supabase } from '@/supabase/config';
 
 // Crear nueva rutina
-export async function createRoutine(routineData) {
+export async function createRoutine(routineData ) {
   const { data, error } = await supabase
     .from('routines')
     .insert([{ ...routineData }])
@@ -22,6 +22,16 @@ export async function getRoutines() {
   return data
 }
 
+export async function getRoutinesByUser(uid) {
+  const { data, error } = await supabase
+    .from('routines')
+    .select('*')
+    .eq('user_id', uid)
+
+  if (error) throw error
+  return data
+}
+
 // Obtener categorías de rutinas
 export async function getRoutineCategories() {
   const { data, error } = await supabase
@@ -30,6 +40,33 @@ export async function getRoutineCategories() {
 
   if (error) throw error
   return data
+}
+
+// Obtener rutina asignada actual
+export async function getAssignedRoutine(uid) {
+  
+  // Paso 1: Obtener el ID de la rutina asignada
+  const { data: userData, error: userError } = await supabase
+    .from('users')
+    .select('assigned_routine')
+    .eq('uid', uid)
+    .single()
+
+  if (userError) throw userError
+
+  const routineId = userData.assigned_routine
+  if (!routineId) return null // No hay rutina asignada
+
+  // Paso 2: Obtener los datos de la rutina usando ese ID
+  const { data: routineData, error: routineError } = await supabase
+    .from('routines')
+    .select('*') // Podés ajustar si solo querés ciertos campos
+    .eq('id', routineId)
+    .single()
+
+  if (routineError) throw routineError
+
+  return routineData
 }
 
 // Actualizar una rutina existente
@@ -60,33 +97,21 @@ export async function updateRoutine(id, routineData) {
   
 
 // Asignar rutina a usuario
-export async function assignRoutineToUser(userId, routineId) {
+export async function assignRoutineToUser(uid, routineId) {
   const { error } = await supabase
     .from('users')
     .update({ assigned_routine: routineId })
-    .eq('id', userId)
+    .eq('uid', uid)
 
   if (error) throw error
-}
-
-// Obtener rutina asignada actual
-export async function getAssignedRoutine(userId) {
-  const { data, error } = await supabase
-    .from('users')
-    .select('assigned_routine')
-    .eq('id', userId)
-    .single()
-
-  if (error) throw error
-  return data.assigned_routine
 }
 
 // Quitar rutina asignada
-export async function unassignRoutineFromUser(userId) {
+export async function unassignRoutineFromUser(uid) {
   const { error } = await supabase
     .from('users')
     .update({ assigned_routine: null })
-    .eq('id', userId)
+    .eq('uid', uid)
 
   if (error) throw error
 }

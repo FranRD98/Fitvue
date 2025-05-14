@@ -1,8 +1,8 @@
 <script setup>
-import { useAuth } from '@/supabase/useAuth'
 import { ref } from 'vue'
+import { useUserStore } from '@/stores/user'  // Importamos el store de Pinia
 
-const { userData } = useAuth()
+const userStore = useUserStore()  // Usamos el store de usuario
 
 const welcomeMessages = [
   'Estás haciendo un gran progreso hoy, ¡sigue así! 💪',
@@ -19,20 +19,19 @@ const randomMessage = ref(welcomeMessages[Math.floor(Math.random() * welcomeMess
 </script>
 
 <template>
-  <header v-if="userData" class="bg-white shadow-sm px-10 py-6">
+  <header v-if="userStore.userData" class="bg-white shadow-sm px-10 py-6">
     <div class="flex gap-4 items-center">
       <img
-        :src="userData.profile_image || 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/profile/default-profile.svg'"
+        :src="userStore.userData.profile_image || 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/profile/default-profile.svg'"
         alt="profile-icon"
         class="w-12 h-12 rounded-full"
       />
       <div>
         <h1 class="text-xl font-bold text-[var(--color-primary)]">
-          ¡Hola, {{ userData?.name || 'Usuario' }}!
+          ¡Hola, {{ userStore.userData?.name || 'Usuario' }}!
         </h1>
         <p class="text-sm text-gray-500">{{ randomMessage }}</p>
       </div>
     </div>
   </header>
 </template>
-

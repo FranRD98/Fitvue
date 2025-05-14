@@ -1,29 +1,44 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import { getExercises } from '@/supabase/services/exercises'
-import { getRoutineCategories, createRoutine, updateRoutine } from '@/supabase/services/routines'
+import { useUserStore } from '@/stores/user'  // Importamos el store de Pinia
 
-const props = defineProps({ show: Boolean, initialData: Object })
+import { getExercises } from '@/supabase/services/exercises'
+import {
+  getRoutineCategories,
+  createRoutine,
+  updateRoutine
+} from '@/supabase/services/routines'
+
+// Props y emits
+const props = defineProps({
+  show: Boolean,
+  initialData: Object
+})
+
 const emit = defineEmits(['close', 'saved'])
 
+// Estado
+const userStore = useUserStore()  // Usamos el store de usuario
 const exercises = ref([])
 const categories = ref([])
+const defaultDays = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+const selectedDays = ref([])
 
 const routine = ref({
   title: '',
   description: '',
   id_category: '',
-  days: []
+  days: [],
+  user_id: ''
 })
 
-const defaultDays = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
-const selectedDays = ref([])
-
+// Cargar datos al montar
 onMounted(async () => {
   exercises.value = await getExercises()
   categories.value = await getRoutineCategories()
 })
 
+// Rellenar el formulario si se edita una rutina
 watch(() => props.initialData, (newVal) => {
   if (newVal) {
     routine.value = {
@@ -48,6 +63,7 @@ watch(() => props.initialData, (newVal) => {
   }
 }, { immediate: true })
 
+// Función para agregar ejercicio a un día
 function addExerciseToDay(day) {
   const selectedId = day.selectedExercise
   const found = exercises.value.find(e => e.id === selectedId)
@@ -62,49 +78,53 @@ function addExerciseToDay(day) {
   day.selectedExercise = ''
 }
 
+// Quitar ejercicio de un día
 function removeExercise(day, index) {
   day.exercises.splice(index, 1)
 }
 
+// Enviar el formulario
 async function submitForm() {
-  // Validación
   if (!routine.value.title || !routine.value.id_category) {
     alert('El título y tipo de rutina son obligatorios.')
     return
   }
 
-  // Asegúrate de mapear correctamente los días seleccionados
   routine.value.days = selectedDays.value
     .filter(d => d.enabled && d.exercises.length)
     .map(d => ({
       day: d.day,
-      exercises: d.exercises.map(exercise => ({
-        id: exercise.id,
-        name: exercise.name,
-        sets: exercise.sets,
-        reps: exercise.reps
+      exercises: d.exercises.map(ex => ({
+        id: ex.id,
+        name: ex.name,
+        sets: ex.sets,
+        reps: ex.reps
       }))
     }))
 
-  console.log('Objeto de rutina a enviar:', routine.value)  // Para debug
+  try {
+    if (routine.value.id) {
+      await updateRoutine(routine.value.id, routine.value)
+    } else {
+      routine.value.user_id = userStore.userData?.uid // Nos aseguramos de que el uid ya esté disponible y lo asignamos antes de crearla
+      await createRoutine(routine.value)
+    }
 
-  // Actualizar o crear la rutina
-  if (routine.value.id) {
-    await updateRoutine(routine.value.id, routine.value)
-  } else {
-    await createRoutine(routine.value)
+    emit('saved')
+    close()
+  } catch (error) {
+    console.error('Error al guardar la rutina:', error)
+    alert('Ocurrió un error al guardar la rutina.')
   }
-
-  emit('saved')
-  close()
 }
 
-
+// Cerrar y resetear
 function close() {
   resetForm()
   emit('close')
 }
 
+// Resetear formulario
 function resetForm() {
   routine.value = {
     title: '',
@@ -121,6 +141,7 @@ function resetForm() {
   }))
 }
 </script>
+
 
 <template>
   <div

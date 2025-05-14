@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, defineAsyncComponent } from 'vue'
-import { useAuth } from '@/supabase/useAuth'
+import { useUserStore } from '@/stores/user'  // Importamos el store de Pinia
 import DashboardSidebar from './DashboardSidebar.vue'
 import DashboardHeader from './DashboardHeader.vue'
 
@@ -18,8 +18,8 @@ import {
   IconSettings
 } from '@tabler/icons-vue'
 
-const { userData } = useAuth()
-const currentUserId = computed(() => userData.value?.uid || null)
+// Obtener el store de usuario
+const userStore = useUserStore()  // Usamos el store de usuario
 
 const menuItems = [
   { key: 'progress', label: 'Mi Progreso', icon: IconChartBar, roles: ['user', 'coach', 'admin'] },
@@ -35,7 +35,7 @@ const menuItems = [
 ]
 
 const visibleMenu = computed(() =>
-  userData.value ? menuItems.filter(i => i.roles.includes(userData.value.role)) : []
+  userStore.userData ? menuItems.filter(i => i.roles.includes(userStore.userData.role)) : []
 )
 
 const activeKey = ref('progress')
@@ -64,7 +64,7 @@ const componentsMap = {
     <div class="flex flex-col flex-1 h-screen overflow-hidden">
       <DashboardHeader />
       <main class="flex-1 overflow-y-auto p-6">
-        <component :is="ActiveComponent" :current-user-id="currentUserId" />
+        <component :is="ActiveComponent" />
       </main>
     </div>
   </div>

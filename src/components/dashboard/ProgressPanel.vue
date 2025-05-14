@@ -14,8 +14,8 @@ onMounted(async () => {
     try {
       reviews.value = await getReviewsById()
 
-      console.log("=== REVIEWS ===")
-      console.log(reviews.value)
+      //console.log("=== REVIEWS ===")
+      //console.log(reviews.value)
     } catch (error) {
       console.error('Error al obtener las reviews:', error)
     } finally {
