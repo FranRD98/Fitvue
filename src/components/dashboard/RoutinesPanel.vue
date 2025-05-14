@@ -129,7 +129,7 @@ onMounted(loadRoutines)
       </div>
 
       <!-- Vista Grid -->
-      <div v-if="viewMode === 'grid' && filteredRoutines.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div v-if="viewMode === 'grid' && filteredRoutines.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <div
           v-for="routine in filteredRoutines"
           :key="routine.id"
@@ -166,7 +166,26 @@ onMounted(loadRoutines)
             </div>
           </div>
         </div>
+
+      <div>
+        <!-- Rutina Asignada Destacada -->
+        <div v-if="assignedRoutine" class=" bg-green-100 shadow-lg rounded-xl p-5 border border-green-300 z-10">
+          <h2 class="text-lg font-bold text-green-800 mb-2">Rutina Asignada por coach</h2>
+          <h3 class="text-md font-semibold text-green-900">{{ assignedRoutine.title }}</h3>
+          <p class="text-sm text-green-700 mb-2">{{ assignedRoutine.description }}</p>
+          <p class="text-xs text-green-600">Ejercicios: {{ countExercises(assignedRoutine) }}</p>
+          <button
+            @click="openEditModal(assignedRoutine)"
+            class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded transition"
+          >
+            Ver / Editar
+          </button>
+        </div>
       </div>
+
+      </div>
+
+
 
       <!-- Vista Tabla -->
       <table v-else-if="viewMode === 'table' && filteredRoutines.length" class="w-full text-left text-sm">
@@ -225,20 +244,6 @@ onMounted(loadRoutines)
         <p class="text-sm">No se encontraron rutinas que coincidan con el filtro.</p>
       </div>
     </div>
-
-    <!-- Rutina Asignada Destacada -->
-<div v-if="assignedRoutine" class="fixed right-6 top-28 w-80 bg-green-100 shadow-lg rounded-xl p-5 border border-green-300 z-10">
-  <h2 class="text-lg font-bold text-green-800 mb-2">Rutina Asignada</h2>
-  <h3 class="text-md font-semibold text-green-900">{{ assignedRoutine.title }}</h3>
-  <p class="text-sm text-green-700 mb-2">{{ assignedRoutine.description }}</p>
-  <p class="text-xs text-green-600">Ejercicios: {{ countExercises(assignedRoutine) }}</p>
-  <button
-    @click="openEditModal(assignedRoutine)"
-    class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded transition"
-  >
-    Ver / Editar
-  </button>
-</div>
 
   </section>
 </template>
