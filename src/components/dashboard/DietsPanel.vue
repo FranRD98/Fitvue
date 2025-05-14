@@ -3,19 +3,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { getDiets, deleteDiet } from '@/supabase/services/diets'
 import { getIngredients, getIngredientById } from '@/supabase/services/ingredients'
 import DietFormModal from '@/components/dashboard/modals/DietFormModal.vue'
-
-const props = defineProps({
-  currentUserId: String,
-  planId: Number // nuevo
-})
-
-const diets = ref([])
-const allIngredients = ref([])
-const showModal = ref(false)
-const selectedDiet = ref(null)
-const loading = ref(true)
-const viewMode = ref('grid')
-const searchQuery = ref('')
+import { useUserStore } from '@/stores/user'  // Importamos el store de Pinia
 
 // Icons
 import {
@@ -24,6 +12,15 @@ import {
   IconLayoutList,
   IconTrash
 } from '@tabler/icons-vue'
+
+const userStore = useUserStore()  // Usamos el store de usuario
+const diets = ref([])
+const allIngredients = ref([])
+const showModal = ref(false)
+const selectedDiet = ref(null)
+const loading = ref(true)
+const viewMode = ref('grid')
+const searchQuery = ref('')
 
 const calculateTotalNutrients = (diet) => {
   
@@ -113,11 +110,11 @@ const enrichDietItems = (dietList, ingredients) => {
 }
 
 const loadDiets = async () => {
-  if (!props.currentUserId) return
+  if (!userStore.userData?.uid) return
   loading.value = true
   try {
     const [dietsRaw, ingredients] = await Promise.all([
-      getDiets(props.currentUserId),
+      getDiets(userStore.userData.uid),
       getIngredients()
     ])
 
@@ -153,7 +150,7 @@ const filteredDiets = computed(() => {
 })
 
 watch(
-  () => props.currentUserId,
+  () => userStore.userData?.uid,
   (id) => {
     if (id) loadDiets()
   },
@@ -177,7 +174,6 @@ watch(
     <DietFormModal
       :show="showModal"
       :initialData="selectedDiet"
-      :current-user-id="props.currentUserId"
       @close="showModal = false; selectedDiet = null"
       @saved="loadDiets"
     />

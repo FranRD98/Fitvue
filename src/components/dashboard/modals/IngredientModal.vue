@@ -42,90 +42,47 @@ const handleSubmit = () => {
 
 </script>
 <template>
-  <div
-    v-if="show"
-    class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 px-4"
-  >
+  <div v-if="show" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 px-4">
     <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md space-y-6 relative">
-      <!-- Botón de cerrar (cruz) -->
-      <button
-        @click="emit('close')"
-        class="absolute top-3 right-3 text-gray-500 hover:text-red-500 transition"
-        aria-label="Cerrar"
-      >
+      <!-- Botón de cerrar -->
+      <button @click="emit('close')" class="absolute top-3 right-3 text-gray-500 hover:text-red-500 transition" aria-label="Cerrar">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-          <path
-            fill-rule="evenodd"
-            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 
-            1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 
-            1.414L10 11.414l-4.293 4.293a1 1 0 
-            01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-            clip-rule="evenodd"
-          />
+          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
         </svg>
       </button>
 
-      <h2 class="text-2xl font-bold text-[var(--color-primary)]">
-        {{ initialData.id ? 'Editar' : 'Nuevo' }} ingrediente
-      </h2>
+      <h2 class="text-2xl font-bold text-[var(--color-primary)]">{{ initialData.id ? 'Editar' : 'Nuevo' }} ingrediente</h2>
 
       <form @submit.prevent="handleSubmit" class="space-y-4">
         <div class="space-y-1">
           <label for="name" class="text-sm font-medium text-gray-700">Nombre del ingrediente</label>
-          <input
-            id="name"
-            v-model="form.name"
-            placeholder="Ej: Pollo"
-            class="input-field"
-          />
+          <input id="name" v-model="form.name" placeholder="Ej: Pollo" class="input" />
         </div>
 
         <div class="grid grid-cols-2 gap-4">
           <div class="space-y-1">
             <label for="calories" class="text-sm font-medium text-gray-700">Calorías (100g)</label>
-            <input
-              id="calories"
-              v-model="form.calories"
-              type="number"
-              class="input-field"
-            />
+            <input id="calories" v-model="form.calories" type="number" class="input" />
           </div>
 
           <div class="space-y-1">
             <label for="protein" class="text-sm font-medium text-gray-700">Proteínas</label>
-            <input
-              id="protein"
-              v-model="form.protein"
-              type="number"
-              class="input-field"
-            />
+            <input id="protein" v-model="form.protein" type="number" class="input" />
           </div>
 
           <div class="space-y-1">
             <label for="carbs" class="text-sm font-medium text-gray-700">Carbohidratos</label>
-            <input
-              id="carbs"
-              v-model="form.carbs"
-              type="number"
-              class="input-field"
-            />
+            <input id="carbs" v-model="form.carbs" type="number" class="input" />
           </div>
 
           <div class="space-y-1">
             <label for="fats" class="text-sm font-medium text-gray-700">Grasas</label>
-            <input
-              id="fats"
-              v-model="form.fats"
-              type="number"
-              class="input-field"
-            />
+            <input id="fats" v-model="form.fats" type="number" class="input" />
           </div>
         </div>
-<div class="flex justify-end pt-4">
-          <button
-            type="submit"
-            class="bg-[var(--color-primary)] hover:bg-opacity-90 text-white px-5 py-2 rounded-lg transition"
-          >
+
+        <div class="flex justify-end pt-4">
+          <button type="submit" class="bg-[var(--color-primary)] text-white px-5 py-2 rounded-lg hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition">
             Guardar
           </button>
         </div>
@@ -134,17 +91,55 @@ const handleSubmit = () => {
   </div>
 </template>
 
+
 <style scoped>
-.input-field {
+.input {
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.5rem 0.75rem;
   border: 1px solid #d1d5db;
   border-radius: 0.5rem;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  font-size: 0.95rem;
+  background-color: white;
+  color: #374151;
+  transition: all 0.2s ease;
 }
-.input-field:focus {
+
+.input:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 0 0 1px var(--color-primary);
+  outline: none;
+}
+
+/* Slide down para abrir caja de comida */
+.slide-fade-enter-active {
+  transition: all 0.3s ease;
+}
+.slide-fade-leave-active {
+  transition: all 0.2s ease;
+}
+.slide-fade-enter-from {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* Drop-fade para cada plato */
+.drop-fade-enter-active {
+  transition: all 0.3s ease;
+}
+.drop-fade-leave-active {
+  transition: all 0.2s ease;
+  position: absolute;
+}
+.drop-fade-enter-from {
+  opacity: 0;
+  transform: translateY(-15px);
+}
+.drop-fade-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
 }
 </style>

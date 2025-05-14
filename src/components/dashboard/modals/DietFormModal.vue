@@ -177,22 +177,32 @@ const totalMacros = computed(() => {
 
 // Guardar
 async function submitForm() {
-  diet.value.meals = selectedMeals.value.filter(m => m.enabled && m.items.length > 0)
+  // Eliminar los campos de totales antes de guardar la dieta
+  const cleanedDiet = { ...diet.value };
+  delete cleanedDiet.totalCalories;
+  delete cleanedDiet.totalProtein;
+  delete cleanedDiet.totalCarbs;
+  delete cleanedDiet.totalFats;
 
-  if (!diet.value.user_id || typeof diet.value.user_id !== 'string') {
+  // Filtramos solo las comidas activadas con platos
+  cleanedDiet.meals = selectedMeals.value.filter(m => m.enabled && m.items.length > 0);
+
+  if (!cleanedDiet.user_id || typeof cleanedDiet.user_id !== 'string') {
     alert('Error: no se ha podido determinar el usuario. Intenta recargar la página.');
     return;
   }
 
-  if (diet.value.id) {
-    await updateDiet(diet.value.id, diet.value)
+  // Enviar la dieta limpia (sin los campos no deseados)
+  if (cleanedDiet.id) {
+    await updateDiet(cleanedDiet.id, cleanedDiet);
   } else {
-    await createDiet(diet.value)
+    await createDiet(cleanedDiet);
   }
 
-  emit('saved')
-  emit('close')
+  emit('saved');
+  emit('close');
 }
+
 
 // Cerrar modal
 function close() {
@@ -204,103 +214,130 @@ function close() {
 <template>
   <div v-if="show" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex justify-center items-center px-4">
     <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-3xl relative overflow-y-auto max-h-[90vh]">
-      
-      <!-- Botón cerrar -->
-      <button @click="close" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl">✕</button>
+
+      <!-- Botón de cerrar -->
+      <button @click="emit('close')" class="absolute top-3 right-3 text-gray-500 hover:text-red-500 transition" aria-label="Cerrar">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+        </svg>
+      </button>
 
       <!-- Título -->
       <h2 class="text-2xl font-bold text-[var(--color-primary)] mb-4">
         {{ diet.id ? 'Editar dieta' : 'Crear nueva dieta' }}
       </h2>
 
-      <!-- Formulario principal -->
+      <!-- Formulario -->
       <form @submit.prevent="submitForm" class="space-y-6">
+
         <!-- Inputs generales -->
         <div class="grid md:grid-cols-2 gap-4">
-  <div>
-    <label for="diet-title" class="text-sm text-gray-700 font-medium mb-1 block">Título de la dieta</label>
-    <input id="diet-title" v-model="diet.title" placeholder="Ej: Volumen 2300 kcal" class="input" required />
-  </div>
-  <div>
-    <label for="diet-description" class="text-sm text-gray-700 font-medium mb-1 block">Descripción</label>
-    <input id="diet-description" v-model="diet.description" placeholder="Opcional..." class="input" />
-  </div>
-</div>
-
-        <!-- Sección de comidas -->
-        <div class="space-y-6">
-<div
-  v-for="meal in selectedMeals"
-  :key="meal.name"
-  class="border-2 border-dashed border-gray-300 rounded-xl p-4 bg-white hover:border-gray-400 transition-all duration-300"
->
-  <label class="flex items-center justify-between mb-2">
-  <div class="flex items-center gap-2">
-    <input type="checkbox" v-model="meal.enabled" />
-    <span class="font-semibold text-[var(--color-primary)] text-base">{{ meal.name }}</span>
-  </div>
-  <!-- Botón eliminar solo si no es una comida predefinida -->
-  <button v-if="!['Desayuno', 'Almuerzo', 'Comida', 'Merienda', 'Cena'].includes(meal.name)"
-          @click="removeCustomMeal(meal.name)"
-          class="text-red-500 text-xs hover:underline">
-    Eliminar
-  </button>
-</label>
-
-  <Transition name="slide-fade">
-    <div v-if="meal.enabled" class="space-y-2">
-      <!-- Select platos -->
-      <select @change="e => addPlateToMeal(meal, plates.find(p => p.id === Number(e.target.value)))"
-              class="input bg-white">
-        <option disabled selected>Selecciona un plato</option>
-        <option v-for="plate in plates" :key="plate.id" :value="plate.id">{{ plate.name }}</option>
-      </select>
-
-      <!-- Lista de platos -->
-      <TransitionGroup name="drop-fade" tag="div">
-  <div
-    v-for="(plate, index) in meal.items"
-    :key="plate.id"
-    class="mt-1"
-  >
-    <div class="flex justify-between items-center">
-      <div class="text-sm">
-        {{ plate.name }} —
-        <span class="text-xs text-gray-500">
-          {{ getMacros(plate).calories }} kcal
-        </span>
-      </div>
-      <button @click="meal.items.splice(index, 1)" class="text-red-500 hover:underline text-xs">
-        Quitar
-      </button>
-    </div>
-    <div class="text-xs text-gray-500">
-      <strong>Macros totales:</strong>
-      Proteína: {{ getMacros(plate).protein }}g •
-      Carbohidratos: {{ getMacros(plate).carbs }}g •
-      Grasa: {{ getMacros(plate).fats }}g
-    </div>
-  </div>
-</TransitionGroup>
-    </div>
-  </Transition>
-</div>
+          <div>
+            <label for="diet-title" class="block text-sm text-gray-700 font-medium mb-1">Título de la dieta</label>
+            <input id="diet-title" v-model="diet.title" placeholder="Ej: Volumen 2300 kcal"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-700 transition-all focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] outline-none" required />
+          </div>
+          <div>
+            <label for="diet-description" class="block text-sm text-gray-700 font-medium mb-1">Descripción</label>
+            <input id="diet-description" v-model="diet.description" placeholder="Opcional..."
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-700 transition-all focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] outline-none" />
+          </div>
         </div>
 
-        <!-- Comida personalizada -->
+        <!-- Comidas -->
+        <div class="space-y-6">
+          <div
+            v-for="meal in selectedMeals"
+            :key="meal.name"
+            class="border-2 border-dashed border-gray-300 rounded-xl p-4 bg-white hover:border-gray-400 transition-all duration-300"
+          >
+            <label class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <input type="checkbox" v-model="meal.enabled" />
+                <span class="font-semibold text-[var(--color-primary)] text-base">{{ meal.name }}</span>
+              </div>
+              <button
+                v-if="!['Desayuno', 'Almuerzo', 'Comida', 'Merienda', 'Cena'].includes(meal.name)"
+                @click="removeCustomMeal(meal.name)"
+                class="text-red-500 text-xs hover:underline"
+              >
+                Eliminar
+              </button>
+            </label>
+
+            <Transition name="slide-fade">
+              <div v-if="meal.enabled" class="space-y-2">
+                <!-- Select platos -->
+                <select
+                  @change="e => addPlateToMeal(meal, plates.find(p => p.id === Number(e.target.value)))"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-700 transition-all focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] outline-none"
+                >
+                  <option disabled selected>Selecciona un plato</option>
+                  <option v-for="plate in plates" :key="plate.id" :value="plate.id">{{ plate.name }}</option>
+                </select>
+
+                <!-- Lista platos -->
+                <TransitionGroup name="drop-fade" tag="div">
+                  <div class="overflow-x-auto mt-2">
+                    <div class="flex space-x-4">
+                      <div
+                        v-for="(plate, index) in meal.items"
+                        :key="plate.id"
+                        class="bg-white border p-4 rounded-lg shadow-md min-w-[150px]"
+                      >
+                        <div class="flex justify-between items-center">
+                          <div class="text-sm">
+                            {{ plate.name }} —
+                            <span class="text-xs text-gray-500">
+                              {{ getMacros(plate).calories }} kcal
+                            </span>
+                          </div>
+                          <button
+                            @click="meal.items.splice(index, 1)"
+                            class="text-red-500 hover:underline text-xs"
+                          >
+                            Quitar
+                          </button>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">
+                          <strong>Macros totales:</strong><br>
+                          Proteína: {{ getMacros(plate).protein }}g •
+                          Carbohidratos: {{ getMacros(plate).carbs }}g •
+                          Grasa: {{ getMacros(plate).fats }}g
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </TransitionGroup>
+              </div>
+            </Transition>
+          </div>
+        </div>
+
+        <!-- Añadir comida personalizada -->
         <div class="text-sm mt-4">
-          <button @click="showCustomMealInput = true" v-if="!showCustomMealInput" type="button" class="text-[var(--color-primary)] hover:underline">
+          <button
+            @click="showCustomMealInput = true"
+            v-if="!showCustomMealInput"
+            type="button"
+            class="text-[var(--color-primary)] hover:underline"
+          >
             + Añadir comida personalizada
           </button>
           <div v-if="showCustomMealInput" class="flex gap-2 mt-2">
-            <input v-model="customMealName" placeholder="Nombre (Ej. Tentempié)" class="input" />
-            <button @click="addCustomMeal" type="button" class="bg-[var(--color-primary)] text-white px-4 rounded">Agregar</button>
+            <input v-model="customMealName" placeholder="Nombre (Ej. Tentempié)"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-700 transition-all focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] outline-none" />
+            <button @click="addCustomMeal" type="button"
+              class="bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] text-white px-4 py-2 rounded-lg text-sm font-medium">
+              Agregar
+            </button>
           </div>
         </div>
 
         <!-- Botón guardar -->
         <div class="flex justify-end pt-4 border-t mt-6">
-          <button type="submit" class="bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] text-white px-6 py-2 rounded-lg font-semibold">
+          <button type="submit"
+            class="bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] text-white px-6 py-2 rounded-lg font-semibold">
             Guardar dieta
           </button>
         </div>
@@ -319,25 +356,9 @@ function close() {
     </div>
   </div>
 </template>
+
 <style scoped>
-  .input {
-    width: 100%;
-    padding: 0.5rem 0.75rem;
-    border: 1px solid #d1d5db;
-    border-radius: 0.5rem;
-    font-size: 0.95rem;
-    background-color: white;
-    color: #374151;
-    transition: all 0.2s ease;
-  }
-
-  .input:focus {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 1px var(--color-primary);
-    outline: none;
-  }
-
-  /* Slide down para abrir caja de comida */
+/* Animaciones personalizadas (no reemplazables por Tailwind) */
 .slide-fade-enter-active {
   transition: all 0.3s ease;
 }
@@ -353,7 +374,6 @@ function close() {
   transform: translateY(-10px);
 }
 
-/* Drop-fade para cada plato */
 .drop-fade-enter-active {
   transition: all 0.3s ease;
 }
@@ -369,6 +389,4 @@ function close() {
   opacity: 0;
   transform: translateY(10px);
 }
-
-
 </style>
