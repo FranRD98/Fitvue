@@ -29,8 +29,8 @@ const menuItems = [
   { key: 'diets', label: 'Dietas', icon: IconToolsKitchen2, roles: ['user', 'coach', 'admin'] },
   { key: 'plates', label: 'Platos', icon: IconSoup, roles: ['user', 'coach', 'admin'] },
   { key: 'ingredients', label: 'Ingredientes', icon: IconCarrot, roles: ['user', 'coach', 'admin'] },
-  { key: 'guides', label: 'Guías', icon: IconBook, roles: ['coach', 'admin'] },
-  { key: 'users', label: 'Usuarios', icon: IconUsers, roles: ['admin'] },
+  { key: 'guides', label: 'Guías', icon: IconBook, roles: ['user', 'coach', 'admin'] },
+  { key: 'users', label: 'Usuarios', icon: IconUsers, roles: ['user', 'coach', 'admin'] },
   { key: 'config', label: 'Configuración', icon: IconSettings, roles: ['user', 'coach', 'admin'] }
 ]
 

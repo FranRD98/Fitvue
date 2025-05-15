@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { getGuides, getCategories, deleteGuide } from '@/firebase/guides.js'
+import { getGuides, getCategories, deleteGuide } from '@/supabase/services/guides.js'
 import GuideFormModal from '@/components/dashboard/modals/GuideFormModal.vue'
 
 import {
@@ -141,9 +141,9 @@ const handleDelete = async (guide) => {
           <p class="text-sm text-gray-600 mb-2 line-clamp-2">{{ guide.description }}</p>
 
           <div class="text-xs text-gray-500 mt-auto">
-            <p><strong>Categoría:</strong> {{ guide.category?.title || '—' }}</p>
+            <p><strong>Categoría:</strong> {{ categories.find(cat => cat.id === guide.id_category)?.title || '—sin categoría—' }}</p>
             <p><strong>Autor:</strong> {{ guide.author }}</p>
-            <p><strong>Fecha:</strong> {{ guide.created?.toDate().toLocaleDateString() || '—' }}</p>
+            <p><strong>Fecha:</strong> {{ new Date(guide.created_at).toLocaleDateString() || '—' }}</p>
           </div>
 
           <div class="mt-4 flex justify-end items-center">

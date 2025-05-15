@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import { createGuide, updateGuide, getCategories, createCategory } from '@/firebase/guides'
+import { createGuide, updateGuide, getCategories, createCategory } from '@/supabase/services/guides'
 
 const props = defineProps({
   show: Boolean,
@@ -13,7 +13,7 @@ const guide = ref({
   description: '',
   content: '',
   author: '',
-  category: '',
+  id_category: '',
   imageUrl: '',
   created: new Date().toISOString()
 })
@@ -54,14 +54,14 @@ watch(
     if (newVal) {
       const matchedCategory = categories.value.find(cat => {
         return (
-          cat.id === newVal.category?.id ||
-          cat.title === newVal.category?.title
+          cat.id === newVal.id_category?.id ||
+          cat.title === newVal.id_category?.title
         )
       })
 
       guide.value = {
         ...newVal,
-        category: matchedCategory || ''
+        id_category: matchedCategory || ''
       }
     } else {
       resetForm()
@@ -75,9 +75,13 @@ watch(
 async function submitForm() {
   try {
     if (guide.value.id) {
-      await updateGuide(guide.value.id, guide.value)
+      console.log("GUÍA EDITADA:")
+      console.log(guide.value)
+      //await updateGuide(guide.value.id, guide.value)
     } else {
-      await createGuide(guide.value)
+      console.log("GUÍA QUE SE VA A CREAR:")
+            console.log(guide.value)
+      //await createGuide(guide.value)
     }
     emit('saved')
     close()
@@ -93,7 +97,7 @@ async function createNewCategory() {
   try {
     const newCat = await createCategory(newCategoryTitle.value.trim())
     categories.value.push(newCat)
-    guide.value.category = newCat
+    guide.value.id_category = newCat
     newCategoryTitle.value = ''
     showCategoryModal.value = false
   } catch (err) {
@@ -108,7 +112,7 @@ function resetForm() {
     description: '',
     content: '',
     author: '',
-    category: '',
+    id_category: '',
     imageUrl: '',
     created: new Date().toISOString()
   }
@@ -140,9 +144,10 @@ function close() {
         <input v-model="guide.author" placeholder="Autor" class="input" required />
 
         <label class="block text-sm font-medium text-gray-700">Categoría</label>
-        <select v-model="guide.category" class="w-full border border-gray-300 p-2 rounded" required>
+
+        <select v-model="guide.id_category" class="w-full border border-gray-300 p-2 rounded" required>
           <option disabled value="">Selecciona una categoría</option>
-          <option v-for="category in categories" :key="category.id" :value="category">
+          <option v-for="category in categories" :key="category.id" :value="category.id">
             {{ category.title }}
           </option>
           <option value="__new">+ Crear nueva categoría</option>

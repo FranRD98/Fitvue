@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { getUsers, deleteUser } from '@/firebase/users.js'
+import { getUsers, deleteUser } from '@/supabase/services/users.js'
 import UserFormModal from '@/components/dashboard/modals/UserFormModal.vue'
 
 const users = ref([])
@@ -86,43 +86,44 @@ const filteredUsers = computed(() => {
 
     <!-- Filtros -->
     <div class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
-  <!-- Buscador -->
-  <div class="flex-1">
-    <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Buscar</label>
-    <input
-      v-model="searchQuery"
-      type="text"
-      placeholder="Correo, nombre..."
-      class="w-full border border-gray-300 rounded p-2 text-sm text-gray-700 focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
-    />
-  </div>
+    
+      <!-- Buscador -->
+    <div class="flex-1">
+      <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Buscar</label>
+      <input
+        v-model="searchQuery"
+        type="text"
+        placeholder="Correo, nombre..."
+        class="w-full border border-gray-300 rounded p-2 text-sm text-gray-700 focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
+      />
+    </div>
 
-  <!-- Plan -->
-  <div>
-    <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Plan</label>
-    <select
-      v-model="selectedPlan"
-      class="w-full border border-gray-300 p-2 rounded text-sm text-gray-700 focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
-    >
-      <option value="">Todos</option>
-      <option value="free">Free</option>
-      <option value="premium">Premium</option>
-    </select>
-  </div>
+    <!-- Plan -->
+    <div>
+      <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Plan</label>
+      <select
+        v-model="selectedPlan"
+        class="w-full border border-gray-300 p-2 rounded text-sm text-gray-700 focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
+      >
+        <option value="">Todos</option>
+        <option value="free">Free</option>
+        <option value="premium">Premium</option>
+      </select>
+    </div>
 
-  <!-- Rol -->
-  <div>
-    <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Rol</label>
-    <select
-      v-model="selectedRole"
-      class="w-full border border-gray-300 p-2 rounded text-sm text-gray-700 focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
-    >
-      <option value="">Todos</option>
-      <option value="user">Usuario</option>
-      <option value="coach">Coach</option>
-      <option value="admin">Admin</option>
-    </select>
-  </div>
+    <!-- Rol -->
+    <div>
+      <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Rol</label>
+      <select
+        v-model="selectedRole"
+        class="w-full border border-gray-300 p-2 rounded text-sm text-gray-700 focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
+      >
+        <option value="">Todos</option>
+        <option value="user">Usuario</option>
+        <option value="coach">Coach</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
 </div>
 
 
@@ -149,8 +150,8 @@ const filteredUsers = computed(() => {
         {{ user.name }} {{ user.last_name }}
       </td>
       <td class="py-3 px-2 whitespace-nowrap">{{ user.email }}</td>
-      <td class="py-3 px-2 whitespace-nowrap">{{ user.created?.toDate().toLocaleDateString() || '—' }}</td>
-      <td class="py-3 px-2 capitalize">{{ user.suscriptionPlan || '—' }}</td>
+      <td class="py-3 px-2 whitespace-nowrap">{{ new Date(user.created_at).toLocaleDateString() || '—' }}</td>
+      <td class="py-3 px-2 capitalize">{{ user.plan_id || '—' }}</td>
       <td class="py-3 px-2 capitalize">{{ user.role || '—' }}</td>
       <td class="py-3 px-2 text-right">
         <button

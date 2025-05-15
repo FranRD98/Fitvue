@@ -3,42 +3,41 @@ import { supabase } from '@/supabase/config'
 // Obtener todos los usuarios
 export async function getUsers() {
   const { data, error } = await supabase.from('users').select('*')
+  
   if (error) throw error
   return data
 }
 
-// Crear usuario (Auth + Tabla users)
-export async function createUser({ email, password, ...profile }) {
-  const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-    email,
-    password,
-    email_confirm: true
-  })
+export async function createUser(userData, accessToken) {
+  const response = await fetch('https://bumjstjctwiokebjwnzn.supabase.co/functions/v1/hyper-service', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`
+    },
+    body: JSON.stringify(userData),
+  });
 
-  if (authError) throw authError
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Error creando usuario');
+  }
 
-  const { user } = authData
-
-  const { error: insertError } = await supabase.from('users').insert([
-    {
-      id: user.id,
-      email,
-      ...profile,
-      created_at: new Date().toISOString()
-    }
-  ])
-
-  if (insertError) throw insertError
+  return response.json();
 }
 
-// Actualizar usuario
-export async function updateUser(uid, userData) {
+
+// Esto lo dejas como lo tenías para editar
+export async function updateUser(id, updatedData) {
+  // Asumimos que estás usando Supabase client-side para esto
+  const { supabase } = useSupabase(); // o como lo tengas configurado
+
   const { error } = await supabase
     .from('users')
-    .update(userData)
-    .eq('uid', uid)
+    .update(updatedData)
+    .eq('id', id);
 
-  if (error) throw error
+  if (error) throw error;
 }
 
 // Eliminar usuario

@@ -15,7 +15,7 @@ export async function getGuides() {
   const { data, error } = await supabase
     .from('guides')
     .select('*')
-    .order('created', { ascending: false }) // Solo si usas campo 'created'
+    .order('created_at', { ascending: false }) // Solo si usas campo 'created'
 
   if (error) {
     console.error('Error al obtener guías:', error)
@@ -28,7 +28,7 @@ export async function getGuides() {
 // Crear nueva categoría
 export async function createCategory(title) {
   const { data, error } = await supabase
-    .from('categories')
+    .from('guides_categories')
     .insert([{ title }])
     .select()
 
@@ -39,7 +39,7 @@ export async function createCategory(title) {
 // Obtener categorías
 export async function getCategories() {
   const { data, error } = await supabase
-    .from('categories')
+    .from('guides_categories')
     .select('*')
 
   if (error) {
