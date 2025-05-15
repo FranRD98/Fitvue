@@ -1,4 +1,4 @@
-# FitVue 🏋️‍♂️🍏  
+# FitVue 🏋️‍♂️  
 
 🚀 **FitVue** es una plataforma interactiva para personas interesadas en el fitness y la vida saludable. Ofrece recomendaciones personalizadas, seguimiento del progreso y un panel de administración para mejorar la experiencia de los usuarios.  
 
@@ -13,10 +13,10 @@
 
 ## 🛠️ Tecnologías utilizadas  
 - **Frontend:** VueJS ⚡  
-- **Backend y Base de datos:** Firebase 🔥  
-- **Autenticación:** Firebase Auth 🔐  
+- **Backend y Base de datos:** Supabase 🔥  
+- **Autenticación:** Supabase Auth 🔐  
 - **Estilos:** TailwindCSS 🎨  
-- **Gestión de estado:** Vuex / Pinia 🌐  
+- **Gestión de estado:** Pinia 🌐  
 
 ---
 
