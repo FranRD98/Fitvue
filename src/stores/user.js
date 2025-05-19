@@ -9,7 +9,7 @@ export const useUserStore = defineStore('user', () => {
   const authError = ref('')
   const router = useRouter()
 
-  // 📝 Registrar
+  // Registrar
   const register = async ({ email, password, ...profile }) => {
     authError.value = ''
     const { data, error: signUpError } = await supabase.auth.signUp({
@@ -44,7 +44,7 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  // 🔐 Login
+  // Login
   const login = async ({ email, password }) => {
     authError.value = ''
     const { error } = await supabase.auth.signInWithPassword({ email, password })
@@ -57,7 +57,7 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  // 🚪 Logout
+  // Logout
   const logout = async () => {
     await supabase.auth.signOut()
     user.value = null
@@ -65,8 +65,9 @@ export const useUserStore = defineStore('user', () => {
     router.push('/')
   }
 
-  // 📦 Obtener usuario actual y datos extendidos
+  // Obtener usuario actual y datos extendidos
   const fetchUserData = async () => {
+
     const { data: sessionData } = await supabase.auth.getSession()
     user.value = sessionData?.session?.user || null
 

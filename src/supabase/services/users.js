@@ -80,7 +80,7 @@ export async function updateUserData(userId, updates) {
   const { error } = await supabase
     .from('users')
     .update(updates)
-    .eq('id', userId)
+    .eq('uid', userId)
 
   if (error) throw error
 }

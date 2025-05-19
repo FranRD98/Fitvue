@@ -1,15 +1,21 @@
 <script setup>
-import { onMounted, ref } from 'vue'
-import { useAuth } from '@/supabase/useAuth'
+import { ref, watch } from 'vue'
+import { useUserStore } from '@/stores/user'
+import { storeToRefs } from 'pinia' // 👈 Importante para mantener reactividad
+import { supabase } from '@/supabase/config'
 import { uploadProfileImage, updateUserData } from '@/supabase/services/users'
 
-const { userData, logout } = useAuth()
+// Obtener el store y desestructurar con reactividad
+const userStore = useUserStore()
+const { userData } = storeToRefs(userStore)
+const { logout, fetchUserData } = userStore
 
-const name = ref(userData?.name || '')
-const lastName = ref(userData?.last_name || '')
-const email = ref(userData?.email || '')
+// Campos del formulario
+const name = ref('')
+const lastName = ref('')
+const email = ref('')
 const password = ref('')
-const profileImage = ref(userData?.profile_image || '')
+const profileImage = ref('')
 const imageFile = ref(null)
 const updating = ref(false)
 
@@ -27,54 +33,56 @@ const handleImageChange = async (e) => {
 
 const handleSave = async () => {
   updating.value = true
+
   try {
-    let imageUrl = userData.profile_image
+    if (!userData.value?.uid) throw new Error('Falta el ID del usuario')
+
+    let imageUrl = profileImage.value
+
     if (imageFile.value) {
-      imageUrl = await uploadProfileImage(imageFile.value, userData.id)
+      imageUrl = await uploadProfileImage(imageFile.value, userData.value.uid)
     }
 
     const updates = {
       name: name.value,
-      lastName: lastName.value,
+      last_name: lastName.value,
       email: email.value,
-      profileImage: imageUrl
+      profile_image: imageUrl
+    }
+
+    if (email.value && email.value !== userData.value.email) {
+      await supabase.auth.updateUser({ email: email.value })
     }
 
     if (password.value) {
       await supabase.auth.updateUser({ password: password.value })
     }
 
-    await updateUserData(userData.id, updates)
+    await updateUserData(userData.value.uid, updates)
+    await fetchUserData()
+
     alert('Datos actualizados correctamente.')
   } catch (err) {
-    // Mostrar el error de manera detallada
-    console.error('Error al guardar los cambios:', err)  // Mejor para depuración
+    console.error('Error al guardar los cambios:', err)
     alert(`Error al guardar los cambios: ${err.message || 'Error desconocido'}`)
   } finally {
     updating.value = false
   }
 }
 
-
-
-const handleLogout = async () => {
-  await logout()
-  location.reload()
-}
-
-onMounted(async () => {
-  try {
-    if (userData.value) {
-      name.value = userData.value.name || ''
-      lastName.value = userData.value.last_name || ''
-      email.value = userData.value.email || ''
-      profileImage.value = userData.value.profile_image || ''
+// Rellenar el formulario cuando se carguen los datos del usuario
+watch(
+  () => userData.value,
+  (newVal) => {
+    if (newVal) {
+      name.value = newVal.name || ''
+      lastName.value = newVal.last_name || ''
+      email.value = newVal.email || ''
+      profileImage.value = newVal.profile_image || ''
     }
-  } catch (error) {
-    console.error('Error al montar el componente:', error)
-  }
-})
-
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
@@ -102,7 +110,6 @@ onMounted(async () => {
             <span v-if="!profileImage" class="text-gray-600">Haz clic para subir una imagen</span>
             <div v-else class="relative w-32 h-32">
               <img :src="profileImage" alt="Imagen de perfil" class="w-full h-full object-cover rounded-full border" />
-              <!-- Botón de eliminar (opcional) -->
               <button
                 @click.prevent="profileImage = null"
                 class="absolute top-1 right-1 w-6 h-6 bg-white bg-opacity-75 rounded-full flex items-center justify-center shadow hover:bg-opacity-100"
@@ -115,6 +122,7 @@ onMounted(async () => {
         </div>
       </div>
 
+      <!-- Campos -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
         <input v-model="name" type="text" class="w-full border rounded p-2 text-sm" />
@@ -125,18 +133,19 @@ onMounted(async () => {
         <input v-model="lastName" type="text" class="w-full border rounded p-2 text-sm" />
       </div>
 
-      <div>
+      <!--<div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
         <input v-model="email" type="email" class="w-full border rounded p-2 text-sm" />
-      </div>
+      </div>-->
 
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Nueva contraseña</label>
         <input v-model="password" type="password" placeholder="Deja en blanco para no cambiarla" class="w-full border rounded p-2 text-sm" />
       </div>
 
+      <!-- Botones -->
       <div class="flex justify-between items-center pt-4 border-t">
-        <button @click="handleLogout" class="text-sm text-red-600 hover:underline">Cerrar sesión</button>
+        <button @click="logout" class="text-sm text-red-600 hover:underline">Cerrar sesión</button>
         <button
           @click="handleSave"
           :disabled="updating"
