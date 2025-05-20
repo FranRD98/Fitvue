@@ -175,12 +175,43 @@ function resetForm() {
   imageFile.value = null
 }
 
-const handleImageChange = (event) => {
-  const file = event.target.files[0];
-  if (!file) return;
-  exercise.value.image = URL.createObjectURL(file);
-  imageFile.value = file;
-};
+const handleImageChange = async (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+
+  const resizedFile = await resizeImage(file, 800)
+  exercise.value.image = URL.createObjectURL(resizedFile)
+  imageFile.value = resizedFile
+}
+
+const resizeImage = (file, maxWidth = 800) => {
+  return new Promise((resolve) => {
+    const img = new Image()
+    const reader = new FileReader()
+
+    reader.onload = (e) => {
+      img.src = e.target.result
+    }
+
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      const scaleFactor = maxWidth / img.width
+      canvas.width = maxWidth
+      canvas.height = img.height * scaleFactor
+
+      const ctx = canvas.getContext('2d')
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+
+      canvas.toBlob((blob) => {
+        const resizedFile = new File([blob], file.name, { type: file.type })
+        resolve(resizedFile)
+      }, file.type, 0.8) // compresión al 80%
+    }
+
+    reader.readAsDataURL(file)
+  })
+}
+
 </script>
 
 <style scoped>

@@ -1,21 +1,21 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getReviewsById } from '@/supabase/services/progress'
-import { useAuth } from '@/supabase/useAuth'
+import { useUserStore } from '@/stores/user'  // Importamos el store de Pinia
 
-const { userData } = useAuth()
+import { getReviewsById } from '@/supabase/services/progress'
+
+const userStore = useUserStore()
 const reviews = ref([])
 const loading = ref(true)
 
 onMounted(async () => {
 
-  if (userData) {
+  if (userStore) {
 
     try {
-      reviews.value = await getReviewsById()
+      reviews.value = await getReviewsById() // Ahora mismo carga sin filtrar
 
-      //console.log("=== REVIEWS ===")
-      //console.log(reviews.value)
+      console.log(reviews.value)
     } catch (error) {
       console.error('Error al obtener las reviews:', error)
     } finally {
@@ -42,7 +42,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section v-if="false">
+  <section v-if="true">
     <!-- Header -->
     <div class="flex justify-between items-center mb-10">
       <h1 class="text-3xl font-bold text-[var(--color-primary)]">Mi Progreso</h1>
