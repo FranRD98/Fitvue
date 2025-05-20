@@ -41,12 +41,13 @@ const filteredGuides = computed(() => {
       guide.description?.toLowerCase().includes(searchQuery.value.toLowerCase())
 
     const matchCategory = selectedCategory.value
-      ? guide.category?.title === selectedCategory.value
+      ? guide.id_category === selectedCategory.value
       : true
 
     return matchSearch && matchCategory
   })
 })
+
 
 const openEditModal = (guide) => {
   selectedGuide.value = guide
@@ -99,8 +100,11 @@ const handleDelete = async (guide) => {
         <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Categoría</label>
         <select v-model="selectedCategory" class="w-full border border-gray-300 p-2 rounded text-sm text-gray-700">
           <option value="">Todas</option>
-          <option v-for="cat in categories" :key="cat.id" :value="cat.title">{{ cat.title }}</option>
+          <option v-for="cat in categories" :key="cat.id" :value="cat.id">
+            {{ cat.title }}
+          </option>
         </select>
+
       </div>
 
       <div class="flex items-center gap-1">
@@ -131,7 +135,8 @@ const handleDelete = async (guide) => {
         @click="openEditModal(guide)"
       >
         <img
-          :src="guide.imageUrl || 'https://placehold.co/600x400?text=Sin+Portada&font=poppins'"
+          loading="lazy"
+          :src="guide.header_image || 'https://placehold.co/600x400?text=Sin+Portada&font=poppins'"
           alt="Portada"
           class="w-full aspect-video object-cover"
         />
@@ -167,7 +172,6 @@ const handleDelete = async (guide) => {
           <th class="px-2">Categoría</th>
           <th class="px-2">Autor</th>
           <th class="px-2">Fecha</th>
-          <th class="px-2">Descripción</th>
           <th class="px-2 text-right">Acciones</th>
         </tr>
       </thead>
@@ -179,10 +183,9 @@ const handleDelete = async (guide) => {
           @click="openEditModal(guide)"
         >
           <td class="py-3 px-2 font-semibold text-[var(--color-primary)]">{{ guide.title }}</td>
-          <td class="py-3 px-2">{{ guide.category?.title || '—' }}</td>
+          <td class="py-3 px-2"> {{ categories.find(cat => cat.id === guide.id_category)?.title || '—sin categoría—' }}</td>
           <td class="py-3 px-2">{{ guide.author }}</td>
-          <td class="py-3 px-2">{{ guide.created?.toDate().toLocaleDateString() || '—' }}</td>
-          <td class="py-3 px-2 line-clamp-2 text-gray-600">{{ guide.description }}</td>
+          <td class="py-3 px-2"> {{ new Date(guide.created_at).toLocaleDateString() || '—' }}</td>
           <td class="py-3 px-2 text-right">
             <button
                 @click.prevent.stop="handleDelete(guide)"

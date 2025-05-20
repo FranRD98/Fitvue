@@ -52,7 +52,12 @@ export async function getCategories() {
 
 // Actualizar guía
 export async function updateGuide(id, guideData) {
-  const { id: _, created, ...cleanData } = guideData // Evitar sobrescribir id y created
+  const { id: _, created, ...cleanData } = guideData
+
+  // Asegurar que el campo id_category sea numérico
+  if (cleanData.id_category && typeof cleanData.id_category === 'string') {
+    cleanData.id_category = parseInt(cleanData.id_category)
+  }
 
   const { error } = await supabase
     .from('guides')
@@ -61,6 +66,7 @@ export async function updateGuide(id, guideData) {
 
   if (error) throw error
 }
+
 
 // Eliminar guía
 export async function deleteGuide(id) {
