@@ -20,9 +20,9 @@ import Terms from '@/views/legal/Terms.vue';
 import Dashboard from '@/components/layout/dashboard/DashboardLayout.vue';
 import NewReview from '@/components/dashboard/NewReview.vue';
 import ReviewDetail from '@/components/dashboard/ReviewDetail.vue'
+import StartRoutine from '@/components/dashboard/StartRoutine.vue';
 
 import Register from '@/views/auth/Register.vue';
-
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
@@ -45,6 +45,7 @@ const routes = [
   { path: '/dashboard', name: 'Dashboard', component: Dashboard },
   { path: '/dashboard/newReview', name: 'New Review', component: NewReview },
   { path: '/user/:userId/:reviewId', name: 'Review Detail', component: ReviewDetail },
+  { path: '/user/:userId/iniciar-rutina', name: 'Start Routine', component: StartRoutine },
 
   
   { path: '/empezar', name: 'Start Change', component: StartChange },

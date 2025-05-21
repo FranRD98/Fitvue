@@ -1,27 +1,27 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useUserStore } from '@/stores/user'  // Importamos el store de Pinia
+import { useUserStore } from '@/stores/user'
 import {
   getRoutinesByUser,
   assignRoutineToUser,
   getAssignedRoutine,
   unassignRoutineFromUser
 } from '@/supabase/services/routines.js'
-
 import RoutineFormModal from '@/components/dashboard/modals/RoutineFormModal.vue'
-
-// Icons
 import { IconPlus, IconLayoutGrid, IconLayoutList } from '@tabler/icons-vue'
+import { useDelayedSkeleton } from '@/composables/useDelayedSkeleton'
 
-const userStore = useUserStore()  // Usamos el store de usuario
+const userStore = useUserStore()
 const routines = ref([])
-const loading = ref(true)
 const showModal = ref(false)
 const selectedRoutine = ref(null)
 const assignedRoutine = ref(null)
 const assignedRoutineId = ref(null)
 const viewMode = ref('grid')
 const searchQuery = ref('')
+
+// Skeleton/loading state
+const { loading, showSkeleton, start, finish } = useDelayedSkeleton(200)
 
 const filteredRoutines = computed(() =>
   routines.value.filter(routine =>
@@ -30,7 +30,7 @@ const filteredRoutines = computed(() =>
 )
 
 const loadRoutines = async () => {
-  loading.value = true
+  start()
   try {
     routines.value = await getRoutinesByUser(userStore.userData?.uid)
     assignedRoutine.value = await getAssignedRoutine(userStore.userData?.uid)
@@ -38,9 +38,11 @@ const loadRoutines = async () => {
   } catch (error) {
     console.error('Error al cargar rutinas:', error)
   } finally {
-    loading.value = false
+    finish()
   }
 }
+
+onMounted(loadRoutines)
 
 const openEditModal = (routine) => {
   selectedRoutine.value = routine
@@ -51,7 +53,6 @@ const countExercises = (routine) => {
   return routine.days?.reduce((acc, day) => acc + (day.exercises?.length || 0), 0)
 }
 
-/* Assign routine to user */
 const handleAssign = async (routineId) => {
   if (assignedRoutineId.value && assignedRoutineId.value !== routineId) {
     const confirmChange = confirm('Este usuario ya tiene una rutina asignada. ¿Deseas reemplazarla?')
@@ -63,15 +64,13 @@ const handleAssign = async (routineId) => {
   alert('Rutina asignada correctamente.')
 }
 
-/* Unassign routine to user */
 const handleUnassign = async () => {
   await unassignRoutineFromUser(userStore.userData?.uid)
   assignedRoutineId.value = null
   alert('Rutina desasignada correctamente.')
 }
-
-onMounted(loadRoutines)
 </script>
+
 
 
 <template>
@@ -95,8 +94,13 @@ onMounted(loadRoutines)
       @saved="loadRoutines"
     />
 
-    <!-- Loading -->
-    <div v-if="loading">Cargando rutinas...</div>
+    <!-- Delay sin mostrar nada -->
+    <div v-if="loading && !showSkeleton" />
+
+    <!-- Skeleton si tarda -->
+    <div v-else-if="loading && showSkeleton" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6 animate-pulse">
+      <div v-for="n in 4" :key="n" class="bg-gray-100 h-40 rounded-xl shadow" />
+    </div>
 
     <!-- Buscador y vista -->
     <div v-else>

@@ -10,7 +10,7 @@
 
   const reviews = ref([])
   const lastReview = computed(() => reviews.value[0])
-  const { loading, showSkeleton, start, finish } = useDelayedSkeleton(200) // <-- 200ms
+  const { loading, showSkeleton, start, finish } = useDelayedSkeleton(300) // <-- 300ms
 
   watch(
     () => userStore.userData?.uid,
@@ -160,7 +160,7 @@
         </div>
 
           <router-link
-            to="/dashboard/iniciar-rutina"
+          :to="`/user/${userStore.userData?.uid}/iniciar-rutina`"
             class="relative bottom-0 flex justify-center items-center gap-2 rounded-xl text-white bg-[var(--color-primary)] px-12 py-3 text-sm shadow-sm transition duration-300 group hover:bg-cyan-500 hover:text-white active:scale-95 focus:outline-none focus:ring-2 focus:ring-cyan-500"
           >
             <span class="truncate transition-all duration-300 group-hover:opacity-0 group-hover:-translate-x-4">

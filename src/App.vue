@@ -1,6 +1,6 @@
 <script setup>
-import Header from '@/components/Layout/Header.vue'
-import Footer from '@/components/Layout/MainFooter.vue'
+import Header from '@/components/layout/Header.vue'
+import Footer from '@/components/layout/MainFooter.vue'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'

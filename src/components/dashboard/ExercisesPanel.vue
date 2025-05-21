@@ -1,43 +1,47 @@
 <script setup>
-  import { ref, computed, onMounted } from 'vue';
-  import { getExercises, deleteExercise, getExerciseCategories } from '@/supabase/services/exercises';
+  import { ref, computed, watch } from 'vue'
+  import { getExercises, deleteExercise, getExerciseCategories } from '@/supabase/services/exercises'
   import ExerciseFormModal from '@/components/dashboard/modals/ExerciseFormModal.vue'
+
+  import { IconPlus, IconLayoutGrid, IconLayoutList, IconTrash } from '@tabler/icons-vue'
+  
+  import { useUserStore } from '@/stores/user'
+  import { useDelayedSkeleton } from '@/composables/useDelayedSkeleton'
 
   const props = defineProps({
     userData: Object
   })
 
+  const userStore = useUserStore()
   const exercises = ref([])
   const exerciseCategories = ref([])
-  const loading = ref(true)
   const showModal = ref(false)
   const isAdmin = true
   const selectedExercise = ref(null)
-  const viewMode = ref('grid') // 'grid' o 'table'
-  
-  // Icons
-  import { IconPlus, IconLayoutGrid, IconLayoutList, IconTrash } from '@tabler/icons-vue'
-
-  /* OnMounted Function */
-  const loadExercises = async () => {
-    loading.value = true
-
-    try {
-      exercises.value = await getExercises() // Load the exercises
-      exerciseCategories.value = await getExerciseCategories() // Load the exercises categories
-
-    } catch (error) {
-      console.error('Error al cargar ejercicios:', error)
-    } finally {
-      loading.value = false
-    }
-  }
-
-  onMounted(loadExercises)
-
-  // Filters
+  const viewMode = ref('grid')
   const searchQuery = ref('')
   const selectedCategory = ref('')
+
+  const { loading, showSkeleton, start, finish } = useDelayedSkeleton(300) // <-- 300ms
+
+  watch(
+    () => userStore.userData?.uid,
+    async (uid) => {
+      if (!uid) return
+
+      start()
+
+      try {
+        exercises.value = await getExercises()
+        exerciseCategories.value = await getExerciseCategories()
+      } catch (err) {
+        console.error('Error al cargar ejercicios:', error)
+      } finally {
+        finish()
+      }
+    },
+    { immediate: true }
+  )
 
   const openEditModal = (exercise) => {
     selectedExercise.value = exercise
@@ -51,7 +55,6 @@
     }
   }
 
-  // Computed: ejercicios filtrados
   const filteredExercises = computed(() => {
     return exercises.value.filter(ex => {
       const matchesSearch = ex.name.toLowerCase().includes(searchQuery.value.toLowerCase())
@@ -59,8 +62,8 @@
       return matchesSearch && matchesCategory
     })
   })
-
 </script>
+
 
 <template>
   <section>
@@ -86,8 +89,13 @@
       @saved="loadExercises()"
     />
 
-    <!-- Loading / Empty -->
-    <div v-if="loading">Cargando ejercicios...</div>
+    <!-- Delay antes del skeleton -->
+    <div v-if="loading && !showSkeleton" />
+
+    <!-- Skeleton visible si tarda en cargar -->
+    <div v-else-if="loading && showSkeleton" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10 animate-pulse">
+      <div v-for="n in 4" :key="n" class="bg-gray-100 h-64 rounded-xl shadow" />
+    </div>
 
     <!-- Panel -->
     <div v-else class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -222,7 +230,7 @@
 
 
     <!-- Si no hay coincidencias -->
-    <div v-if="filteredExercises.length === 0" class="flex flex-col items-center justify-center py-12 text-gray-500">
+    <div v-if="!loading && filteredExercises.length === 0" class="flex flex-col items-center justify-center py-12 text-gray-500">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0z" />
       </svg>
