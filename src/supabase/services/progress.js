@@ -31,28 +31,24 @@ export async function deleteReview(id) {
 }
 
 // Obtener todas las revisiones por uid
-export async function getReviewsById() {
+export async function getReviewsById(userId) {
   const { data, error } = await supabase
     .from('progress')
     .select('*')
-    //.eq('user_id', uid)
+    .eq('user_id', userId)
     .order('created_at', { ascending: false })
 
-  if (error) {
-    console.error('Error al obtener revisiones por UID:', error)
-    return []
-  }
-
+  if (error) throw error
   return data
 }
 
 // Obtener una revisión por uid y fecha
-export async function getReviewById(uid, reviewDate) {
+export async function getReviewById(uid, reviewId) {
   const { data, error } = await supabase
     .from('progress')
     .select('*')
-    .eq('uid', uid)
-    .eq('date', reviewDate)
+    .eq('user_id', uid)
+    .eq('id', reviewId)
     .limit(1)
 
   if (error) {

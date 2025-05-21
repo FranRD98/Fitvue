@@ -44,7 +44,7 @@ const routes = [
   // Dashboard
   { path: '/dashboard', name: 'Dashboard', component: Dashboard },
   { path: '/dashboard/newReview', name: 'New Review', component: NewReview },
-  { path: '/user/:uid/:date', name: 'Review Detail', component: ReviewDetail },
+  { path: '/user/:userId/:reviewId', name: 'Review Detail', component: ReviewDetail },
 
   
   { path: '/empezar', name: 'Start Change', component: StartChange },

@@ -12,8 +12,8 @@ const direction = ref('forward')
 const inputRef = ref(null)
 
 const userData = ref({
-  uid: '',
-  date: new Date().toISOString(),
+  user_id: '',
+  created_at: new Date().toISOString(),
   weight: '',
   neck: '',
   shoulders: '',
@@ -31,7 +31,7 @@ const userData = ref({
 
 onMounted(() => {
   if (userStore.userData?.uid) {
-    userData.value.uid = userStore.userData.uid
+    userData.value.user_id = userStore.userData.uid
   }
 })
 
@@ -61,8 +61,9 @@ const totalSteps = computed(() => steps.length)
 
 function handleNext() {
   const val = userData.value[currentStep.value.model]
-  if (!val || val <= 0) {
+  if (val === '' || val === null || isNaN(val) || val < 0) {
     alert('Introduce un valor válido antes de continuar.')
+
     return
   }
 

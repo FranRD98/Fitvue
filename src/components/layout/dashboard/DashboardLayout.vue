@@ -22,7 +22,7 @@ import {
 const userStore = useUserStore()  // Usamos el store de usuario
 
 const menuItems = [
-  { key: 'progress', label: 'Mi Progreso', icon: IconChartBar, roles: ['user', 'coach', 'admin'] },
+  { key: 'home', label: 'Panel de control', icon: IconChartBar, roles: ['user', 'coach', 'admin'] },
   { key: 'exercises', label: 'Ejercicios', icon: IconBarbell, roles: ['user', 'coach', 'admin'] },
   { key: 'routines', label: 'Rutinas', icon: IconTreadmill, roles: ['user', 'coach', 'admin'] },
   { key: 'habits', label: 'Hábitos', icon: IconLeaf, roles: ['user', 'coach', 'admin'] },
@@ -38,11 +38,11 @@ const visibleMenu = computed(() =>
   userStore.userData ? menuItems.filter(i => i.roles.includes(userStore.userData.role)) : []
 )
 
-const activeKey = ref('progress')
+const activeKey = ref('home')
 const ActiveComponent = computed(() => componentsMap[activeKey.value])
 
 const componentsMap = {
-  progress: defineAsyncComponent(() => import('@/components/dashboard/ProgressPanel.vue')),
+  home: defineAsyncComponent(() => import('@/components/dashboard/HomePanel.vue')),
   exercises: defineAsyncComponent(() => import('@/components/dashboard/ExercisesPanel.vue')),
   routines: defineAsyncComponent(() => import('@/components/dashboard/RoutinesPanel.vue')),
   habits: defineAsyncComponent(() => import('@/components/dashboard/HabitsPanel.vue')),
