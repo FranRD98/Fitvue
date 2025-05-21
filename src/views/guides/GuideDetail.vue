@@ -1,40 +1,39 @@
 <script setup>
-/*import { ref, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { doc, getDoc } from 'firebase/firestore'
-import { db } from '@/firebase/config'
+
+import { getGuidesById } from '@/supabase/services/guides.js'
 
 const route = useRoute()
 const guideId = route.params.id
+const category = route.params.category
 const guide = ref(null)
 const loading = ref(true)
 
+// Cargar la guía
 onMounted(async () => {
   try {
-    const docRef = doc(db, 'guides', guideId)
-    const docSnap = await getDoc(docRef)
+    guide.value = await getGuidesById(guideId)
 
-    if (docSnap.exists()) {
-      guide.value = docSnap.data()
-    } else {
-    }
+    console.log(guide.value)
   } catch (err) {
     console.error('Error al cargar la guía:', err)
   } finally {
     loading.value = false
   }
-})*/
+})
+
 </script>
 
 <template>
   
-  <section v-if="false" class="max-w-6xl mx-auto px-6 py-12">
+  <section class="max-w-6xl mx-auto px-6 py-12">
     <div v-if="loading" class="text-center text-gray-500">Cargando guía...</div>
 
     <div v-else-if="guide" class="bg-white rounded-lg shadow-lg overflow-hidden">
       <!-- Imagen destacada -->
       <img
-        :src="guide.imageUrl || 'https://placehold.co/800x400?text=Sin+imagen'"
+        :src="guide.header_image || 'https://placehold.co/800x400?text=Sin+imagen'"
         alt="Imagen de la guía"
         class="w-full h-96 object-cover"
       />
@@ -46,12 +45,8 @@ onMounted(async () => {
         <!-- Metadatos -->
         <div class="text-sm text-gray-500 mb-4 flex flex-wrap gap-4">
           <span><strong>Autor:</strong> {{ guide.author }}</span>
-          <span><strong>Categoría:</strong> {{ guide.category?.title || 'Sin categoría' }}</span>
-          <span><strong>Publicado:</strong> {{ guide.created?.toDate().toLocaleDateString() || 'N/A' }}</span>
-        </div>
-
-        <!-- Descripción -->
-        <p class="text-gray-700 text-lg mb-6">{{ guide.description }}</p>
+          <span><strong>Categoría:</strong> {{ category || 'Sin categoría' }}</span>
+          <span><strong>Publicado:</strong> {{ new Date(guide.created_at).toLocaleDateString('es-ES') || 'N/A' }}</span>        </div>
 
         <!-- Contenido detallado -->
         <div class="space-y-8">

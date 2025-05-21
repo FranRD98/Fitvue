@@ -1,7 +1,8 @@
 <script setup>
-/*import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'  // Importar useRoute y useRouter
-import { getGuides, getCategories } from '@/firebase/guides'
+import { getGuides, getCategories } from '@/supabase/services/guides.js'
+
 import Card from '@/components/Card.vue'
 
 const route = useRoute()  // Crear la instancia de route
@@ -33,7 +34,11 @@ watch(() => route.params.category, (newCategory) => {
 // Filtrar las guías según la categoría seleccionada
 const filteredItems = computed(() => {
   if (selectedCategory.value === 'Todas') return items.value
-  return items.value.filter(item => item.category?.title === selectedCategory.value)
+
+  const selectedCat = categories.value.find(cat => cat.title === selectedCategory.value)
+  if (!selectedCat) return []
+
+  return items.value.filter(item => item.id_category === selectedCat.id)
 })
 
 // Paginación
@@ -52,11 +57,11 @@ const goToPage = (page) => {
 watch(selectedCategory, (newVal) => {
   const categoryPath = newVal === 'Todas' ? '/guias' : `/guias/${encodeURIComponent(newVal)}`
   router.push(categoryPath)  // Cambiar la URL sin redirigir
-})*/
+})
 </script>
 
 <template>
-  <section v-if="false" class="max-w-7xl mx-auto px-6 py-10">
+  <section v-if="items" class="max-w-7xl mx-auto px-6 py-10">
     <div class="flex flex-col md:flex-row gap-6">
       
       <!-- Filters Aside -->
@@ -93,8 +98,8 @@ watch(selectedCategory, (newVal) => {
             v-for="item in paginatedItems"
             :key="item.id"
             :item="item"
-            :route-to="`/guias/${item.category?.title || 'general'}/${item.id}`"
-          />
+            :categories="categories"
+            :route-to="`/guias/${categories.find(cat => cat.id === item.id_category)?.title || 'general'}/${item.id}`"          />
         </main>
 
         <!-- Si no hay coincidencias -->

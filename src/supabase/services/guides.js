@@ -25,6 +25,23 @@ export async function getGuides() {
   return data
 }
 
+// Obtener guía por id
+export async function getGuidesById(guideId) {
+  const { data, error } = await supabase
+    .from('guides')
+    .select('*')
+    .eq('id', guideId)
+    .single()
+
+  if (error) {
+    console.error('Error al obtener la guía:', error)
+    return []
+  }
+
+  return data
+}
+
+
 // Crear nueva categoría
 export async function createCategory(title) {
   const { data, error } = await supabase
