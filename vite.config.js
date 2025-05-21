@@ -8,6 +8,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/', // Asegura que los paths sean relativos al dominio raíz
   plugins: [
     vue(),
     vueDevTools(),
@@ -19,3 +20,4 @@ export default defineConfig({
     },
   },
 })
+
