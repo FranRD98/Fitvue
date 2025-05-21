@@ -1,5 +1,5 @@
 <script setup>
-import PlanCard from '@/components/Home/PlanCard.vue'
+import PlanCard from '@/components/home/PlanCard.vue'
 
 const plans = [
   {
