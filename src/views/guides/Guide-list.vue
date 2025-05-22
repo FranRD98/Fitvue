@@ -99,7 +99,8 @@ watch(selectedCategory, (newVal) => {
             :key="item.id"
             :item="item"
             :categories="categories"
-            :route-to="`/guias/${categories.find(cat => cat.id === item.id_category)?.title || 'general'}/${item.id}`"          />
+            :route-to="`/rutinas/${categories.find(cat => cat.id === item.id_category)?.title || 'general'}/${item.id}`"
+          />
         </main>
 
         <!-- Si no hay coincidencias -->

@@ -1,53 +1,53 @@
 <script setup>
-  import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { supabase } from '@/supabase/config'
+import { useUserStore } from '@/stores/user'
+import { getCategories } from '@/supabase/services/guides.js'
 
-  const mobileMenuOpen = ref(false)
-  const toggleMobileMenu = () => mobileMenuOpen.value = !mobileMenuOpen.value
-  const closeMenu = () => mobileMenuOpen.value = false
+const userStore = useUserStore()
+const { logout } = userStore
 
-  const categories = ref([])
+const mobileMenuOpen = ref(false)
+const toggleMobileMenu = () => (mobileMenuOpen.value = !mobileMenuOpen.value)
+const closeMenu = () => (mobileMenuOpen.value = false)
 
-  /* SUPABASE */
-  import { supabase } from '@/supabase/config'; 
-  import { useAuth } from '@/supabase/useAuth';
+const categories = ref([])
 
-  const { user, userData, logout } = useAuth();
+onMounted(async () => {
+  const { data, error } = await supabase.from('guides_categories').select('*')
+  if (error) {
+    console.error('Error al obtener categorías:', error)
+    return
+  }
 
-  onMounted(async () => {
-    const { data, error } = await supabase
-      .from('guides_categories') 
-      .select('*');
+  const categoriesWithImages = await Promise.all(
+    data.map(async (category) => {
+      const { data: imageData, error: imageError } = await supabase
+        .storage
+        .from('fitvue')
+        .getPublicUrl(category.icon_path)
 
-    if (error) {
-      console.error('Error al obtener las categories de las guías:', error);
-      categories.value = [];  // En caso de error, asignamos un array vacío
-      return;
-    }
-    
-    // Obtener la URL pública de las imágenes asociadas a cada categoría
-    const categoriesWithImages = await Promise.all(
-      data.map(async (category) => {
-        // Asumimos que category.icon_path tiene la ruta relativa de la imagen, como "icons/guides/diets.svg"
-        const { data: imageData, error: imageError } = await supabase
-          .storage
-          .from('fitvue') // Nombre del bucket donde están las imágenes
-          .getPublicUrl(`${category.icon_path}`);  // Ruta de la imagen en el bucket
-        
-        if (imageError) {
-          console.error('Error al obtener la URL de la imagen:', imageError);
-          category.icon_path = '/icons/default-icon.svg';  // Imagen por defecto si ocurre un error
-        } else {
-          category.icon_path = imageData.publicUrl;  // Asignamos la URL pública de la imagen
-        }
+      category.icon_path = imageError
+        ? '/icons/default-icon.svg'
+        : imageData.publicUrl
 
-        return category;  // Devolvemos la categoría con la URL de la imagen
-      })
-    );
+      return category
+    })
+  )
 
-    categories.value = categoriesWithImages;  // Asignamos las categorías con las URLs de las imágenes
+  categories.value = categoriesWithImages
+})
 
-  });
+// Computed seguros
+const user = computed(() => userStore.user)
+const userData = computed(() => userStore.userData)
 
+const profileImage = computed(() =>
+  userData.value?.profile_image ||
+  'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/profile/default-profile.svg'
+)
+
+const userName = computed(() => userData.value?.name || 'Usuario')
 </script>
 
 <template>
@@ -167,14 +167,15 @@
             <div class="relative group">
               <!-- Botón avatar y nombre -->
               <div class="flex items-center space-x-2 cursor-pointer">
+                <!-- Avatar del usuario -->
                 <img
-                  :src="userData.profile_image || 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/profile/default-profile.svg'"
+                  :src="profileImage"
                   alt="profile-icon"
-                  class="rounded-full w-12 h-12"
+                  class="rounded-full w-12 h-12 object-cover"
                 />
 
                 <span class="text-sm text-[var(--color-text)] font-medium">
-                  ¡Hola, {{ userData?.name || 'Usuario' }}!
+                  ¡Hola, {{ userName }}!
                 </span>
                 <svg class="w-4 h-4 text-[var(--color-text)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />

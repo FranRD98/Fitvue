@@ -10,6 +10,7 @@ const props = defineProps({
   show: Boolean,
   initialData: Object
 })
+
 const emit = defineEmits(['close', 'saved'])
 
 const guide = ref({
@@ -297,22 +298,22 @@ const resizeImage = (file, maxWidth = 800) => {
 </template>
 
 <style scoped>
-.input {
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  line-height: 1.5rem;
-  outline: none;
-  transition: border-color 0.2s ease;
-}
-.input:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 1px var(--color-primary);
-}
-.textarea {
-  min-height: 6rem;
-  resize: vertical;
-}
+  .input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    line-height: 1.5rem;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+  .input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 1px var(--color-primary);
+  }
+  .textarea {
+    min-height: 6rem;
+    resize: vertical;
+  }
 </style>
