@@ -12,10 +12,20 @@ export async function getExercises() {
     return [];  // En caso de error, devuelve un array vacío
   }
 
-  //console.log('Ejercicios obtenidos:', data);  // Esto debería imprimir los ejercicios en la consola
-
   return data;  // Devuelve los ejercicios con la categoría
 }
+
+export async function getExerciseById(id) {
+  const { data, error } = await supabase
+    .from('exercises')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (error) throw error
+  return data
+}
+
 
 
 // Obtener categorías de ejercicios

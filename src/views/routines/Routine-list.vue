@@ -54,10 +54,18 @@ watch(selectedCategory, (newVal) => {
 })
 
 // Para obtener la ruta amigable según la categoría
-function getCategoryNameById(id) {
-  const cat = categories.value.find(c => c.id === id)
-  return cat?.name || 'general'
+function getCategoryNameById(id_category) {
+  const cat = categories.value.find(c => c.id === id_category)
+  const title = cat?.title || 'general'
+
+  return title
+    .toLowerCase()                            // minúsculas
+    .normalize('NFD')                         // descompone acentos
+    .replace(/[\u0300-\u036f]/g, '')          // elimina acentos
+    .replace(/\s+/g, '-')                     // reemplaza espacios por guiones
+    .replace(/[^a-z0-9-]/g, '')               // elimina caracteres no válidos
 }
+
 </script>
 
 <template>

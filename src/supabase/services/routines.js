@@ -42,6 +42,18 @@ export async function getRoutineCategories() {
   return data
 }
 
+export async function getRoutineById(id) {
+  const { data, error } = await supabase
+    .from('routines')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+
 // Obtener rutina asignada actual
 export async function getAssignedRoutine(uid) {
   

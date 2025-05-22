@@ -10,6 +10,7 @@ import NotFound from '@/views/static/NotFound.vue';
 import FAQ from '@/views/static/FAQ.vue';
 
 import RoutineList from '@/views/routines/Routine-list.vue';
+import RoutineDetail from '@/views/routines/RoutineDetail.vue';
 
 import GuideList from '@/views/guides/Guide-list.vue';
 import GuideDetail from '@/views/guides/GuideDetail.vue';
@@ -29,8 +30,7 @@ const routes = [
   { path: '/nosotros', name: 'About', component: About },
   { path: '/rutinas', name: 'Rutinas', component: RoutineList },
   { path: '/rutinas/:routine', name: 'Rutinas por categoria', component: RoutineList },
-  { path: '/rutinas/:routine/:id', name: 'Rutina Detalle', component: RoutineList },
-
+  { path: '/rutinas/:routine/:id', name: 'Rutina Detalle', component: RoutineDetail },
   // Guías
   { path: '/guias', name: 'Guia listado', component: GuideList },
   { path: '/guias/:category', name: 'Guia por categoria', component: GuideList },

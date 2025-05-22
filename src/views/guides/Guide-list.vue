@@ -58,6 +58,22 @@ watch(selectedCategory, (newVal) => {
   const categoryPath = newVal === 'Todas' ? '/guias' : `/guias/${encodeURIComponent(newVal)}`
   router.push(categoryPath)  // Cambiar la URL sin redirigir
 })
+
+
+function getCategoryNameById(id_category) {
+  const cat = categories.value.find(c => c.id === id_category)
+  const title = cat?.title || 'general'
+
+  return title
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // elimina acentos
+    .replace(/\s+/g, '-')            // espacios → guiones
+    .replace(/[^a-z0-9-]/g, '')      // limpia caracteres especiales
+    .replace(/-+/g, '-')             // evita guiones dobles
+    .replace(/^-+|-+$/g, '')         // quita guiones extremos
+}
+
 </script>
 
 <template>
@@ -99,8 +115,8 @@ watch(selectedCategory, (newVal) => {
             :key="item.id"
             :item="item"
             :categories="categories"
-            :route-to="`/rutinas/${categories.find(cat => cat.id === item.id_category)?.title || 'general'}/${item.id}`"
-          />
+            :route-to="`/guias/${getCategoryNameById(item.id_category)}/${item.id}`"
+          </Card>
         </main>
 
         <!-- Si no hay coincidencias -->

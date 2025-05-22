@@ -97,7 +97,6 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue';
-import { supabase } from '@/supabase/config';
 import { createExercise, getExerciseCategories, updateExercise } from '@/supabase/services/exercises';
 
 const props = defineProps({ show: Boolean, initialData: Object })
