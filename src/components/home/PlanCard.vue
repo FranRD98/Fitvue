@@ -1,3 +1,21 @@
+  <script setup>
+    defineProps({
+      title: String,
+      price: String,
+      buttonText: String,
+      highlighted: Boolean,
+      planId: Number,
+      badgeText: {
+        type: String,
+        default: 'Recomendado'
+      },
+      features: {
+        type: Array,
+        default: () => []
+      }
+    })
+  </script>
+
 <template>
     <div
       class="relative rounded-xl border-2 border-[var(--color-primary)] shadow-md p-6 hover:shadow-lg hover:scale-105 transition-all duration-300 flex flex-col justify-between h-full"
@@ -43,26 +61,12 @@
       
       <hr class="my-6 border-t-2 border-[var(--color-bg-light)]">
 
-      <button class=" bg-[var(--color-primary)] text-white px-6 py-3 rounded-full font-semibold transition-colors hover:bg-[var(--color-secondary)]">
+      <router-link :to="`/empezar/${planId}`"
+      class=" bg-[var(--color-primary)] text-white px-6 py-3 rounded-full font-semibold transition-colors hover:bg-[var(--color-secondary)]">
         {{ buttonText }}
-      </button>
+      </router-link>
     </div>
   </template>
   
-  <script setup>
-  defineProps({
-    title: String,
-    price: String,
-    buttonText: String,
-    highlighted: Boolean,
-    badgeText: {
-      type: String,
-      default: 'Recomendado'
-    },
-    features: {
-      type: Array,
-      default: () => []
-    }
-  })
-  </script>
+
   

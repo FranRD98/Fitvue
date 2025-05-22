@@ -1,46 +1,55 @@
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
+const route = useRoute()
 
 const step = ref(0)
 const userData = ref({
-  uid:'',
-  name:'',
-  last_name:'',
-  email:'',
-  birthday:'',
-  role:'user',
-  suscriptionPlan:'free',
+  uid: '',
+  name: '',
+  last_name: '',
+  email: '',
+  birthday: '',
+  role: 'user',
+  suscriptionPlan: 1, // default to free
   height: '',
   weight: '',
   age: '',
   activity: 'sedentario',
   avatar: '/icons/default-avatar.svg',
   completedForm: 'true',
-  created:'',
-  goal: '', 
+  created: '',
+  goal: '',
   gender: '',
-});
+})
+
+onMounted(() => {
+  const plan = Number(route.params.suscriptionPlan)
+  userData.value.suscriptionPlan = [1, 2, 3].includes(plan) ? plan : 1
+})
 
 const macros = ref({ carbs: 0, proteins: 0, fats: 0 })
 
 const nextStep = () => {
-  if ((step.value === 1 && !userData.value.name && !userData.value.last_name) ||
-      (step.value === 2 && !userData.value.gender) ||
-      (step.value === 3 && !userData.value.goal) ||
-      (step.value === 4 && !userData.value.age) ||
-      (step.value === 5 && !userData.value.height) ||
-      (step.value === 6 && !userData.value.weight) ||
-      (step.value === 7 && !userData.value.activity)
-    ) {
+  if (
+    (step.value === 0 && (!userData.value.name || !userData.value.last_name)) ||
+    (step.value === 1 && !userData.value.gender) ||
+    (step.value === 2 && !userData.value.goal) ||
+    (step.value === 3 && !userData.value.age) ||
+    (step.value === 4 && !userData.value.height) ||
+    (step.value === 5 && !userData.value.weight) ||
+    (step.value === 6 && !userData.value.activity)
+  ) {
     alert('Por favor, completa este campo antes de continuar.')
     return
   }
 
   if (step.value < 6) {
     step.value++
+  } else if ([2, 3].includes(userData.value.suscriptionPlan)) {
+    step.value = 7 // pasarela de pago
   } else {
     calculateCalories()
   }

@@ -3,10 +3,12 @@ import PlanCard from '@/components/home/PlanCard.vue'
 
 const plans = [
   {
+
     title: 'Plan Gratuito',
     price: '0€/mes',
     highlighted: false,
     buttonText: 'Empezar',
+    planId: 1,
     features: [
       { label: 'Acceso a rutinas básicas', active: true },
       { label: 'Acceso a la herramienta de progreso', active: true },
@@ -21,6 +23,7 @@ const plans = [
     price: '€39.99/mes',
     highlighted: true,
     buttonText: 'Empezar',
+    planId: 2,
     features: [
       { label: 'Acceso a rutinas básicas', active: true },
       { label: 'Acceso a la herramienta de progreso', active: true },
@@ -35,6 +38,7 @@ const plans = [
     price: '€59.99/mes',
     highlighted: false,
     buttonText: 'Empezar',
+    planId: 3,
     features: [
     { label: 'Acceso a rutinas básicas', active: true },
       { label: 'Acceso a la herramienta de progreso', active: true },

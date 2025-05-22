@@ -48,7 +48,7 @@ const routes = [
   { path: '/user/:userId/iniciar-rutina', name: 'Start Routine', component: StartRoutine },
 
   
-  { path: '/empezar', name: 'Start Change', component: StartChange },
+  { path: '/empezar/:suscriptionPlan', name: 'Start Change', component: StartChange },
   { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound }, // Página 404
   { path: '/politica-privacidad', name: 'Politica de privacidad', component: PrivacyPolicy }, // Página 'Terminos y condiciones'
   { path: '/terminos-y-condiciones', name: 'Terminos y condiciones', component: Terms }, // Página 'Terminos y condiciones'

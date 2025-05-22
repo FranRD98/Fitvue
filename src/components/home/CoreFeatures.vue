@@ -24,9 +24,6 @@
         <!-- Contenido centrado horizontal y distribuido verticalmente -->
         <div class="relative z-20 flex flex-col justify-between items-center h-full w-full px-6 py-6 text-white text-center">
           <h3 class="text-xl">{{ card.title }}</h3>
-          <button class="bg-white text-[var(--color-primary)] font-semibold px-4 py-2 rounded-full hover:bg-[var(--color-primary)] hover:text-white transition">
-            Más información
-          </button>
         </div>
       </div>
     </div>

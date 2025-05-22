@@ -198,7 +198,7 @@ const userName = computed(() => userData.value?.name || 'Usuario')
           
           <div v-else>
             <router-link to="/login" class="px-4 py-2 text-[var(--color-text)] font-normal hover:text-[var(--color-primary)]">Iniciar sesión</router-link>
-            <router-link to="/empezar" class="bg-[var(--color-primary)] text-white px-6 py-2 rounded-full font-normal hover:bg-[var(--color-secondary)] transition-colors">Consigue tu cambio</router-link>
+            <router-link to="/empezar/1" class="bg-[var(--color-primary)] text-white px-6 py-2 rounded-full font-normal hover:bg-[var(--color-secondary)] transition-colors">Consigue tu cambio</router-link>
           </div>
 
         </div>
