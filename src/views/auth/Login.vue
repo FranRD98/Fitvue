@@ -4,7 +4,6 @@ import { useRouter } from 'vue-router'
 import { supabase } from '@/supabase/config'
 
 const router = useRouter()
-
 const email = ref('')
 const password = ref('')
 const error = ref('')
@@ -17,7 +16,7 @@ const login = async () => {
 
   error.value = ''
 
-  const { data, error: authError } = await supabase.auth.signInWithPassword({
+  const { error: authError } = await supabase.auth.signInWithPassword({
     email: email.value,
     password: password.value,
   })
@@ -33,36 +32,54 @@ const login = async () => {
 </script>
 
 <template>
-  <div class="flex items-center justify-center min-h-screen bg-[var(--color-bg-light)]">
-    <div class="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
-      <h2 class="text-2xl font-bold text-center text-[var(--color-primary)]">Iniciar sesión</h2>
-      
-      <form @submit.prevent="login" class="mt-6">
-        <div class="mb-4">
-          <label class="block text-[var(--color-secondary)]">Correo electrónico</label>
-          <input v-model="email" type="email" 
-            class="w-full px-4 py-2 mt-2 border border-[var(--color-accent)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]" 
-            placeholder="tucorreo@example.com">
+  <div class="flex flex-col md:flex-row h-[70vh] justify-center overflow-hidden">
+    <!-- Columna izquierda (formulario) -->
+    <div class="w-full md:w-1/2 flex items-center justify-center bg-white px-6 sm:px-10 md:px-20 pt-10 pb-6 md:py-0">
+      <div class="w-full max-w-md space-y-8">
+        
+        <!-- Branding -->
+        <div class="mt-4 md:mt-0">
+          <h1 class="text-5xl md:text-7xl font-extrabold leading-none">
+            <span>fit</span><span class="text-[var(--color-primary)]">VUE</span>
+          </h1>
         </div>
 
-        <div class="mb-4">
-          <label class="block text-[var(--color-secondary)]">Contraseña</label>
-          <input v-model="password" type="password" 
-            class="w-full px-4 py-2 mt-2 border border-[var(--color-accent)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]" 
-            placeholder="••••••••">
+        <!-- Título -->
+        <div class="pt-4 md:pt-0">
+          <h2 class="text-3xl sm:text-4xl font-bold text-[var(--color-primary)]">Iniciar sesión</h2>
+          <p class="text-sm text-gray-500 mt-1">Accede a tu cuenta para continuar.</p>
         </div>
 
-        <p v-if="error" class="text-red-500 text-sm">{{ error }}</p>
+        <!-- Formulario -->
+        <form @submit.prevent="login" class="space-y-4">
+          <div>
+            <label class="block text-sm text-[var(--color-secondary)] mb-1">Correo electrónico</label>
+            <input v-model="email" type="email" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]" placeholder="tucorreo@fitvue.com">
+          </div>
 
-        <button type="submit" 
-          class="w-full px-4 py-2 mt-4 text-[var(--color-text-dark)] bg-[var(--color-primary)] rounded-lg hover:bg-[var(--color-secondary)] transition">
-          Iniciar sesión
-        </button>
-      </form>
+          <div>
+            <label class="block text-sm text-[var(--color-secondary)] mb-1">Contraseña</label>
+            <input v-model="password" type="password" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]" placeholder="••••••••">
+          </div>
 
-      <p class="mt-4 text-sm text-center text-[var(--color-text)]">
-        ¿No tienes cuenta? <a href="/empezar" class="text-[var(--color-primary)] hover:underline">Consigue tu cambio ya</a>
-      </p>
+          <p v-if="error" class="text-red-500 text-sm">{{ error }}</p>
+
+          <button type="submit" class="w-full bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] text-white font-semibold py-2 rounded-lg transition">
+            Iniciar sesión
+          </button>
+        </form>
+
+        <!-- Enlace crear cuenta -->
+        <p class="text-sm text-center text-[var(--color-text)] pt-4">
+          ¿No tienes cuenta?
+          <router-link to="/sign-in" class="text-[var(--color-primary)] hover:underline">Crear cuenta</router-link>
+        </p>
+      </div>
+    </div>
+
+    <!-- Columna derecha (imagen en escritorio) -->
+    <div class="hidden md:block md:w-1/2 bg-gray-200">
+      <img src="https://placehold.co/800x800?text=Vista+FitVue" alt="Vista previa" class="w-full h-full object-cover" />
     </div>
   </div>
 </template>

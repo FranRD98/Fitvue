@@ -3,67 +3,88 @@ import PlanCard from '@/components/home/PlanCard.vue'
 
 const plans = [
   {
-
     title: 'Plan Gratuito',
+    subtitle: 'Ideal para empezar tu cambio',
     price: '0€/mes',
     highlighted: false,
-    buttonText: 'Empezar',
+    buttonText: 'Empieza gratis',
     planId: 1,
     features: [
-      { label: 'Acceso a rutinas básicas', active: true },
-      { label: 'Acceso a la herramienta de progreso', active: true },
-      { label: 'Rutinas personalizadas', active: false },
-      { label: 'Dietas personalizadas', active: false },
-      { label: 'Seguimiento avanzado', active: false },
-      { label: 'Acceso a la comunidad', active: false },
-    ]
-  },
-  {
-    title: 'Plan Avanzado',
-    price: '€39.99/mes',
-    highlighted: true,
-    buttonText: 'Empezar',
-    planId: 2,
-    features: [
-      { label: 'Acceso a rutinas básicas', active: true },
-      { label: 'Acceso a la herramienta de progreso', active: true },
-      { label: 'Rutinas personalizadas', active: true },
-      { label: 'Dietas personalizadas', active: false },
-      { label: 'Seguimiento avanzado', active: false },
-      { label: 'Acceso a la comunidad', active: false },
+      // Funciones personales
+      { label: 'Crea tus propias rutinas de entrenamiento', active: true },
+      { label: 'Planifica tus comidas y dietas personales', active: true },
+      { label: 'Herramientas de seguimiento y métricas', active: true },
+      { label: 'Visualiza tu progreso en tiempo real', active: true },
+
+      // Comunidad y acompañamiento
+      { label: 'Acceso a la comunidad FitVue', active: false },
+      { label: 'Acompañamiento profesional', active: false },
+      { label: 'Rutinas y dietas asignadas por expertos', active: false },
+      { label: 'Atención personalizada', active: false },
+
+      // Modo entrenador
+      { label: 'Gestión de clientes (modo entrenador)', active: false }
     ]
   },
   {
     title: 'Plan Premium',
-    price: '€59.99/mes',
+    subtitle: 'Acompañamiento por expertos',
+    price: '39,99€/mes',
+    highlighted: true,
+    buttonText: 'Quiero acompañamiento',
+    planId: 2,
+    features: [
+      { label: 'Crea tus propias rutinas de entrenamiento', active: true },
+      { label: 'Planifica tus comidas y dietas personales', active: true },
+      { label: 'Herramientas de seguimiento y métricas', active: true },
+      { label: 'Visualiza tu progreso en tiempo real', active: true },
+
+      { label: 'Acceso a la comunidad FitVue', active: true },
+      { label: 'Acompañamiento profesional', active: true },
+      { label: 'Rutinas y dietas asignadas por expertos', active: true },
+      { label: 'Atención personalizada', active: true },
+
+      { label: 'Gestión de clientes (modo entrenador)', active: false }
+    ]
+  },
+  {
+    title: 'Plan Profesional',
+    subtitle: 'Diseñado para entrenadores',
+    price: '119,99€/mes',
     highlighted: false,
-    buttonText: 'Empezar',
+    buttonText: 'Soy entrenador',
     planId: 3,
     features: [
-    { label: 'Acceso a rutinas básicas', active: true },
-      { label: 'Acceso a la herramienta de progreso', active: true },
-      { label: 'Rutinas personalizadas', active: true },
-      { label: 'Dietas personalizadas', active: true },
-      { label: 'Seguimiento avanzado', active: true },
-      { label: 'Acceso a la comunidad', active: true },
+      { label: 'Crea rutinas de entrenamiento para tus clientes', active: true },
+      { label: 'Planifica comidas y dietas para tus clientes', active: true },
+      { label: 'Herramientas de seguimiento y métricas', active: true },
+      { label: 'Visualiza el progreso de tus clientes', active: true },
+
+      { label: 'Acceso a la comunidad FitVue', active: true },
+      { label: 'Panel de control profesional', active: true },
+      { label: 'Seguimiento avanzado por cliente', active: true },
+      { label: 'Acceso a herramientas exclusivas de coaches', active: true },
+      { label: 'Asesoría técnica y soporte prioritario', active: true }
     ]
   }
 ]
 </script>
 
 <template>
-  <section class="bg-[#f3f6f8]">
-    <div class="max-w-7xl mx-auto px-6 py-20 text-center">
+  <section class="bg-[#f3f6f8] py-20 px-6">
+    <div class="max-w-7xl mx-auto text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-[var(--color-primary)] mb-6">Nuestros Planes</h2>
+      <p class="text-lg md:text-xl text-gray-600 mb-14 max-w-3xl mx-auto">
+        Elige el plan que mejor se adapte a tu etapa y empieza tu transformación con FitVue.
+      </p>
 
-    <h2 class="text-4xl font-semibold text-[var(--color-primary)] mb-12">Nuestros Planes</h2>
-
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 mx-auto">
-      <PlanCard
-        v-for="(plan, i) in plans"
-        :key="i"
-        v-bind="plan"
-      />
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+        <PlanCard
+          v-for="(plan, i) in plans"
+          :key="i"
+          v-bind="plan"
+        />
+      </div>
     </div>
-  </div>
   </section>
 </template>

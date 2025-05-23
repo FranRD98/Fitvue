@@ -40,7 +40,7 @@ const routes = [
   { path: '/contacto', name: 'Contact', component: Contact },
   { path: '/FAQ', name: 'Preguntas Frecuentes', component: FAQ },
   { path: '/login', name: 'Login', component: Login },
-  { path: '/registrarse', name: 'Register', component: Register },
+  { path: '/sign-in', name: 'Register', component: Register },
   
   // Dashboard
   { path: '/dashboard', name: 'Dashboard', component: Dashboard },

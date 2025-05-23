@@ -9,7 +9,7 @@ import UserTestimonials from '@/components/home/UserTestimonials.vue'
 <template>
     <LandingHero />
     <Features />
-    <ChallengesPrograms />
     <PricingPlans />
     <UserTestimonials />
+    <ChallengesPrograms />
 </template>

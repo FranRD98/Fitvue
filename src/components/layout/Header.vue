@@ -79,27 +79,29 @@ const userName = computed(() => userData.value?.name || 'Usuario')
       <!-- Contenedor principal con 3 grupos -->
       <div class="flex justify-between items-center h-20">
         
-        <!-- Grupo 1: Logo -->
+        <!-- Grupo 1: Logo en escritorio -->
         <div class="hidden lg:flex items-center flex-1">
           
-          <router-link to="/">
-            <h1 class="text-3xl font-bold tracking-widest flex items-center">
-                <img src="/Logo_azul.png" alt="FitVue Logo" class="h-6 mb-3 mr-2">fitVUE
-
-            </h1>
+          <router-link to="/" class="text-4xl font-bold">
+            <span>fit</span><span class="text-[var(--color-primary)]">VUE</span>
           </router-link>
         </div>
+
+        <!-- Logo solo visible en móvil -->
+         <router-link to="/" class="lg:hidden text-3xl font-bold">
+            <span>fit</span><span class="text-[var(--color-primary)]">VUE</span>
+          </router-link>
         
         <!-- Grupo 2: Menú central -->
         <div class="hidden lg:flex justify-center items-center space-x-6 flex-1">
-          
+
           <!-- Enlaces '¿Qué es Fitvue?' -->
           <router-link to="/nosotros" class="nav-link px-1 py-2 text-[var(--color-text)] font-normal hover:text-[var(--color-secondary)]">¿Qué es FitVue?</router-link>
 
          <!-- Dropdown Rutinas -->
           <div class="relative dropdown">
             <router-link to="/rutinas">
-              <a class="px-1 py-2 text-[var(--color-text)] font-normal hover:text-[var(--color-primary)]">
+              <a class="px-1 py-2 text-[var(--color-text)] font-medium hover:text-[var(--color-primary)]">
                 Rutinas
                 <svg class="w-4 h-4 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -134,41 +136,41 @@ const userName = computed(() => userData.value?.name || 'Usuario')
           </div>
           
           <!-- Dropdown Guías -->
-<div class="relative dropdown">
-  <router-link to="/guias">
-    <a class="px-1 py-2 text-[var(--color-text)] font-normal hover:text-[var(--color-primary)]">
-      Guías
-      <svg class="w-4 h-4 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-      </svg>
-    </a>
-  </router-link>
+          <div class="relative dropdown">
+            <router-link to="/guias">
+              <a class="px-1 py-2 text-[var(--color-text)] font-normal hover:text-[var(--color-primary)]">
+                Guías
+                <svg class="w-4 h-4 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </a>
+            </router-link>
 
-  <div class="dropdown-menu bg-white shadow-lg mt-0 border-t border-gray-200">
-    <div class="dropdown-content p-8">
-      <h2 class="text-2xl font-bold text-[var(--color-primary)] mb-6">Aquí encontrarás diferentes guías</h2>
-      <div class="grid grid-cols-4 gap-8">
-        <div
-          v-for="category in guideCategories"
-          :key="category.id"
-          class="flex items-center space-x-3"
-        >
-          <img
-            :src="category.icon_path || '/icons/default-icon.svg'"
-            alt="Icono"
-            class="w-8 h-8 object-contain"
-          />
-          <router-link
-            :to="`/guias/${category.title}`"
-            class="nav-link text-md font-normal text-[var(--color-text)] hover:text-[var(--color-primary)]"
-          >
-            {{ category.title }}
-          </router-link>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+            <div class="dropdown-menu bg-white shadow-lg mt-0 border-t border-gray-200">
+              <div class="dropdown-content p-8">
+                <h2 class="text-2xl font-bold text-[var(--color-primary)] mb-6">Aquí encontrarás diferentes guías</h2>
+                <div class="grid grid-cols-4 gap-8">
+                  <div
+                    v-for="category in guideCategories"
+                    :key="category.id"
+                    class="flex items-center space-x-3"
+                  >
+                    <img
+                      :src="category.icon_path || '/icons/default-icon.svg'"
+                      alt="Icono"
+                      class="w-8 h-8 object-contain"
+                    />
+                    <router-link
+                      :to="`/guias/${category.title}`"
+                      class="nav-link text-md font-normal text-[var(--color-text)] hover:text-[var(--color-primary)]"
+                    >
+                      {{ category.title }}
+                    </router-link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
           
         </div>
         
@@ -210,8 +212,8 @@ const userName = computed(() => userData.value?.name || 'Usuario')
           </div>
           
           <div v-else>
-            <router-link to="/login" class="px-4 py-2 text-[var(--color-text)] font-normal hover:text-[var(--color-primary)]">Iniciar sesión</router-link>
-            <router-link to="/empezar/1" class="bg-[var(--color-primary)] text-white px-6 py-2 rounded-full font-normal hover:bg-[var(--color-secondary)] transition-colors">Consigue tu cambio</router-link>
+            <router-link to="/login" class="border border-[var(--color-primary)] px-6 py-2 rounded-full font-normal hover:bg-[var(--color-secondary)] hover:text-white transition-colors mr-1">Iniciar sesión</router-link>
+            <router-link to="/sign-in" class="bg-[var(--color-primary)] text-white px-6 py-2 rounded-full font-normal hover:bg-[var(--color-secondary)] transition-colors">Consigue tu cambio</router-link>
           </div>
 
         </div>
@@ -232,24 +234,110 @@ const userName = computed(() => userData.value?.name || 'Usuario')
     </div>
   </nav>
 
-   <!-- Menú móvil -->
-   <transition name="fade">
-    <div
-      v-if="mobileMenuOpen"
-      class="w-full bg-white lg:hidden text-center px-6 py-6 space-y-5 shadow-md border-t"
+<transition name="fade">
+  <div
+    v-if="mobileMenuOpen"
+    class="fixed top-0 left-0 w-full h-full overflow-y-auto bg-white lg:hidden z-[999] px-6 py-28"
+  >
+    <!-- Botón cerrar -->
+    <button
+      @click="closeMenu"
+      class="absolute top-4 right-4 text-gray-500 hover:text-[var(--color-primary)]"
     >
-      <router-link @click="closeMenu" to="/nosotros" class="block text-[var(--color-text)] font-normal">¿Qué es FitVue?</router-link>
-      <router-link @click="closeMenu" to="/rutinas/entrenamiento" class="block text-[var(--color-text)] font-normal">Rutinas</router-link>
-      <router-link @click="closeMenu" to="/guias/dieta" class="block text-[var(--color-text)] font-normal">Guías</router-link>
-      <router-link @click="closeMenu" to="/planes" class="block text-[var(--color-text)] font-normal">Planes</router-link>
-      <router-link @click="closeMenu" to="/casos-de-exito" class="block text-[var(--color-text)] font-normal">Casos de éxito</router-link>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+        stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
 
-      <div class="pt-5 border-t border-gray-200">
-        <router-link @click="closeMenu" to="/login" class="block text-[var(--color-text)] font-normal mt-4">Iniciar sesión</router-link>
-        <router-link @click="closeMenu" to="/empezar" class="inline-block bg-[var(--color-primary)] text-white px-6 py-2 rounded-full font-normal hover:bg-cyan-900 mt-2">Consigue tu cambio</router-link>
-      </div>
+    <!-- Logo -->
+    <div class="text-center mb-10">
+      <router-link to="/" class="text-5xl font-bold" @click="closeMenu">
+        <span>fit</span><span class="text-[var(--color-primary)]">VUE</span>
+      </router-link>
     </div>
-  </transition>
+
+    <!-- Navegación -->
+    <nav class="flex flex-col gap-5 text-[var(--color-text)] text-lg">
+      <router-link
+        @click="closeMenu"
+        to="/nosotros"
+        class="hover:text-[var(--color-primary)] transition"
+      >
+        ¿Qué es FitVue?
+      </router-link>
+      <router-link
+        @click="closeMenu"
+        to="/rutinas"
+        class="hover:text-[var(--color-primary)] transition"
+      >
+        Rutinas
+      </router-link>
+      <router-link
+        @click="closeMenu"
+        to="/guias"
+        class="hover:text-[var(--color-primary)] transition"
+      >
+        Guías
+      </router-link>
+    </nav>
+
+    <!-- Línea divisoria -->
+    <div class="my-8 border-t border-gray-200"></div>
+
+<!-- Acciones -->
+<div class="flex flex-col items-center gap-4">
+  <template v-if="user">
+    <!-- Perfil del usuario logueado -->
+    <div class="flex flex-col items-center gap-2 mb-4">
+      <img
+        :src="profileImage"
+        alt="Foto de perfil"
+        class="w-16 h-16 rounded-full object-cover border border-gray-300"
+      />
+      <p class="text-[var(--color-text)] font-semibold text-base">
+        ¡Hola, {{ userName }}!
+      </p>
+    </div>
+
+    <router-link
+      @click="closeMenu"
+      to="/dashboard"
+      class="text-[var(--color-text)] text-base hover:text-[var(--color-primary)]"
+    >
+      Dashboard
+    </router-link>
+    <button
+      @click="() => { logout(); closeMenu(); }"
+      class="text-[var(--color-text)] text-base hover:text-[var(--color-primary)]"
+    >
+      Cerrar sesión
+    </button>
+  </template>
+
+  <template v-else>
+    <router-link
+      @click="closeMenu"
+      to="/login"
+      class="text-[var(--color-text)] text-base hover:text-[var(--color-primary)]"
+    >
+      Iniciar sesión
+    </router-link>
+
+    <router-link
+      @click="closeMenu"
+      to="/empezar"
+      class="bg-[var(--color-primary)] text-white px-6 py-3 rounded-full font-semibold hover:bg-[var(--color-secondary)] transition"
+    >
+      Consigue tu cambio
+    </router-link>
+  </template>
+</div>
+
+  </div>
+</transition>
+
+
 
 </template>
 

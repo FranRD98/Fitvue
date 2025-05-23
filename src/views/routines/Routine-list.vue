@@ -1,41 +1,61 @@
 <script setup>
+// Imports
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getRoutines, getRoutineCategories } from '@/supabase/services/routines.js'
 import Card from '@/components/Card.vue'
 
+// Variables de estado
 const route = useRoute()
 const router = useRouter()
 
-const items = ref([])
-const categories = ref([])
-const selectedCategory = ref('Todas')
-const currentPage = ref(1)
-const itemsPerPage = 6
+const routines = ref([])                 // Lista de rutinas
+const categories = ref([])              // Lista de categorías
+const selectedCategory = ref('Todas')   // Categoría seleccionada
+const currentPage = ref(1)              // Página actual
+const itemsPerPage = 6                  // Rutinas por página
 
-// Cargar datos y aplicar categoría desde la URL
+// Carga inicial al montar el componente
 onMounted(async () => {
-  items.value = await getRoutines()
+  routines.value = await getRoutines()
   categories.value = await getRoutineCategories()
 
   const categoryParam = route.params.category
   if (categoryParam) {
-    const match = categories.value.find(cat =>
-      cat.name.toLowerCase() === decodeURIComponent(categoryParam).toLowerCase()
-    )
-    selectedCategory.value = match ? match.name : 'Todas'
+    selectedCategory.value = decodeURIComponent(categoryParam)
   }
 })
 
-// Si cambia la URL, actualiza la categoría seleccionada
+// Reaccionar al cambio de categoría en la URL
 watch(() => route.params.category, (newCategory) => {
-  const match = categories.value.find(cat =>
-    cat.name.toLowerCase() === decodeURIComponent(newCategory || '').toLowerCase()
-  )
-  selectedCategory.value = match ? match.name : 'Todas'
+  selectedCategory.value = newCategory ? decodeURIComponent(newCategory) : 'Todas'
 })
 
-// Actualiza la URL cuando cambia la categoría desde el select
+// Filtrar rutinas por categoría
+const filteredRoutines = computed(() => {
+  if (selectedCategory.value === 'Todas') return routines.value
+
+  const selectedCat = categories.value.find(cat => cat.title === selectedCategory.value)
+  if (!selectedCat) return []
+
+  return routines.value.filter(routine => routine.id_category === selectedCat.id)
+})
+
+// Rutinas paginadas
+const paginatedRoutines = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  return filteredRoutines.value.slice(start, start + itemsPerPage)
+})
+
+// Total de páginas
+const totalPages = computed(() => Math.ceil(filteredRoutines.value.length / itemsPerPage))
+
+// Cambiar página
+const goToPage = (page) => {
+  if (page >= 1 && page <= totalPages.value) currentPage.value = page
+}
+
+// Actualizar la URL al cambiar el filtro desde el select
 watch(selectedCategory, (newVal) => {
   const categoryPath = newVal === 'Todas'
     ? '/rutinas'
@@ -43,32 +63,7 @@ watch(selectedCategory, (newVal) => {
   router.push(categoryPath)
 })
 
-// Rutinas filtradas según categoría seleccionada
-const filteredItems = computed(() => {
-  if (selectedCategory.value === 'Todas') return items.value
-
-  const selectedCat = categories.value.find(cat =>
-    cat.name.toLowerCase() === selectedCategory.value.toLowerCase()
-  )
-
-  if (!selectedCat) return []
-
-  return items.value.filter(item => item.id_category === selectedCat.id)
-})
-
-// Paginación
-const paginatedItems = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage
-  return filteredItems.value.slice(start, start + itemsPerPage)
-})
-
-const totalPages = computed(() => Math.ceil(filteredItems.value.length / itemsPerPage))
-
-const goToPage = (page) => {
-  if (page >= 1 && page <= totalPages.value) currentPage.value = page
-}
-
-// Ruta amigable por ID de categoría
+// Generar slug a partir de ID de categoría
 function getCategoryNameById(id_category) {
   const cat = categories.value.find(c => c.id === id_category)
   const title = cat?.title || 'general'
@@ -76,14 +71,16 @@ function getCategoryNameById(id_category) {
   return title
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '')
+    .replace(/[\u0300-\u036f]/g, '') // Eliminar acentos
+    .replace(/\s+/g, '-')            // Espacios → guiones
+    .replace(/[^a-z0-9-]/g, '')      // Quitar caracteres no válidos
+    .replace(/-+/g, '-')             // Evitar guiones dobles
+    .replace(/^-+|-+$/g, '')         // Quitar guiones extremos
 }
 </script>
 
 <template>
-  <section class="max-w-7xl mx-auto px-6 py-10">
+  <section v-if="routines" class="max-w-7xl mx-auto px-6 py-10">
     <div class="flex flex-col md:flex-row gap-6">
 
       <!-- Filtros -->
@@ -91,7 +88,9 @@ function getCategoryNameById(id_category) {
         <h1 class="text-3xl font-bold text-[var(--color-primary)]">Rutinas</h1>
 
         <div>
-          <label class="block text-sm font-medium text-[var(--color-primary)] mb-2">Filtrar por categoría</label>
+          <label class="block text-sm font-medium text-[var(--color-primary)] mb-2">
+            Filtrar por categoría
+          </label>
           <select
             class="w-full border border-gray-300 rounded p-2 text-gray-700"
             v-model="selectedCategory"
@@ -100,9 +99,9 @@ function getCategoryNameById(id_category) {
             <option
               v-for="category in categories"
               :key="category.id"
-              :value="category.name"
+              :value="category.title"
             >
-              {{ category.name }}
+              {{ category.title }}
             </option>
           </select>
         </div>
@@ -116,15 +115,15 @@ function getCategoryNameById(id_category) {
 
         <!-- Resultados -->
         <main
-          v-if="paginatedItems.length > 0"
+          v-if="paginatedRoutines.length > 0"
           class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           <Card
-            v-for="item in paginatedItems"
-            :key="item.id"
-            :item="item"
+            v-for="routine in paginatedRoutines"
+            :key="routine.id"
+            :item="routine"
             :categories="categories"
-            :route-to="`/rutinas/${getCategoryNameById(item.id_category)}/${item.id}`"
+            :route-to="`/rutinas/${getCategoryNameById(routine.id_category)}/${routine.id}`"
           />
         </main>
 
@@ -137,7 +136,7 @@ function getCategoryNameById(id_category) {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0z" />
           </svg>
           <p class="text-lg font-semibold">Sin resultados</p>
-          <p class="text-sm">No se encontraron rutinas disponibles.</p>
+          <p class="text-sm">No se encontraron rutinas que coincidan con los filtros aplicados.</p>
         </div>
 
         <!-- Paginación -->
@@ -158,3 +157,4 @@ function getCategoryNameById(id_category) {
     </div>
   </section>
 </template>
+

@@ -12,21 +12,25 @@ export async function createRoutine(routineData ) {
   return data
 }
 
-// Obtener todas las rutinas
-export async function getRoutines() {
-  const { data, error } = await supabase
-    .from('routines')
-    .select('*')
+// Obtener todas las rutinas, opcionalmente filtradas
+export async function getRoutines(category) {
+  let query
+
+  if (category && category !== '') {
+    query = supabase.from('routines').select('*').eq('id_category', category)
+  } else {
+    query = supabase.from('routines').select('*')
+  }
+
+  const { data, error } = await query
 
   if (error) throw error
+  
   return data
 }
 
 export async function getRoutinesByUser(uid) {
-  const { data, error } = await supabase
-    .from('routines')
-    .select('*')
-    .eq('user_id', uid)
+  const { data, error } = await supabase.from('routines').select('*').eq('user_id', uid)
 
   if (error) throw error
   return data
