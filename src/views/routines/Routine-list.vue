@@ -2,7 +2,6 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getRoutines, getRoutineCategories } from '@/supabase/services/routines.js'
-
 import Card from '@/components/Card.vue'
 
 const route = useRoute()
@@ -14,29 +13,50 @@ const selectedCategory = ref('Todas')
 const currentPage = ref(1)
 const itemsPerPage = 6
 
+// Cargar datos y aplicar categoría desde la URL
 onMounted(async () => {
   items.value = await getRoutines()
   categories.value = await getRoutineCategories()
 
   const categoryParam = route.params.category
   if (categoryParam) {
-    selectedCategory.value = decodeURIComponent(categoryParam)
+    const match = categories.value.find(cat =>
+      cat.name.toLowerCase() === decodeURIComponent(categoryParam).toLowerCase()
+    )
+    selectedCategory.value = match ? match.name : 'Todas'
   }
 })
 
+// Si cambia la URL, actualiza la categoría seleccionada
 watch(() => route.params.category, (newCategory) => {
-  selectedCategory.value = newCategory ? decodeURIComponent(newCategory) : 'Todas'
+  const match = categories.value.find(cat =>
+    cat.name.toLowerCase() === decodeURIComponent(newCategory || '').toLowerCase()
+  )
+  selectedCategory.value = match ? match.name : 'Todas'
 })
 
+// Actualiza la URL cuando cambia la categoría desde el select
+watch(selectedCategory, (newVal) => {
+  const categoryPath = newVal === 'Todas'
+    ? '/rutinas'
+    : `/rutinas/categoria/${encodeURIComponent(newVal)}`
+  router.push(categoryPath)
+})
+
+// Rutinas filtradas según categoría seleccionada
 const filteredItems = computed(() => {
   if (selectedCategory.value === 'Todas') return items.value
 
-  const selectedCat = categories.value.find(cat => cat.name === selectedCategory.value)
+  const selectedCat = categories.value.find(cat =>
+    cat.name.toLowerCase() === selectedCategory.value.toLowerCase()
+  )
+
   if (!selectedCat) return []
 
   return items.value.filter(item => item.id_category === selectedCat.id)
 })
 
+// Paginación
 const paginatedItems = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage
   return filteredItems.value.slice(start, start + itemsPerPage)
@@ -48,31 +68,25 @@ const goToPage = (page) => {
   if (page >= 1 && page <= totalPages.value) currentPage.value = page
 }
 
-watch(selectedCategory, (newVal) => {
-  const categoryPath = newVal === 'Todas' ? '/rutinas' : `/rutinas/${encodeURIComponent(newVal)}`
-  router.push(categoryPath)
-})
-
-// Para obtener la ruta amigable según la categoría
+// Ruta amigable por ID de categoría
 function getCategoryNameById(id_category) {
   const cat = categories.value.find(c => c.id === id_category)
   const title = cat?.title || 'general'
 
   return title
-    .toLowerCase()                            // minúsculas
-    .normalize('NFD')                         // descompone acentos
-    .replace(/[\u0300-\u036f]/g, '')          // elimina acentos
-    .replace(/\s+/g, '-')                     // reemplaza espacios por guiones
-    .replace(/[^a-z0-9-]/g, '')               // elimina caracteres no válidos
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
 }
-
 </script>
 
 <template>
   <section class="max-w-7xl mx-auto px-6 py-10">
     <div class="flex flex-col md:flex-row gap-6">
 
-      <!-- Filters Aside -->
+      <!-- Filtros -->
       <aside class="w-full md:w-1/4 space-y-6">
         <h1 class="text-3xl font-bold text-[var(--color-primary)]">Rutinas</h1>
 
@@ -94,13 +108,13 @@ function getCategoryNameById(id_category) {
         </div>
       </aside>
 
-      <!-- Main content -->
+      <!-- Contenido principal -->
       <div class="w-full">
         <h2 class="text-3xl font-bold text-[var(--color-primary)] mb-6">
           {{ selectedCategory === 'Todas' ? 'Todas las rutinas' : selectedCategory }}
         </h2>
 
-        <!-- Mostrar rutinas si hay resultados -->
+        <!-- Resultados -->
         <main
           v-if="paginatedItems.length > 0"
           class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
@@ -114,7 +128,7 @@ function getCategoryNameById(id_category) {
           />
         </main>
 
-        <!-- Si no hay coincidencias -->
+        <!-- Sin resultados -->
         <div
           v-else
           class="col-span-full flex flex-col items-center justify-center py-12 text-gray-500"
@@ -126,7 +140,7 @@ function getCategoryNameById(id_category) {
           <p class="text-sm">No se encontraron rutinas disponibles.</p>
         </div>
 
-        <!-- Pagination -->
+        <!-- Paginación -->
         <div class="flex justify-center mt-10 space-x-2" v-if="totalPages > 1">
           <button
             v-for="page in totalPages"

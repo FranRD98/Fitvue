@@ -29,8 +29,9 @@ const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/nosotros', name: 'About', component: About },
   { path: '/rutinas', name: 'Rutinas', component: RoutineList },
-  { path: '/rutinas/:routine', name: 'Rutinas por categoria', component: RoutineList },
+  { path: '/rutinas/categoria/:category', name: 'Rutinas por categoría', component: RoutineList },
   { path: '/rutinas/:routine/:id', name: 'Rutina Detalle', component: RoutineDetail },
+  
   // Guías
   { path: '/guias', name: 'Guia listado', component: GuideList },
   { path: '/guias/:category', name: 'Guia por categoria', component: GuideList },
