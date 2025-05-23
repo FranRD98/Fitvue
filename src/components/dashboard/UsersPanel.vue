@@ -68,7 +68,7 @@ const filteredUsers = computed(() => {
 <template>
   <section>
     <!-- Header -->
-    <div class="flex justify-between items-center mb-10">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
       <h1 class="text-3xl font-bold text-[var(--color-primary)]">Usuarios</h1>
       <button @click="openCreateModal" class="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg shadow hover:bg-[var(--color-secondary)] transition">
         <IconPlus class="w-5 h-5"/>
@@ -85,7 +85,7 @@ const filteredUsers = computed(() => {
     />
 
     <!-- Filtros -->
-    <div class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4 w-full">
     
       <!-- Buscador -->
     <div class="flex-1">
@@ -128,45 +128,48 @@ const filteredUsers = computed(() => {
 
 
     <!-- Tabla -->
-<table v-if="filteredUsers.length" class="w-full text-left text-sm">
-  <thead class="bg-gray-200 text-gray-600 font-medium">
-    <tr>
-      <th class="py-3 px-2">Nombre</th>
-      <th class="px-2">Email</th>
-      <th class="px-2">Creado</th>
-      <th class="px-2">Plan</th>
-      <th class="px-2">Rol</th>
-      <th class="px-2 text-right">Acciones</th>
-    </tr>
-  </thead>
-  <tbody class="bg-white">
-    <tr
-      v-for="user in filteredUsers"
-      :key="user.id"
-      class="border-t border-gray-200 hover:bg-gray-100 transition"
-      @click="openEditModal(user)"
-    >
-      <td class="py-3 px-2 font-semibold text-[var(--color-primary)] whitespace-nowrap">
-        {{ user.name }} {{ user.last_name }}
-      </td>
-      <td class="py-3 px-2 whitespace-nowrap">{{ user.email }}</td>
-      <td class="py-3 px-2 whitespace-nowrap">{{ new Date(user.created_at).toLocaleDateString() || '—' }}</td>
-      <td class="py-3 px-2 capitalize">{{ user.plan_id || '—' }}</td>
-      <td class="py-3 px-2 capitalize">{{ user.role || '—' }}</td>
-      <td class="py-3 px-2 text-right">
-        <button
+     <div v-if="filteredUsers.length" class="overflow-x-auto">
+
+      <table class="min-w-[800px] w-full text-left text-sm">
+        <thead class="bg-gray-200 text-gray-600 font-medium">
+          <tr>
+            <th class="py-3 px-2">Nombre</th>
+            <th class="px-2">Email</th>
+            <th class="px-2">Creado</th>
+            <th class="px-2">Plan</th>
+            <th class="px-2">Rol</th>
+            <th class="px-2 text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white">
+          <tr
+            v-for="user in filteredUsers"
+            :key="user.id"
+            class="border-t border-gray-200 hover:bg-gray-100 transition"
+            @click="openEditModal(user)"
+          >
+            <td class="py-3 px-2 font-semibold text-[var(--color-primary)] whitespace-nowrap">
+              {{ user.name }} {{ user.last_name }}
+            </td>
+            <td class="py-3 px-2 whitespace-nowrap">{{ user.email }}</td>
+            <td class="py-3 px-2 whitespace-nowrap">{{ new Date(user.created_at).toLocaleDateString() || '—' }}</td>
+            <td class="py-3 px-2 capitalize">{{ user.plan_id || '—' }}</td>
+            <td class="py-3 px-2 capitalize">{{ user.role || '—' }}</td>
+            <td class="py-3 px-2 text-right">
+              <button
                 @click.prevent.stop="handleDelete(user)"
-                class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full transition duration-200"
+                class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-300"
                 title="Eliminar"
               >
                 <IconTrash class="w-5 h-5" />
-              </button> 
-      </td>
-    </tr>
-  </tbody>
-</table>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+     </div>
 
     <!-- Sin resultados -->
-    <div v-else class="text-center text-gray-500 mt-10">No se encontraron usuarios con esos criterios.</div>
+    <div v-else class="text-center text-gray-500 mt-10 px-4">No se encontraron usuarios con esos criterios.</div>
   </section>
 </template>

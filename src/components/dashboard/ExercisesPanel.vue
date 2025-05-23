@@ -98,7 +98,7 @@
     </div>
 
     <!-- Panel -->
-    <div v-else class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div v-else class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4 w-full">
       
       <!-- Buscador -->
       <div class="flex-1">
@@ -142,11 +142,11 @@
     </div>
 
     <!-- Grid -->
-    <div v-if="viewMode === 'grid' && filteredExercises.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div v-if="viewMode === 'grid' && filteredExercises.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         <div
           v-for="exercise in filteredExercises"
           :key="exercise.id"
-          class="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col transition cursor-pointer"
+          class="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col transition cursor-pointer w-full"
           @click="openEditModal(exercise)"
         >
         <img
@@ -188,7 +188,9 @@
       </div>
 
     <!-- Table view mode -->
-    <table v-else-if="viewMode === 'table' && filteredExercises.length" class="w-full text-left text-sm">
+     <div v-else-if="viewMode === 'table' && filteredExercises.length"class="overflow-x-auto">
+
+    <table class="min-w-[600px] w-full text-left text-sm">
       <thead class="bg-gray-200 text-gray-600 font-medium">
         <tr>
           <th class="py-3 px-2">Nombre</th>
@@ -227,7 +229,7 @@
         </tr>
       </tbody>
     </table>
-
+</div>
 
     <!-- Si no hay coincidencias -->
     <div v-if="!loading && filteredExercises.length === 0" class="flex flex-col items-center justify-center py-12 text-gray-500">

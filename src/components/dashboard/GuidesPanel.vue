@@ -65,7 +65,7 @@ const handleDelete = async (guide) => {
 <template>
   <section>
     <!-- Header -->
-    <div class="flex justify-between items-center mb-6">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
       <h1 class="text-3xl font-bold text-[var(--color-primary)]">Guías</h1>
       <button
         @click="showModal = true"
@@ -85,7 +85,7 @@ const handleDelete = async (guide) => {
     />
 
     <!-- Filtros -->
-    <div class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4" v-if="!loading && guides.length">
+<div class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4 w-full" v-if="!loading && guides.length">
       <div class="flex-1">
         <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Buscar guía</label>
         <input
@@ -127,11 +127,11 @@ const handleDelete = async (guide) => {
     </div>
 
     <!-- Grid View -->
-    <div v-if="viewMode === 'grid' && filteredGuides.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+<div v-if="viewMode === 'grid' && filteredGuides.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       <div
         v-for="guide in filteredGuides"
         :key="guide.id"
-        class="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col hover:shadow-md transition cursor-pointer"
+        class="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col hover:shadow-md transition cursor-pointer w-full"
         @click="openEditModal(guide)"
       >
         <img
@@ -165,7 +165,9 @@ const handleDelete = async (guide) => {
     </div>
 
     <!-- Table View -->
-    <table v-else-if="viewMode === 'table' && filteredGuides.length" class="w-full text-left text-sm">
+     <div v-else-if="viewMode === 'table' && filteredGuides.length" class="overflow-x-auto">
+
+    <table class="min-w-[800px] w-full text-left text-sm">
       <thead class="bg-gray-200 text-gray-600 font-medium">
         <tr>
           <th class="py-3 px-2">Título</th>
@@ -188,15 +190,16 @@ const handleDelete = async (guide) => {
           <td class="py-3 px-2"> {{ new Date(guide.created_at).toLocaleDateString() || '—' }}</td>
           <td class="py-3 px-2 text-right">
             <button
-                @click.prevent.stop="handleDelete(guide)"
-                class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full transition duration-200"
-                title="Eliminar"
-              >
-                <IconTrash class="w-5 h-5" />
-              </button> 
+              @click.prevent.stop="handleDelete(guide)"
+              class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-300"
+              title="Eliminar"
+            >
+              <IconTrash class="w-5 h-5" />
+            </button>
           </td>
         </tr>
       </tbody>
     </table>
+    </div>
   </section>
 </template>

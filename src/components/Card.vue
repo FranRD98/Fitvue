@@ -16,6 +16,7 @@ defineProps({
       :src="item?.header_image || 'https://placehold.co/600x400?text=Sin+Imagen'"
       alt="Imagen"
       class="w-full h-48 object-cover"
+      loading="lazy"
     />
 
     <!-- Contenido -->
@@ -24,12 +25,12 @@ defineProps({
         {{ item.title }}
       </h3>
 
-      <p class="text-sm text-gray-500 mb-3 line-clamp-3">
+      <p class="text-sm text-gray-500 mb-3 line-clamp-2 sm:line-clamp-3">
         {{ item.description }}
       </p>
 
       <!-- Info inferior -->
-      <div class="text-xs text-gray-400 mt-auto">
+      <div class="text-xs text-gray-400 mt-auto space-y-1">
         <p v-if="item.author"><strong>Autor:</strong> {{ item.author }}</p>
         <p v-if="item.id_category">
           <strong>Categoría:</strong>

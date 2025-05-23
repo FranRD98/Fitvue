@@ -123,20 +123,20 @@
   </section>
 
   <section v-else class="p-6 space-y-6">
-    <!-- Header -->
-    <div class="flex justify-between items-center">
-      <h1 class="text-3xl font-bold text-[var(--color-primary)]">Panel de control</h1>
-      <router-link
-        to="/dashboard/newReview"
-        class="bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] text-white px-4 py-2 rounded-lg shadow transition"
-      >
-        Nueva revisión
-      </router-link>
-    </div>
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-primary)]">Panel de control</h1>
+    <router-link
+      to="/dashboard/newReview"
+      class="bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] text-white px-4 py-2 rounded-lg shadow transition text-sm sm:text-base"
+    >
+      Nueva revisión
+    </router-link>
+  </div>
 
     
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <div class="bg-white shadow rounded-xl p-4">
         <h3 class="text-sm text-gray-500">Revisiones totales</h3>
         <p class="text-2xl font-bold text-[var(--color-primary)]">{{ reviews.length }}</p>
@@ -176,18 +176,18 @@
       </div>
     </div>
 
-    <!-- Chart & Historial -->
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-      <!-- Gráfica principal -->
-      <div class="col-span-1 lg:col-span-3 bg-white rounded-xl shadow p-4">
-        <h3 class="text-lg font-semibold mb-4 text-[var(--color-primary)]">Evolución del progreso</h3>
-        <img src="https://placehold.co/800x300?text=Chart+Placeholder" alt="Chart" class="w-full h-auto rounded" />
-      </div>
+      <!-- Chart & Historial -->
+  <div class="flex flex-col lg:flex-row gap-6">
+    <!-- Chart -->
+    <div class="w-full lg:w-3/4 bg-white rounded-xl shadow p-4">
+      <h3 class="text-lg font-semibold mb-4 text-[var(--color-primary)]">Evolución del progreso</h3>
+      <img src="https://placehold.co/800x300?text=Chart+Placeholder" alt="Chart" class="w-full h-auto rounded max-w-full" />
+    </div>
 
-      <!-- Historial lateral -->
-      <div class="bg-white rounded-xl shadow p-4 h-full overflow-y-auto">
-        <h3 class="text-lg font-semibold mb-4 text-[var(--color-primary)]">Historial de revisiones</h3>
-        <ul class="space-y-3">
+      <!-- Historial -->
+    <div class="w-full lg:w-1/4 bg-white rounded-xl shadow p-4 max-h-[500px] overflow-y-auto">
+      <h3 class="text-lg font-semibold mb-4 text-[var(--color-primary)]">Historial de revisiones</h3>
+      <ul class="space-y-3">
           <li v-if="!loading && reviews.length === 0" class="text-gray-500 text-sm">Sin revisiones registradas.</li>
           <li
             v-for="review in reviews"

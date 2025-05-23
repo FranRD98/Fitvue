@@ -53,7 +53,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section class="max-w-7xl mx-auto p-6">
+<section class="w-full max-w-7xl mx-auto p-6">
     <div v-if="loading" class="text-center text-gray-500 py-10">Cargando revisión...</div>
 
     <div v-else-if="!review" class="text-center text-gray-500 py-10">No se encontró la revisión.</div>
@@ -66,7 +66,7 @@ onMounted(async () => {
       </div>
 
       <!-- Medidas -->
-      <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         <div
           v-for="item in formattedFields"
           :key="item.key"

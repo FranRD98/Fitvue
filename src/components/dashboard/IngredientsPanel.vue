@@ -81,7 +81,7 @@ onMounted(loadIngredients)
 <template>
   <section>
     <!-- Header -->
-    <div class="flex justify-between items-center mb-6">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
       <h1 class="text-3xl font-bold text-[var(--color-primary)]">Ingredientes</h1>
       <button
         @click="openNewModal"
@@ -101,7 +101,7 @@ onMounted(loadIngredients)
     />
 
     <!-- Filtro y vista -->
-    <div class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4 w-full">
       <div class="flex-1">
         <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Buscar ingrediente</label>
         <input
@@ -129,11 +129,11 @@ onMounted(loadIngredients)
     </div>
 
     <!-- Grid View -->
-    <div v-if="viewMode === 'grid' && filteredIngredients.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+<div v-if="viewMode === 'grid' && filteredIngredients.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
      <div
         v-for="ingredient in filteredIngredients"
         :key="ingredient.id"
-        class="bg-white rounded-xl shadow-lg p-5 hover:shadow-md transition flex flex-col justify-between cursor-pointer"
+        class="bg-white rounded-xl shadow-lg p-5 hover:shadow-md transition flex flex-col justify-between cursor-pointer w-full"
         @click="openEditModal(ingredient)"
       >
         <!-- Nombre -->
@@ -166,7 +166,9 @@ onMounted(loadIngredients)
     </div>
 
     <!-- Table View -->
-    <table v-else-if="viewMode === 'table' && filteredIngredients.length" class="w-full text-left text-sm">
+     <div v-else-if="viewMode === 'table' && filteredIngredients.length" class="overflow-x-auto">
+
+    <table class="min-w-[800px] w-full text-left text-sm">
       <thead class="bg-gray-200 text-gray-600 font-medium">
         <tr>
           <th class="py-3 px-2">Nombre</th>
@@ -192,15 +194,16 @@ onMounted(loadIngredients)
           <td class="py-3 px-2 text-right">
             <button
               @click.prevent.stop="removeIngredient(ingredient)"
-              class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full"
+              class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-300"
               title="Eliminar"
             >
               <IconTrash class="w-5 h-5" />
-            </button>  
+            </button>
           </td>
         </tr>
       </tbody>
     </table>
+  </div>
 
     <!-- Sin resultados -->
     <div v-else class="flex flex-col items-center justify-center py-12 text-gray-500">

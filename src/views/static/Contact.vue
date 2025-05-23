@@ -4,9 +4,7 @@
     <!-- Encabezado -->
     <header class="text-center py-12">
       <h1 class="text-4xl md:text-5xl font-extrabold text-[var(--color-primary)]">¿Necesitas ayuda?</h1>
-      <p class="mt-4 text-lg md:text-xl text-[var(--color-text)]">
-        Estamos disponibles 24/7 para resolver tus dudas.
-      </p>
+      <p class="mt-4 text-lg md:text-xl">Estamos disponibles 24/7 para resolver tus dudas.</p>
     </header>
 
     <!-- Sección principal -->
@@ -16,25 +14,24 @@
         <!-- Info contacto -->
         <div>
           <h2 class="text-2xl font-bold text-[var(--color-primary)] mb-6">Información de contacto</h2>
-          <ul class="space-y-4 text-[var(--color-text)]">
+          <ul class="space-y-5 text-[var(--color-text)] text-base">
             <li class="flex items-center gap-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--color-secondary)] mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h18m-7 5h7" />
-                  </svg>              
-                  <span>info@fitvue.com</span>
+              <svg class="w-5 h-5 text-[var(--color-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+              </svg>
+              <span>info@fitvue.com</span>
             </li>
             <li class="flex items-center gap-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--color-secondary)] mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12v8m0 0h-8m8 0h8" />
-                  </svg>              
-                  <span>+34 600 123 456</span>
+              <svg class="w-5 h-5 text-[var(--color-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10a9 9 0 0018 0M12 14v3m0 4h.01"/>
+              </svg>
+              <span>+34 600 123 456</span>
             </li>
             <li class="flex items-center gap-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--color-secondary)] mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 11V6c0-1.105-.895-2-2-2h-5c-1.105 0-2 .895-2 2v5m-4 0V6c0-1.105-.895-2-2-2H5c-1.105 0-2 .895-2 2v5m7 0v5m0 0h7m-7 0H7" />
-                  </svg>              
-                  <span>Calle Ficticia 123, Barcelona</span>
+              <svg class="w-5 h-5 text-[var(--color-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5V4H2v16h5m10 0v2a2 2 0 01-2 2H9a2 2 0 01-2-2v-2m10 0H7"/>
+              </svg>
+              <span>Calle Ficticia 123, Barcelona</span>
             </li>
           </ul>
         </div>
@@ -42,20 +39,44 @@
         <!-- Formulario -->
         <div>
           <h2 class="text-2xl font-bold text-[var(--color-primary)] mb-6">Envíanos un mensaje</h2>
-          <form class="space-y-6">
+          <form @submit.prevent="handleSubmit" class="space-y-6">
             <div>
-              <label class="block fot-medium text-[var(--color-primary)]">Nombre</label>
-              <input type="text" placeholder="Tu nombre" class="w-full p-4 mt-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-accent)]" />
+              <label class="block text-sm font-medium text-[var(--color-primary)]">Nombre</label>
+              <input
+                v-model="form.name"
+                required
+                aria-label="Nombre"
+                type="text"
+                placeholder="Tu nombre"
+                class="w-full p-4 mt-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-accent)]"
+              />
             </div>
             <div>
-              <label class="block font-medium text-[var(--color-primary)]">Correo electrónico</label>
-              <input type="email" placeholder="email@ejemplo.com" class="w-full p-4 mt-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-accent)]" />
+              <label class="block text-sm font-medium text-[var(--color-primary)]">Correo electrónico</label>
+              <input
+                v-model="form.email"
+                required
+                aria-label="Correo electrónico"
+                type="email"
+                placeholder="email@ejemplo.com"
+                class="w-full p-4 mt-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-accent)]"
+              />
             </div>
             <div>
-              <label class="block font-medium text-[var(--color-primary)]">Mensaje</label>
-              <textarea rows="5" placeholder="Escribe tu mensaje..." class="w-full p-4 mt-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-accent)]"></textarea>
+              <label class="block text-sm font-medium text-[var(--color-primary)]">Mensaje</label>
+              <textarea
+                v-model="form.message"
+                required
+                aria-label="Mensaje"
+                rows="5"
+                placeholder="Escribe tu mensaje..."
+                class="w-full p-4 mt-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-accent)]"
+              ></textarea>
             </div>
-            <button class="w-full py-3 bg-[var(--color-primary)] text-white font-semibold rounded-full hover:bg-[var(--color-secondary)] transition">
+            <button
+              type="submit"
+              class="w-full py-3 bg-[var(--color-primary)] text-white font-semibold rounded-full hover:bg-[var(--color-secondary)] transition"
+            >
               Enviar mensaje
             </button>
           </form>
@@ -65,3 +86,23 @@
     </section>
   </div>
 </template>
+
+<script setup>
+import { ref } from 'vue'
+
+const form = ref({
+  name: '',
+  email: '',
+  message: ''
+})
+
+function handleSubmit() {
+  if (!form.value.name || !form.value.email || !form.value.message) return
+
+  // Aquí puedes enviar a tu backend o API de correo
+  console.log('📬 Enviado:', form.value)
+
+  alert('¡Mensaje enviado! Te responderemos pronto.')
+  form.value = { name: '', email: '', message: '' }
+}
+</script>

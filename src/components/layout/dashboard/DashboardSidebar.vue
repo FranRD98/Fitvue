@@ -16,7 +16,7 @@ import { IconCrown } from '@tabler/icons-vue'
 <template>
   <aside class="flex flex-col h-full">
     <div class="py-4 px-6 flex items-center justify-between">
-      <router-link to="/" class="text-2xl font-bold">
+      <router-link to="/" class="text-4xl font-bold">
         <span>fit</span><span class="text-[var(--color-primary)]">VUE</span>
       </router-link>
       <!-- Botón cerrar solo visible en móvil -->
@@ -41,7 +41,7 @@ import { IconCrown } from '@tabler/icons-vue'
     </nav>
 
     <!-- Premium: solo visible en desktop -->
-    <div class="hidden md:block mt-auto p-4">
+    <div class="mt-auto p-4">
       <div class="bg-gradient-to-br from-cyan-900 via-cyan-700 to-cyan-600 text-white p-4 rounded-xl shadow-lg">
         <div class="bg-white/10 rounded-full w-10 h-10 flex items-center justify-center mb-3">
           <IconCrown class="w-6 h-6"/>

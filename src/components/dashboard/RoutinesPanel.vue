@@ -104,7 +104,7 @@ const handleUnassign = async () => {
 
     <!-- Buscador y vista -->
     <div v-else>
-      <div class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4 w-full">
         <div class="flex-1">
           <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Buscar rutina</label>
           <input
@@ -133,11 +133,11 @@ const handleUnassign = async () => {
       </div>
 
       <!-- Vista Grid -->
-      <div v-if="viewMode === 'grid' && filteredRoutines.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div v-if="viewMode === 'grid' && filteredRoutines.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         <div
           v-for="routine in filteredRoutines"
           :key="routine.id"
-          class="bg-white shadow rounded-xl overflow-hidden flex flex-col hover:shadow-md transition cursor-pointer justify-between"
+          class="bg-white shadow rounded-xl overflow-hidden flex flex-col hover:shadow-md transition cursor-pointer justify-between w-full"
           @click="openEditModal(routine)"
         >
           <div class="p-5 flex flex-col flex-grow">
@@ -173,7 +173,7 @@ const handleUnassign = async () => {
 
       <div>
         <!-- Rutina Asignada Destacada -->
-        <div v-if="assignedRoutine" class=" bg-green-100 shadow-lg rounded-xl p-5 border border-green-300 z-10">
+        <div v-if="assignedRoutine" class="col-span-full bg-green-100 shadow-lg rounded-xl p-5 border border-green-300 z-10">
           <h2 class="text-lg font-bold text-green-800 mb-2">Rutina Asignada por coach</h2>
           <h3 class="text-md font-semibold text-green-900">{{ assignedRoutine.title }}</h3>
           <p class="text-sm text-green-700 mb-2">{{ assignedRoutine.description }}</p>
@@ -192,7 +192,9 @@ const handleUnassign = async () => {
 
 
       <!-- Vista Tabla -->
-      <table v-else-if="viewMode === 'table' && filteredRoutines.length" class="w-full text-left text-sm">
+       <div v-else-if="viewMode === 'table' && filteredRoutines.length" class="overflow-x-auto">
+      <table class="min-w-[600px] w-full text-left text-sm">
+        
         <thead class="bg-gray-200 text-gray-600 font-medium">
           <tr>
             <th class="py-3 px-2">Nombre</th>
@@ -237,7 +239,7 @@ const handleUnassign = async () => {
           </tr>
         </tbody>
       </table>
-
+       </div>
       <!-- Sin resultados -->
       <div v-if="filteredRoutines.length === 0" class="flex flex-col items-center justify-center py-12 text-gray-500">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

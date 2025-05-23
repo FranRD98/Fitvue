@@ -65,8 +65,8 @@ function handleBack() {
 <template>
   <div v-if="loading" class="text-center p-6">Cargando rutina...</div>
 
-  <div v-else class="fixed inset-0 bg-[var(--color-primary)] bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl h-[90vh] flex flex-col relative overflow-hidden">
+  <div v-else class="fixed inset-0 bg-[var(--color-primary)] bg-opacity-60 backdrop-blur-sm flex justify-center items-start overflow-y-auto py-6 z-50">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] h-auto flex flex-col relative overflow-hidden">
 
       <!-- Header -->
       <div class="text-center py-6 border-b">
@@ -90,7 +90,7 @@ function handleBack() {
             <div
               v-for="(set, i) in exerciseInputs[step]?.sets"
               :key="i"
-              class="flex gap-2 items-center justify-center"
+              class="input w-1/2 text-center"
             >
               <input
                 ref="inputRefs"

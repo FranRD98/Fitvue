@@ -87,11 +87,11 @@ watch(
 
 <template>
   <section>
-    <div class="flex justify-between items-center mb-10">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
       <h1 class="text-3xl font-bold text-[var(--color-primary)]">Configuración</h1>
     </div>
 
-    <div class="bg-white shadow rounded-xl p-6 max-w-3xl space-y-6">
+<div class="bg-white shadow rounded-xl p-6 max-w-3xl w-full mx-auto space-y-6">
       <!-- Imagen de perfil -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Imagen de perfil</label>
@@ -144,7 +144,7 @@ watch(
       </div>
 
       <!-- Botones -->
-      <div class="flex justify-between items-center pt-4 border-t">
+      <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t">
         <button @click="logout" class="text-sm text-red-600 hover:underline">Cerrar sesión</button>
         <button
           @click="handleSave"

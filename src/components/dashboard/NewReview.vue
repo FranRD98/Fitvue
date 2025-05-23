@@ -86,8 +86,8 @@ function handleBack() {
 </script>
 
 <template>
-  <div class="fixed inset-0 bg-[var(--color-primary)] bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl h-[90vh] flex flex-col relative overflow-hidden">
+<div class="fixed inset-0 bg-[var(--color-primary)] bg-opacity-60 backdrop-blur-sm flex items-start justify-center overflow-y-auto py-6 z-50">
+<div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] h-auto flex flex-col relative overflow-hidden">
       
       <!-- Encabezado -->
       <div class="text-center py-6 border-b">
@@ -104,7 +104,7 @@ function handleBack() {
 
       <!-- Contenido -->
       <transition :name="direction === 'forward' ? 'slide-left' : 'slide-right'" mode="out-in">
-        <div :key="step" class="flex-1 flex flex-col items-center justify-center text-center p-6 gap-6">
+        <div :key="step" class="flex-1 relative flex flex-col items-center justify-center text-center p-6 gap-6">
           <h3 class="text-xl font-semibold text-gray-700">{{ currentStep.label }}</h3>
 
           <img
@@ -118,7 +118,7 @@ function handleBack() {
             ref="inputRef"
             v-model.number="userData[currentStep.model]"
             type="number"
-            class="input mt-4"
+            class="input mt-4 text-center w-full max-w-xs"
             placeholder="Introduce el valor en cm"
             required
             @keyup.enter="handleNext"

@@ -41,6 +41,12 @@ function openNewModal() {
   selectedPlate.value = null
   showModal.value = true
 }
+function getTotal(plate, macro) {
+  const total = plate.items?.reduce((acc, item) => {
+    return acc + (item[macro] || 0)
+  }, 0)
+  return total.toFixed(1)
+}
 
 function openEditModal(plate) {
   selectedPlate.value = plate
@@ -67,7 +73,7 @@ function getIngredientName(id) {
 
 <template>
   <section>
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
       <h1 class="text-3xl font-bold text-[var(--color-primary)]">Platos</h1>
       <button @click="openNewModal" class="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg shadow hover:bg-[var(--color-secondary)] transition">
         <IconPlus class="w-5 h-5" />
@@ -85,7 +91,7 @@ function getIngredientName(id) {
     />
 
     <!-- Filtro -->
-    <div class="mb-6 flex justify-between items-end gap-4">
+    <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4 w-full">
       <input
         v-model="searchQuery"
         placeholder="Buscar plato..."
@@ -103,11 +109,11 @@ function getIngredientName(id) {
     </div>
 
         <!-- VISTA GRID -->
-    <div v-if="viewMode === 'grid' && filteredPlates.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div v-if="viewMode === 'grid' && filteredPlates.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       <div
         v-for="plate in filteredPlates"
         :key="plate.id"
-        class="bg-white p-4 rounded-lg shadow cursor-pointer hover:shadow-md transition flex flex-col justify-between"
+        class="bg-white p-4 rounded-lg shadow cursor-pointer hover:shadow-md transition flex flex-col justify-between w-full"
         @click="openEditModal(plate)"
       >
         <h3 class="text-lg font-bold truncate text-[var(--color-primary)]">{{ plate.name }}</h3>
@@ -142,7 +148,9 @@ function getIngredientName(id) {
     </div>
 
     <!-- VISTA TABLE -->
-    <table v-else-if="viewMode === 'table' && filteredPlates.length" class="w-full text-left text-sm">
+     <div v-else-if="viewMode === 'table' && filteredPlates.length" class="overflow-x-auto">
+
+    <table class="min-w-[900px] w-full text-left text-sm">
       <thead class="bg-gray-100 text-gray-600 font-semibold">
         <tr>
           <th class="px-4 py-2">Nombre</th>
@@ -166,13 +174,18 @@ function getIngredientName(id) {
           <td class="px-4 py-3 text-center">{{ getTotal(plate, 'carbs') }} g</td>
           <td class="px-4 py-3 text-center">{{ getTotal(plate, 'fats') }} g</td>
           <td class="px-4 py-3 text-right">
-            <button @click.prevent.stop="removePlate(plate)" class="text-red-500 hover:bg-red-500 hover:text-white p-2 rounded-full transition">
+            <button
+              @click.stop="removePlate(plate)"
+              class="text-red-600 hover:text-white hover:bg-red-600 p-2 rounded-full transition focus:outline-none focus:ring-2 focus:ring-red-300"
+              title="Eliminar"
+            >
               <IconTrash class="w-5 h-5" />
             </button>
           </td>
         </tr>
       </tbody>
     </table>
+     </div>
 
     <!-- Si no hay coincidencias -->
     <div v-if="filteredPlates.length === 0"class="flex flex-col items-center justify-center py-12 text-gray-500">
