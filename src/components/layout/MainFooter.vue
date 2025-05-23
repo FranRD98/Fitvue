@@ -1,3 +1,8 @@
+<script setup>
+  import { IconBrandInstagram, IconBrandX, IconBrandLinkedin } from '@tabler/icons-vue'
+
+</script>
+
 <template>
   <footer class="bg-[var(--color-primary)] shadow-xl text-white text-sm pt-12">
     <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-10 items-start pb-12">
@@ -5,11 +10,15 @@
       <!-- Social + descripción -->
       <div class="space-y-4">
         <div class="flex gap-3">
-          <a href="#"><i class="fab fa-instagram text-xl"></i></a>
-          <a href="#"><i class="fab fa-tiktok text-xl"></i></a>
-          <a href="#"><i class="fab fa-facebook-f text-xl"></i></a>
-          <a href="#"><i class="fab fa-x-twitter text-xl"></i></a>
-          <a href="#"><i class="fab fa-linkedin-in text-xl"></i></a>
+          <a href="#">
+            <IconBrandInstagram class="w-8 h-8"/>
+          </a>
+          <a href="#">
+            <IconBrandX class="w-8 h-8"/>
+          </a>
+          <a href="#">
+            <IconBrandLinkedin class="w-8 h-8"/>
+          </a>
         </div>
         <p class="text-sm">
           *FitVue no ofrece asesoramiento médico ni diagnóstico. Su uso es informativo.
@@ -24,15 +33,15 @@
           <ul class="space-y-2">
             <li><router-link to="/nosotros" class="nav-link">¿Qué es FitVue?</router-link></li>
             <li><router-link to="/rutinas" class="nav-link">Rutinas</router-link></li>
-            <li><router-link to="/nutricion" class="nav-link">Nutrición</router-link></li>
+            <li><router-link to="/guias" class="nav-link">Guías</router-link></li>
           </ul>
         </div>
         <div>
           <h4 class="text-lg font-semibold mb-2">Soporte</h4>
           <ul class="space-y-2">
+            <li><router-link to="/empezar/1" class="nav-link">Comenzar</router-link></li>
             <li><router-link to="/contacto" class="nav-link">Contacto</router-link></li>
             <li><router-link to="/FAQ" class="nav-link">FAQ</router-link></li>
-            <li><router-link to="/empezar" class="nav-link">Comenzar</router-link></li>
           </ul>
         </div>
       </div>

@@ -30,7 +30,7 @@
         Planes personalizados y rutinas exclusivas para alcanzar tus metas de salud y bienestar.
       </p>
 
-      <router-link to="empezar"
+      <router-link to="empezar/1"
       class="mt-8 bg-[var(--color-primary)] w-3/4 sm:w-1/2 md:w-1/4 px-6 py-3 rounded-full text-white text-lg font-semibold transition duration-300 hover:bg-white hover:text-[var(--color-primary)]">
         Únete ahora
       </router-link>
