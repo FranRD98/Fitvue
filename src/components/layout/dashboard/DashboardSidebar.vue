@@ -81,7 +81,7 @@ const badgeColor = computed(() => {
 
 
     <!-- Premium: solo visible en desktop -->
-    <div v-if="planId === 1" class="mt-auto p-4">
+    <div v-if="plan_Id === 1" class="mt-auto p-4">
       <div class="bg-gradient-to-br from-cyan-900 via-cyan-700 to-cyan-600 text-white p-4 rounded-xl shadow-lg">
         <div class="bg-white/10 rounded-full w-10 h-10 flex items-center justify-center mb-3">
           <IconCrown class="w-6 h-6"/>

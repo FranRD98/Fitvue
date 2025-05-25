@@ -1,4 +1,3 @@
-<!-- src/components/IngredientModal.vue -->
 <script setup>
 import { ref, watch } from 'vue'
 

@@ -4,7 +4,6 @@ import { storeToRefs } from 'pinia'
 
 // Vistas públicas
 import Home from '@/views/Home.vue'
-import About from '@/views/static/About.vue'
 import Contact from '@/views/static/Contact.vue'
 import Login from '@/views/auth/Login.vue'
 import Register from '@/views/auth/Register.vue'
@@ -31,7 +30,6 @@ import SuccessPayment from '@/components/stripe/SuccessPayment.vue'
 
 const routes = [
   { path: '/', component: Home, meta: { public: true } },
-  { path: '/nosotros', component: About, meta: { public: true } },
   { path: '/contacto', component: Contact, meta: { public: true } },
   { path: '/FAQ', component: FAQ, meta: { public: true } },
   { path: '/login', component: Login, meta: { public: true } },

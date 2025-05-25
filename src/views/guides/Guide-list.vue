@@ -2,7 +2,7 @@
 // Imports
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getGuides, getCategories } from '@/supabase/services/guides.js'
+import { getPublishedGuides, getPublishedGuideCategoriesInUse } from '@/supabase/services/guides.js'
 import Card from '@/components/Card.vue'
 
 // Variables
@@ -14,11 +14,16 @@ const categories = ref([])            // Lista de categorías disponibles
 const selectedCategory = ref('Todas') // Categoría seleccionada por defecto
 const currentPage = ref(1)            // Página actual para la paginación
 const itemsPerPage = 6                // Guías por página
+const cat = categories.value.find(c => c.id === id_category)
+const title = cat?.title || 'general'
 
 // Carga inicial al montar el componente
 onMounted(async () => {
-  guides.value = await getGuides()
-  categories.value = await getCategories()
+  guides.value = await getPublishedGuides()
+  categories.value = await getPublishedGuideCategoriesInUse()
+
+  // Evitar mostrar guías sin categoría válida
+  guides.value = guides.value.filter(g => g.id_category)
 
   // Si hay categoría en la URL, se establece como seleccionada
   const categoryParam = route.params.category

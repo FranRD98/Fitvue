@@ -1,5 +1,6 @@
 <script setup>
 import { ref, watch, computed } from 'vue'
+import { useUserStore } from '@/stores/user'
 import { createPlate, updatePlate } from '@/supabase/services/plates'
 
 const props = defineProps({
@@ -8,6 +9,7 @@ const props = defineProps({
   ingredients: Array
 })
 const emit = defineEmits(['close', 'saved'])
+const userStore = useUserStore()
 
 const form = ref({
   name: '',
@@ -56,7 +58,7 @@ async function save() {
   if (isEditing.value) {
     await updatePlate(props.plate.id, payload)
   } else {
-    await createPlate(payload)
+    await createPlate(payload, userStore.userData?.uid)
   }
 
   emit('saved')
@@ -86,7 +88,7 @@ async function save() {
         </div>
 
         <!-- Lista de ingredientes -->
-        <div class="space-y-3">
+        <div v-if="ingredients.length" class="space-y-3">
           <label class="block text-lg font-medium text-gray-700">Listado de ingredientes:</label>
           <div class="grid grid-cols-12 gap-2 text-sm font-medium text-gray-500 mb-1 px-1">
             <div class="col-span-7">Ingrediente</div>
@@ -103,10 +105,14 @@ async function save() {
 
             <button type="button" @click="removeIngredientRow(index)" class="text-red-500 text-xs hover:underline col-span-2 text-right">Eliminar</button>
           </div>
+
+          <button type="button" @click="addIngredientRow" class="text-sm text-blue-600 hover:underline">+ Añadir ingrediente</button>
         </div>
 
-        <button type="button" @click="addIngredientRow" class="text-sm text-blue-600 hover:underline">+ Añadir ingrediente</button>
-
+        <!-- Mensaje si no hay ingredientes -->
+        <p v-else class="text-sm text-red-500 mt-2">
+          ⚠️ No puedes crear un plato sin antes haber creado ingredientes.
+        </p>
         <!-- Guardar -->
         <div class="flex justify-end pt-4">
           <button type="submit" class="bg-[var(--color-primary)] text-white px-5 py-2 rounded-lg hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition">

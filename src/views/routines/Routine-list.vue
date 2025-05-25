@@ -2,7 +2,7 @@
 // Imports
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getRoutines, getRoutineCategories } from '@/supabase/services/routines.js'
+import { getPublishedRoutines, getPublishedRoutineCategoriesInUse } from '@/supabase/services/routines.js'
 import Card from '@/components/Card.vue'
 
 // Variables de estado
@@ -17,8 +17,8 @@ const itemsPerPage = 6                  // Rutinas por página
 
 // Carga inicial al montar el componente
 onMounted(async () => {
-  routines.value = await getRoutines()
-  categories.value = await getRoutineCategories()
+  routines.value = await getPublishedRoutines()
+  categories.value = await getPublishedRoutineCategoriesInUse()
 
   const categoryParam = route.params.category
   if (categoryParam) {

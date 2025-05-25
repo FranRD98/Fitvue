@@ -1,7 +1,7 @@
 import { supabase } from '@/supabase/config';
 
 // Crear nueva rutina
-export async function createRoutine(routineData ) {
+export async function createRoutine(routineData) {
   const { data, error } = await supabase
     .from('routines')
     .insert([{ ...routineData }])
@@ -27,6 +27,74 @@ export async function getRoutines(category) {
   if (error) throw error
   
   return data
+}
+
+// Obtener solo rutinas publicadas
+export async function getPublishedRoutines() {
+  const { data, error } = await supabase
+    .from('routines')
+    .select('*')
+    .eq('published', true)
+    .order('created_at', { ascending: false }) // opcional si tenés campo de fecha
+
+  if (error) {
+    console.error('Error al obtener rutinas publicadas:', error)
+    return []
+  }
+
+  return data
+}
+
+// Obtener categorias de rutinas publicadas
+export async function getPublishedRoutineCategoriesInUse() {
+  // 1. Obtener las rutinas publicadas
+  const { data: routines, error: routineError } = await supabase
+    .from('routines')
+    .select('id_category')
+    .eq('published', true)
+
+  if (routineError) {
+    console.error('Error al obtener rutinas publicadas:', routineError)
+    return []
+  }
+
+  const categoryIds = [...new Set(routines.map(r => r.id_category))] // IDs únicos
+
+  if (categoryIds.length === 0) return []
+
+  // 2. Obtener las categorías que están en uso (sin depender de que estén publicadas)
+  const { data: categories, error: catError } = await supabase
+    .from('routines_categories')
+    .select('*')
+    .in('id', categoryIds)
+
+  if (catError) {
+    console.error('Error al obtener categorías en uso:', catError)
+    return []
+  }
+
+  // 3. Cargar iconos o usar uno por defecto
+  const categoriesWithIcons = await Promise.all(
+    categories.map(async (category) => {
+      if (!category.icon_path) {
+        category.icon_path = '/icons/default-icon.svg'
+        return category
+      }
+
+      const { data: imageData, error: imageError } = await supabase
+        .storage
+        .from('fitvue')
+        .getPublicUrl(category.icon_path)
+
+      category.icon_path = imageError
+        ? '/icons/default-icon.svg'
+        : imageData.publicUrl
+
+      return category
+    })
+  )
+
+  return categoriesWithIcons
 }
 
 export async function getRoutinesByUser(uid) {
@@ -87,8 +155,6 @@ export async function getAssignedRoutine(uid) {
 
 // Actualizar una rutina existente
 export async function updateRoutine(id, routineData) {
-    // Asegúrate de que 'routineData.days' es un array de objetos válidos
-    console.log('Actualizando rutina con los siguientes datos:', JSON.stringify(routineData));
   
     const { data, error } = await supabase
       .from('routines')
@@ -96,7 +162,8 @@ export async function updateRoutine(id, routineData) {
         title: routineData.title,
         description: routineData.description,
         id_category: routineData.id_category,
-        days: routineData.days,  // No necesitas convertirlo a string si ya es un array de objetos
+        days: routineData.days,
+        published: routineData.published,
         updated_at: new Date()
       })
       .eq('id', id)
@@ -110,7 +177,31 @@ export async function updateRoutine(id, routineData) {
     console.log('Rutina actualizada correctamente:', data);
   }
   
-  
+// Crear nueva categoría de rutina (evita duplicados)
+export async function createRoutineCategory(title) {
+  // 1. Comprobamos si ya existe una categoría con el mismo título (ignorando mayúsculas/minúsculas)
+  const { data: existing, error: checkError } = await supabase
+    .from('routines_categories')
+    .select('*')
+    .ilike('title', title) // comparación case-insensitive
+
+  if (checkError) throw checkError
+
+  if (existing && existing.length > 0) {
+    // Si ya existe, devolvemos la existente (opcionalmente podrías lanzar un error en lugar de esto)
+    return existing[0]
+  }
+
+  // 2. Insertar nueva categoría
+  const { data, error } = await supabase
+    .from('routines_categories')
+    .insert([{ title }])
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
 
 // Asignar rutina a usuario
 export async function assignRoutineToUser(uid, routineId) {

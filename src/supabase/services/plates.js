@@ -71,10 +71,10 @@ export function getMacros(plate) {
 }
 
 // Crear nuevo plato
-export async function createPlate(plateData) {
+export async function createPlate(plateData, userId) {
   const { error } = await supabase
     .from('plates')
-    .insert([{ ...plateData }]) // Supabase añade automáticamente el `created_at` si lo configuras en la DB
+    .insert([{ ...plateData, created_by: userId }])
 
   if (error) throw error
 }

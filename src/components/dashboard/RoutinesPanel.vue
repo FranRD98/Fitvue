@@ -5,7 +5,8 @@ import {
   getRoutinesByUser,
   assignRoutineToUser,
   getAssignedRoutine,
-  unassignRoutineFromUser
+  unassignRoutineFromUser,
+  updateRoutine
 } from '@/supabase/services/routines.js'
 import RoutineFormModal from '@/components/dashboard/modals/RoutineFormModal.vue'
 import { IconPlus, IconLayoutGrid, IconLayoutList } from '@tabler/icons-vue'
@@ -19,6 +20,7 @@ const assignedRoutine = ref(null)
 const assignedRoutineId = ref(null)
 const viewMode = ref('grid')
 const searchQuery = ref('')
+const hasSearch = computed(() => searchQuery.value.trim().length > 0)
 
 // Skeleton/loading state
 const { loading, showSkeleton, start, finish } = useDelayedSkeleton(200)
@@ -28,6 +30,16 @@ const filteredRoutines = computed(() =>
     routine.title.toLowerCase().includes(searchQuery.value.toLowerCase())
   )
 )
+
+const togglePublished = async (routine) => {
+  try {
+    const newValue = !routine.published
+    await updateRoutine(routine.id, { published: newValue })
+    routine.published = newValue // actualizamos localmente para evitar refetch
+  } catch (error) {
+    console.error('Error al publicar rutina:', error)
+  }
+}
 
 const loadRoutines = async () => {
   start()
@@ -61,13 +73,11 @@ const handleAssign = async (routineId) => {
 
   await assignRoutineToUser(userStore.userData?.uid, routineId)
   assignedRoutineId.value = routineId
-  alert('Rutina asignada correctamente.')
 }
 
 const handleUnassign = async () => {
   await unassignRoutineFromUser(userStore.userData?.uid)
   assignedRoutineId.value = null
-  alert('Rutina desasignada correctamente.')
 }
 </script>
 
@@ -145,29 +155,63 @@ const handleUnassign = async () => {
             <p class="text-sm text-gray-600 mb-3 line-clamp-3">{{ routine.description }}</p>
             <p class="text-xs text-gray-500 mt-auto">Ejercicios totales: {{ countExercises(routine) }}</p>
 
-            <div class="mt-4 flex justify-end">
-              <label class="relative inline-flex items-center cursor-pointer" @click.stop>
-                <input
-                  type="checkbox"
-                  class="sr-only peer"
-                  :checked="assignedRoutineId === routine.id"
-                  @change="($event) => {
-                    if ($event.target.checked) {
-                      handleAssign(routine.id)
-                    } else {
-                      handleUnassign()
-                    }
-                  }"
-                />
-                <div
-                  class="group peer bg-white rounded-full duration-300 w-12 h-6 ring-2 ring-[var(--color-primary)]
-                    after:transition-transform after:duration-300 after:bg-[var(--color-primary)]
-                    peer-checked:after:bg-green-500 peer-checked:ring-green-500
-                    after:rounded-full after:absolute after:h-4 after:w-4 after:top-1 after:left-1
-                    after:content-[''] peer-checked:after:translate-x-6 peer-hover:after:scale-95"
-                ></div>
-              </label>
+            <div class="flex justify-between">
+              
+              <!-- Checkbox publicar Rutina -->
+              <div class="mt-4 flex justify-end">
+                <label class="flex items-center gap-2 cursor-pointer select-none" @click.stop>
+                  <input
+                    type="checkbox"
+                    class="sr-only"
+                    :checked="routine.published"
+                    @change="() => togglePublished(routine)"
+                  />
+                  <div
+                    class="w-10 h-6 flex items-center bg-gray-300 rounded-full p-1 duration-300 ease-in-out"
+                    :class="{ 'bg-green-500': routine.published }"
+                  >
+                    <div
+                      class="bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out"
+                      :class="{ 'translate-x-4': routine.published }"
+                    ></div>
+                  </div>
+                  <span class="text-sm text-gray-700">
+                    {{ routine.published ? 'Publicado' : 'No publicado' }}
+                  </span>
+                </label>
+              </div>
+              
+              <!-- Checkbox Asignar Rutina -->
+              <div class="mt-4 flex justify-end">
+                <label class="flex items-center gap-2 cursor-pointer select-none" @click.stop>
+                  <input
+                    type="checkbox"
+                    class="sr-only"
+                    :checked="assignedRoutineId === routine.id"
+                    @change="($event) => {
+                      if ($event.target.checked) {
+                        handleAssign(routine.id)
+                      } else {
+                        handleUnassign()
+                      }
+                    }"
+                  />
+                  <div
+                    class="w-10 h-6 flex items-center bg-gray-300 rounded-full p-1 duration-300 ease-in-out"
+                    :class="{ 'bg-green-500': assignedRoutineId === routine.id }"
+                  >
+                    <div
+                      class="bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out"
+                      :class="{ 'translate-x-4': assignedRoutineId === routine.id }"
+                    ></div>
+                  </div>
+                  <span class="text-sm text-gray-700">
+                    {{ assignedRoutineId === routine.id ? 'Asignada' : 'Sin asignar' }}
+                  </span>
+                </label>
+              </div>
             </div>
+
           </div>
         </div>
 
@@ -246,8 +290,14 @@ const handleUnassign = async () => {
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0z" />
         </svg>
-        <p class="text-lg font-semibold">Sin resultados</p>
-        <p class="text-sm">No se encontraron rutinas que coincidan con el filtro.</p>
+        <p class="text-lg font-semibold">
+          {{ hasSearch ? 'Sin resultados' : 'Aún no has creado ninguna rutina' }}
+        </p>
+        <p class="text-sm">
+          {{ hasSearch
+            ? 'No se encontraron rutinas que coincidan con el filtro.'
+            : 'Empieza creando tu primera rutina con el botón de arriba.' }}
+        </p>
       </div>
     </div>
 

@@ -1,7 +1,8 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import { getGuides, getCategories, deleteGuide } from '@/supabase/services/guides.js'
+import { ref, onMounted, computed, watch } from 'vue'
+import { getGuides, getCategories, updateGuide, deleteGuide } from '@/supabase/services/guides.js'
 import GuideFormModal from '@/components/dashboard/modals/GuideFormModal.vue'
+import { useUserStore } from '@/stores/user'
 
 import {
   IconPlus,
@@ -15,6 +16,7 @@ const categories = ref([])
 const loading = ref(true)
 const showModal = ref(false)
 const selectedGuide = ref(null)
+const userStore = useUserStore()
 
 const searchQuery = ref('')
 const selectedCategory = ref('')
@@ -58,6 +60,15 @@ const handleDelete = async (guide) => {
   if (confirm(`¿Eliminar la guía "${guide.title}"?`)) {
     await deleteGuide(guide.id)
     await loadGuides()
+  }
+}
+
+const togglePublished = async (guide) => {
+  try {
+    await updateGuide(guide.id, { published: guide.published })
+    await loadGuides() // recarga
+  } catch (error) {
+    console.error('Error al actualizar publicación:', error)
   }
 }
 </script>
@@ -151,7 +162,35 @@ const handleDelete = async (guide) => {
             <p><strong>Fecha:</strong> {{ new Date(guide.created_at).toLocaleDateString() || '—' }}</p>
           </div>
 
-          <div class="mt-4 flex justify-end items-center">
+          <div class="mt-4 flex justify-between items-center">
+            <div v-if="userStore.userData?.role === 'admin'" class="flex items-center gap-3">
+              <label
+                class="flex items-center gap-2 cursor-pointer select-none"
+                @click.stop>   
+              <input
+                  type="checkbox"
+                  v-model="guide.published"
+                  class="sr-only"
+                  @change.stop="togglePublished(guide)"
+                />
+                <div
+                  class="w-10 h-6 flex items-center bg-gray-300 rounded-full p-1 duration-300 ease-in-out"
+                  :class="{ 'bg-green-500': guide.published }"
+                >
+                  <div
+                    class="bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out"
+                    :class="{ 'translate-x-4': guide.published }"
+                  ></div>
+                </div>
+                <span
+  class="text-xs"
+  :class="guide.published ? 'text-green-600' : 'text-gray-400'"
+>
+  {{ guide.published ? 'Publicado' : 'No publicado' }}
+</span>
+              </label>
+            </div>
+
             <button
               @click.stop="handleDelete(guide)"
               class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full transition duration-200"
@@ -160,6 +199,7 @@ const handleDelete = async (guide) => {
               <IconTrash class="w-5 h-5" />
             </button>
           </div>
+
         </div>
       </div>
     </div>

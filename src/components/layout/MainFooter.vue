@@ -30,7 +30,6 @@
         <div>
           <h4 class="text-base font-semibold text-white mb-2">fitVUE</h4>
           <ul class="space-y-1">
-            <li><router-link to="/nosotros" class="nav-link">¿Qué es FitVue?</router-link></li>
             <li><router-link to="/rutinas" class="nav-link">Rutinas</router-link></li>
             <li><router-link to="/guias" class="nav-link">Guías</router-link></li>
           </ul>
@@ -42,10 +41,11 @@
             <li><router-link to="/contacto" class="nav-link">Contacto</router-link></li>
           </ul>
         </div>
+        
       </div>
 
       <!-- Info legal y contacto -->
-      <div class="space-y-4">
+      <div class="space-y-2">
         <h4 class="text-base font-semibold text-white">Contacto</h4>
         <p>Email: <span class="font-medium">support@fitvue.com</span></p>
         <p>Teléfono: <span class="font-medium">+34 567 890 012</span></p>

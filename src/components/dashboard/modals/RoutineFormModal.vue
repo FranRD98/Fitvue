@@ -3,11 +3,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useUserStore } from '@/stores/user'  // Importamos el store de Pinia
 
 import { getExercises } from '@/supabase/services/exercises'
-import {
-  getRoutineCategories,
-  createRoutine,
-  updateRoutine
-} from '@/supabase/services/routines'
+import { getRoutineCategories, createRoutine, updateRoutine, createRoutineCategory } from '@/supabase/services/routines'
 
 // Props y emits
 const props = defineProps({
@@ -23,13 +19,32 @@ const exercises = ref([])
 const categories = ref([])
 const defaultDays = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 const selectedDays = ref([])
+const newCategoryName = ref('')
+const showNewCategoryInput = ref(false)
+const newCategoryTitle = ref('')
+
+const handleCreateCategory = async () => {
+  if (!newCategoryTitle.value.trim()) return
+
+  try {
+    const newCategory = await createRoutineCategory(newCategoryTitle.value.trim())
+    categories.value.push(newCategory)
+    routine.value.id_category = newCategory.id
+    newCategoryTitle.value = ''
+    showNewCategoryInput.value = false
+  } catch (error) {
+    console.error('Error al crear la categoría:', error)
+    alert('No se pudo crear la categoría.')
+  }
+}
 
 const routine = ref({
   title: '',
   description: '',
   id_category: '',
   days: [],
-  user_id: ''
+  user_id: '',
+  public: false
 })
 
 // Cargar datos al montar
@@ -46,7 +61,8 @@ watch(() => props.initialData, (newVal) => {
       title: newVal.title || '',
       description: newVal.description || '',
       id_category: newVal.id_category || '',
-      days: []
+      days: [],
+      public: newVal.public ?? false,
     }
 
     selectedDays.value = defaultDays.map(dayName => {
@@ -175,12 +191,57 @@ function resetForm() {
         </div>
 
         <!-- Selección de categoría -->
-        <div>
+        <div class="space-y-2">
           <label class="text-sm text-gray-700 font-medium mb-1 block">Tipo</label>
+
           <select v-model="routine.id_category" class="input" required>
             <option disabled value="">Selecciona un tipo</option>
-            <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+            <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.title }}</option>
           </select>
+
+          <!-- Botón para mostrar input de nueva categoría -->
+          <button
+            type="button"
+            @click="showNewCategoryInput = true"
+            v-if="!showNewCategoryInput"
+            class="text-sm text-blue-600 hover:underline mt-1"
+          >
+            + Crear nueva categoría
+          </button>
+
+          <!-- Input de nueva categoría -->
+          <div v-if="showNewCategoryInput" class="flex gap-2 mt-2">
+            <input
+              v-model="newCategoryTitle"
+              type="text"
+              placeholder="Nombre de la nueva categoría"
+              class="input flex-1"
+            />
+            <button
+              type="button"
+              @click="handleCreateCategory"
+              class="bg-[var(--color-primary)] text-white px-4 rounded hover:bg-[var(--color-secondary)]"
+            >
+              Crear
+            </button>
+          </div>
+        </div>
+
+        <!-- Solo visible si el usuario es admin -->
+        <div v-if="userStore.userData?.role === 'admin'" class="flex items-center gap-3 mt-4">
+          <label class="flex items-center gap-2 cursor-pointer select-none">
+            <input type="checkbox" v-model="routine.public" class="sr-only" />
+            <div
+              class="w-10 h-6 flex items-center bg-gray-300 rounded-full p-1 duration-300 ease-in-out"
+              :class="{ 'bg-green-500': routine.public }"
+            >
+              <div
+                class="bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out"
+                :class="{ 'translate-x-4': routine.public }"
+              ></div>
+            </div>
+            <span class="text-sm text-gray-700">Publicar rutina</span>
+          </label>
         </div>
 
         <!-- Días de rutina -->
@@ -262,7 +323,7 @@ function resetForm() {
             </Transition>
           </div>
         </div>
-
+      
         <!-- Guardar -->
         <div class="flex justify-end pt-4 mt-6">
           <button
@@ -273,6 +334,8 @@ function resetForm() {
           </button>
         </div>
       </form>
+
+      
     </div>
   </div>
 </template>

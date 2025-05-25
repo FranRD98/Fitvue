@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-[var(--color-bg-light)] min-h-screen py-16 text-[var(--color-text)]">
+  <div class="bg-white min-h-screen py-16 text-[var(--color-text)]">
 
     <!-- Encabezado -->
     <header class="text-center py-12">
@@ -31,7 +31,7 @@
               <svg class="w-5 h-5 text-[var(--color-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5V4H2v16h5m10 0v2a2 2 0 01-2 2H9a2 2 0 01-2-2v-2m10 0H7"/>
               </svg>
-              <span>Calle Ficticia 123, Barcelona</span>
+              <span>Calle Ficticia 123, Alicante</span>
             </li>
           </ul>
         </div>

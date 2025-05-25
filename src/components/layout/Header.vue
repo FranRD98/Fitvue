@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { supabase } from '@/supabase/config'
+import { getPublishedGuideCategoriesInUse } from '@/supabase/services/guides'
+import { getPublishedRoutineCategoriesInUse } from '@/supabase/services/routines'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
@@ -14,49 +15,12 @@ const guideCategories = ref([])
 const routineCategories = ref([])
 
 onMounted(async () => {
-  // Obtener categorías de guías
-  const { data: guideData, error: guideError } = await supabase.from('guides_categories').select('*')
-  if (guideError) {
-    console.error('Error al obtener categorías de guías:', guideError)
-  } else {
-    const categoriesWithImages = await Promise.all(
-      guideData.map(async (category) => {
-        const { data: imageData, error: imageError } = await supabase
-          .storage
-          .from('fitvue')
-          .getPublicUrl(category.icon_path)
-
-        category.icon_path = imageError
-          ? '/icons/default-icon.svg'
-          : imageData.publicUrl
-
-        return category
-      })
-    )
-    guideCategories.value = categoriesWithImages
-  }
-
+  // Obtener categorías de guías que estén publicadas
+  guideCategories.value = (await getPublishedGuideCategoriesInUse())
+    .filter(cat => !!cat.icon_path)
   // Obtener categorías de rutinas
-  const { data: routineData, error: routineError } = await supabase.from('routines_categories').select('*')
-  if (routineError) {
-    console.error('Error al obtener categorías de rutinas:', routineError)
-  } else {
-    const categoriesWithImages = await Promise.all(
-      routineData.map(async (category) => {
-        const { data: imageData, error: imageError } = await supabase
-          .storage
-          .from('fitvue')
-          .getPublicUrl(category.icon_path)
+  routineCategories.value = await getPublishedRoutineCategoriesInUse()
 
-        category.icon_path = imageError
-          ? '/icons/default-icon.svg'
-          : imageData.publicUrl
-
-        return category
-      })
-    )
-    routineCategories.value = categoriesWithImages
-  }
 })
 
 // Computed seguros
@@ -73,7 +37,7 @@ const userName = computed(() => userData.value?.name || 'Usuario')
 
 <template>
   <!-- Navbar -->
-  <nav class="bg-white shadow-xl sticky top-0 z-50">
+  <nav class="bg-white shadow-md sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-6">
       
       <!-- Contenedor principal con 3 grupos -->
@@ -94,9 +58,6 @@ const userName = computed(() => userData.value?.name || 'Usuario')
         
         <!-- Grupo 2: Menú central -->
         <div class="hidden lg:flex justify-center items-center space-x-6 flex-1">
-
-          <!-- Enlaces '¿Qué es Fitvue?' -->
-          <router-link to="/nosotros" class="nav-link px-1 py-2 text-[var(--color-text)] font-normal hover:text-[var(--color-secondary)]">¿Qué es FitVue?</router-link>
 
          <!-- Dropdown Rutinas -->
           <div class="relative dropdown">

@@ -28,8 +28,8 @@ const selectedPlate = ref(null)
 async function loadPlates() {
   loading.value = true
   try {
-    plates.value = await getPlates(userStore.userData?.uid) // 🎯 aquí
-    ingredients.value = await getIngredients()
+    plates.value = await getPlates(userStore.userData.uid)
+    ingredients.value = await getIngredients(userStore.userData.uid)  
   } finally {
     loading.value = false
   }

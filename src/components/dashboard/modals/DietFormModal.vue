@@ -2,8 +2,9 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import { getPlates } from '@/supabase/services/plates'
 import { createDiet, updateDiet } from '@/supabase/services/diets'
-
 import { getMacros } from '@/supabase/services/plates'
+import { useUserStore } from '@/stores/user'
+
 
 const props = defineProps({ show: Boolean, initialData: Object, currentUserId: String })
 const emit = defineEmits(['close', 'saved'])
@@ -11,6 +12,7 @@ const emit = defineEmits(['close', 'saved'])
 const plates = ref([])
 const customMealName = ref('')
 const showCustomMealInput = ref(false)
+const userStore = useUserStore()
 
 // Dieta
 const diet = ref({
@@ -85,8 +87,7 @@ watch(
 
 // Carga inicial
 onMounted(async () => {
-  plates.value = await getPlates();
-  console.log("Platos disponibles:", plates.value); // Verifica si los platos están cargados correctamente
+  plates.value = await getPlates(userStore.userData.uid)
 
   if (props.initialData) {
     diet.value = { ...props.initialData }
@@ -246,6 +247,11 @@ function close() {
 
         <!-- Comidas -->
         <div class="space-y-6">
+
+          <p v-if="!plates.length" class="text-sm text-red-500 mt-1 col-span-12">
+            ⚠️ Necesitas crear al menos un plato antes de crear una dieta.
+          </p>
+
           <div
             v-for="meal in selectedMeals"
             :key="meal.name"
