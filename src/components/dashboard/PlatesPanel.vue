@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { getPlates, deletePlate } from '@/supabase/services/plates'
 import { getIngredients } from '@/supabase/services/ingredients'
+import { useUserStore } from '@/stores/user'
 
 // Importamos la función getMacros desde plates.js
 import { getMacros } from '@/supabase/services/plates'
@@ -19,6 +20,7 @@ const ingredients = ref([])
 const loading = ref(true)
 const searchQuery = ref('')
 const viewMode = ref('grid')
+const userStore = useUserStore()
 
 const showModal = ref(false)
 const selectedPlate = ref(null)
@@ -26,10 +28,8 @@ const selectedPlate = ref(null)
 async function loadPlates() {
   loading.value = true
   try {
-    plates.value = await getPlates()
+    plates.value = await getPlates(userStore.userData?.uid) // 🎯 aquí
     ingredients.value = await getIngredients()
-  
-    console.log(plates.value)
   } finally {
     loading.value = false
   }
@@ -187,13 +187,24 @@ function getIngredientName(id) {
     </table>
      </div>
 
-    <!-- Si no hay coincidencias -->
-    <div v-if="filteredPlates.length === 0"class="flex flex-col items-center justify-center py-12 text-gray-500">
+    <!-- Sin resultados o sin contenido -->
+    <div v-if="filteredPlates.length === 0" class="flex flex-col items-center justify-center py-12 text-gray-500">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0z" />
       </svg>
-      <p class="text-lg font-semibold">Sin resultados</p>
-      <p class="text-sm">No se encontraron platos que coincidan con los filtros aplicados.</p>
+
+      <p class="text-lg font-semibold">
+        <template v-if="plates.length === 0">
+          Aún no has creado ningún plato
+        </template>
+        <template v-else>
+          No se encontraron platos que coincidan con los filtros aplicados
+        </template>
+      </p>
+
+      <p v-if="plates.length > 0" class="text-sm">
+        Intenta modificar la búsqueda o limpia los filtros.
+      </p>
     </div>
   </section>
 </template>

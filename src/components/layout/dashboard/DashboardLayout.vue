@@ -9,7 +9,6 @@ import {
   IconChartBar,
   IconBarbell,
   IconTreadmill,
-  IconLeaf,
   IconSoup,
   IconToolsKitchen2,
   IconCarrot,
@@ -25,12 +24,19 @@ const menuItems = [
   { key: 'home', label: 'Panel de control', icon: IconChartBar, roles: ['user', 'coach', 'admin'] },
   { key: 'exercises', label: 'Ejercicios', icon: IconBarbell, roles: ['user', 'coach', 'admin'] },
   { key: 'routines', label: 'Rutinas', icon: IconTreadmill, roles: ['user', 'coach', 'admin'] },
-  { key: 'habits', label: 'Hábitos', icon: IconLeaf, roles: ['user', 'coach', 'admin'] },
   { key: 'diets', label: 'Dietas', icon: IconToolsKitchen2, roles: ['user', 'coach', 'admin'] },
   { key: 'plates', label: 'Platos', icon: IconSoup, roles: ['user', 'coach', 'admin'] },
   { key: 'ingredients', label: 'Ingredientes', icon: IconCarrot, roles: ['user', 'coach', 'admin'] },
-  { key: 'guides', label: 'Guías', icon: IconBook, roles: ['user', 'coach', 'admin'] },
-  { key: 'users', label: 'Usuarios', icon: IconUsers, roles: ['user', 'coach', 'admin'] },
+  { key: 'guides', label: 'Guías', icon: IconBook, roles: ['admin'] },
+  {
+    key: 'users',
+    get label() {
+      const role = userStore.userData?.role
+      return role === 'coach' ? 'Clientes' : 'Usuarios'
+    },
+    icon: IconUsers,
+    roles: ['coach', 'admin']
+  },
   { key: 'config', label: 'Configuración', icon: IconSettings, roles: ['user', 'coach', 'admin'] }
 ]
 
@@ -47,7 +53,6 @@ const componentsMap = {
   home: defineAsyncComponent(() => import('@/components/dashboard/HomePanel.vue')),
   exercises: defineAsyncComponent(() => import('@/components/dashboard/ExercisesPanel.vue')),
   routines: defineAsyncComponent(() => import('@/components/dashboard/RoutinesPanel.vue')),
-  habits: defineAsyncComponent(() => import('@/components/dashboard/HabitsPanel.vue')),
   diets: defineAsyncComponent(() => import('@/components/dashboard/DietsPanel.vue')),
   plates: defineAsyncComponent(() => import('@/components/dashboard/PlatesPanel.vue')),
   ingredients: defineAsyncComponent(() => import('@/components/dashboard/IngredientsPanel.vue')),

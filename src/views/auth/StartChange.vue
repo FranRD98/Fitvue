@@ -1,9 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
 const route = useRoute()
+const userStore = useUserStore()
 
 const step = ref(0)
 const userData = ref({
@@ -13,31 +15,39 @@ const userData = ref({
   email: '',
   birthday: '',
   role: 'user',
-  suscriptionPlan: 1, // default to free
+  plan_id: 1,
   height: '',
   weight: '',
   age: '',
   activity: 'sedentario',
-  avatar: '/icons/default-avatar.svg',
-  completedForm: 'true',
-  created: '',
+  profile_image: '/icons/default-avatar.svg',
+  completedForm: true,
   goal: '',
-  gender: '',
+  gender: ''
 })
 
 onMounted(() => {
   const plan = Number(route.params.suscriptionPlan)
-  userData.value.suscriptionPlan = [1, 2, 3].includes(plan) ? plan : 1
+  userData.value.plan_id = [1, 2, 3].includes(plan) ? plan : 1
+
+  const stored = userStore.userData
+  if (stored) {
+    userData.value = {
+      ...userData.value,
+      uid: stored.uid || '',
+      email: stored.email || '',    }
+  }
 })
 
 const macros = ref({ carbs: 0, proteins: 0, fats: 0 })
+const calorieResult = ref(null)
 
-const nextStep = () => {
+const nextStep = async () => {
   if (
     (step.value === 0 && (!userData.value.name || !userData.value.last_name)) ||
     (step.value === 1 && !userData.value.gender) ||
     (step.value === 2 && !userData.value.goal) ||
-    (step.value === 3 && !userData.value.age) ||
+    (step.value === 3 && !userData.value.birthday) ||
     (step.value === 4 && !userData.value.height) ||
     (step.value === 5 && !userData.value.weight) ||
     (step.value === 6 && !userData.value.activity)
@@ -48,58 +58,89 @@ const nextStep = () => {
 
   if (step.value < 6) {
     step.value++
-  } else if ([2, 3].includes(userData.value.suscriptionPlan)) {
-    step.value = 7 // pasarela de pago
   } else {
     calculateCalories()
+    if (userStore.userData?.uid) {
+      try {
+        await userStore.updateUserData(userStore.userData.uid, {
+          name: userData.value.name,
+          last_name: userData.value.last_name,
+          birthday: new Date(userData.value.birthday),
+          plan_id: userData.value.plan_id,
+          height: userData.value.height,
+          weight: userData.value.weight,
+          age: userData.value.age,
+          activity: userData.value.activity,
+          role: userData.value.plan_id === 3 ? 'coach' : 'user',
+          profile_image: userData.value.profile_image,
+          completedForm: true,
+          goal: userData.value.goal,
+          gender: userData.value.gender
+        })
+
+        // Refrescamos los datos en el store
+        await userStore.fetchUserData()
+
+        // Redireccionamos al dashboard
+        router.push('/dashboard')
+
+      } catch (error) {
+        console.error('Error guardando datos:', error)
+      }
+    }
   }
-}
-
-// Función que selecciona el objetivo y lo marcará cambiado el estilo
-function selectGoal(goal) {
-  userData.value.goal = goal;
-}
-
-// Función que selecciona la actividad y lo marcará cambiado el estilo
-const selectActivity = (activity) => {
-  userData.value.activity = activity
-}
-
-// Función que selecciona el genero
-const selectGenre = (gender) => {
-  userData.value.gender = gender
 }
 
 const previousStep = () => {
   if (step.value > 0) step.value--
 }
 
-const calorieResult = ref(null)
-
-  const restart = () => {
-    step.value = 0
-    calorieResult.value = null
-    macros.value = { carbs: 0, proteins: 0, fats: 0 }
-    userData.value = {
-      name:'',
-      last_name:'',
-      email:'',
-      birthday:'',
-      role:'user',
-      suscriptionPlan:'free',
-      height: '',
-      weight: '',
-      age: '',
-      activity: 'sedentario',
-      avatar: '/icons/default-avatar.svg',
-      completedForm: 'false',
-      created:'',
-      goal: '', 
-      gender: '',
-    }
+const restart = () => {
+  step.value = 0
+  calorieResult.value = null
+  macros.value = { carbs: 0, proteins: 0, fats: 0 }
+  userData.value = {
+    name: '',
+    last_name: '',
+    email: '',
+    birthday: '',
+    role: 'user',
+    plan_id: 1,
+    height: '',
+    weight: '',
+    age: '',
+    activity: 'sedentario',
+    profile_image: '/icons/default-avatar.svg',
+    completedForm: true,
+    goal: '',
+    gender: ''
   }
+}
+
+const selectGoal = (goal) => {
+  userData.value.goal = goal
+}
+const selectActivity = (activity) => {
+  userData.value.activity = activity
+}
+const selectGenre = (gender) => {
+  userData.value.gender = gender
+}
 
 const calculateCalories = () => {
+  // Calcular edad en base a la fecha de nacimiento
+  if (userData.value.birthday) {
+    const today = new Date()
+    const birthDate = new Date(userData.value.birthday)
+    let age = today.getFullYear() - birthDate.getFullYear()
+    const m = today.getMonth() - birthDate.getMonth()
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--
+    }
+    userData.value.age = age
+  }
+
+  // Resto igual
   const { weight, height, age, activity } = userData.value
   let bmr = 10 * weight + 6.25 * height - 5 * age + 5
 
@@ -113,206 +154,246 @@ const calculateCalories = () => {
   const total = Math.round(bmr * activityLevels[activity])
   calorieResult.value = total
 
-  // Macronutrientes: 50% carbs, 20% proteins, 30% fats
   macros.value = {
-    carbs: Math.round((total * 0.5) / 4),     // 4 kcal/g
-    proteins: Math.round((total * 0.2) / 4),  // 4 kcal/g
-    fats: Math.round((total * 0.3) / 9)       // 9 kcal/g
+    carbs: Math.round((total * 0.5) / 4),
+    proteins: Math.round((total * 0.2) / 4),
+    fats: Math.round((total * 0.3) / 9)
   }
 
 }
-
-const goToRegister = () => {
-  localStorage.setItem('userData', JSON.stringify(userData.value))
-  router.push('/registrarse')
-}
-
 </script>
-<template>
-  <div class="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-6">
-    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-      <h2 class="text-xl font-bold text-gray-800 text-center mb-4">Calculadora de Calorías</h2>
 
+<template>
+  <div class="min-h-screen flex flex-col items-center justify-center bg-[var(--color-primary)] p-6">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl">
       <transition name="fade" mode="out-in">
         <div v-if="calorieResult === null">
 
-          <!-- STEP 1 - BASIC INFORMATION -->
+          <!-- STEP 1 - NOMBRE -->
           <div v-if="step === 0" key="step0">
-            <label class="block text-gray-600 mb-2 ">¿Cuál es tu nombre y apellidos?</label>
+            <h2 class="text-4xl md:text-5xl font-bold text-center text-[var(--color-primary)] mb-4">Bienvenido a FitVUE</h2>
+            <p class="text-center text-gray-600 text-lg md:text-xl mb-6">Empecemos por conocerte un poco mejor para personalizar tu experiencia.</p>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Nombre</label>
+            <input v-model="userData.name" type="text" placeholder="Tu nombre" class="w-full border px-4 py-2 rounded-lg mb-4" />
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Apellidos</label>
+            <input v-model="userData.last_name" type="text" placeholder="Tus apellidos" class="w-full border px-4 py-2 rounded-lg" />
+          </div>
 
-            <div class="flex flex-col gap-4">
-              <input v-model.string="userData.name" type="text" class="w-full border p-2 rounded-lg" placeholder="Nombre" />
-              <input v-model.string="userData.last_name" type="text" class="w-full border p-2 rounded-lg" placeholder="Apellido"/>
+          <!-- STEP 2 - GÉNERO -->
+          <div v-else-if="step === 1" key="step1">
+            <h2 class="text-2xl font-bold text-center text-[var(--color-primary)] mb-2">¿Con qué género te identificas?</h2>
+            <p class="text-center text-gray-500 mb-6">
+              Este dato nos ayuda a calcular tus necesidades con mayor precisión.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <!-- Hombre -->
+              <div
+                @click="selectGenre('male')"
+                :class="[
+                  'cursor-pointer p-6 rounded-xl shadow-md border transition-all duration-200 hover:scale-105',
+                  userData.gender === 'male' ? 'border-[var(--color-primary)] bg-[var(--color-bg-light)]' : 'border-gray-200'
+                ]"
+              >
+                <img src="/icons/gender_man.svg" class="mx-auto h-14 mb-4" />
+                <p class="text-lg font-semibold text-center text-[var(--color-primary)]">Hombre</p>
+              </div>
+
+              <!-- Mujer -->
+              <div
+                @click="selectGenre('female')"
+                :class="[
+                  'cursor-pointer p-6 rounded-xl shadow-md border transition-all duration-200 hover:scale-105',
+                  userData.gender === 'female' ? 'border-[var(--color-primary)] bg-[var(--color-bg-light)]' : 'border-gray-200'
+                ]"
+              >
+                <img src="/icons/gender_woman.svg" class="mx-auto h-14 mb-4" />
+                <p class="text-lg font-semibold text-center text-[var(--color-primary)]">Mujer</p>
+              </div>
+
+              <!-- Otro -->
+              <div
+                @click="selectGenre('other')"
+                :class="[
+                  'cursor-pointer p-6 rounded-xl shadow-md border transition-all duration-200 hover:scale-105',
+                  userData.gender === 'other' ? 'border-[var(--color-primary)] bg-[var(--color-bg-light)]' : 'border-gray-200'
+                ]"
+              >
+                <img src="/icons/gender_other.svg" class="mx-auto h-14 mb-4" />
+                <p class="text-lg font-semibold text-center text-[var(--color-primary)]">Otro</p>
+              </div>
             </div>
           </div>
 
-          <!-- STEP 2 - GENDER -->
-           <div v-else-if="step === 1" key="step1">
-            <label class="block text-gray-600 mb-2">¿Cuál es tu género?</label>
-
-            <div class="flex flex-col gap-4">
-              <!-- MALE -->
-              <div 
-                  @click="selectGenre('male')"
-                  :class="{'bg-gray-200': userData.gender === 'male'}"
-                  class="p-4 border border-gray-400 rounded-lg shadow-md flex items-center cursor-pointer transition gap-4">
-                  <div>
-                    <img class="w-10 h-auto" src="/icons/gender_man.svg">
-                  </div>
-                  <div>
-                    <h4 class="text-xl font-bold text-[var(--color-text)]">Hombre</h4>
-                  </div>
-              </div>
-
-            <!-- FEMALE -->
-            <div 
-              @click="selectGenre('female')"
-              :class="{'bg-gray-200': userData.gender === 'female'}"
-              class="p-4 border border-gray-400 rounded-lg shadow-md flex items-center cursor-pointer transition gap-4">
-              <div>
-                <img class="w-10 h-auto" src="/icons/gender_woman.svg">
-              </div>
-              <div>
-                <h4 class="text-xl font-bold text-[var(--color-text)]">Mujer</h4>
-              </div>
-            </div>
-
-            <!-- OTHER -->
-            <div 
-              @click="selectGenre('other')"
-              :class="{'bg-gray-200': userData.gender === 'other'}"
-              class="p-4 border border-gray-400 rounded-lg shadow-md flex items-center cursor-pointer transition gap-4">
-              <div>
-                <img class="w-10 h-auto" src="/icons/gender_other.svg">
-              </div>
-              <div>
-                <h4 class="text-xl font-bold text-[var(--color-text)]">Otro</h4>
-              </div>
-            </div>
-           </div>
-           </div>
-
-           <!-- STEP 3 - GOAL -->
+           <!-- STEP 3 - OBJETIVO -->
           <div v-else-if="step === 2" key="step2">
-            <label class="block text-gray-600 mb-2">¿Cuál es tu objetivo?</label>
-            <div class="flex flex-col gap-4">
-              
-              <div 
+            <h2 class="text-2xl font-bold text-center text-[var(--color-primary)] mb-2">¿Cuál es tu objetivo principal?</h2>
+            <p class="text-center text-gray-500 mb-6">
+              Esto nos permitirá ajustar tus calorías y recomendaciones personales.
+            </p>
+
+            <div class="grid grid-cols-1 gap-6">
+              <!-- Perder grasa -->
+              <div
                 @click="selectGoal('perder_grasa')"
-                :class="{'bg-[var(--color-text-dark)] border-[var(--color-primary)]': userData.goal === 'perder_grasa'}"
-                class="p-4 border border-gray-400 rounded-lg shadow-md flex items-center cursor-pointer transition gap-4">
-                <div>
-                  <img class="w-10 h-auto" src="/icons/Perder_grasa.webp">
-                </div>
+                :class="[
+                  'cursor-pointer p-6 rounded-xl shadow-md border flex items-center gap-6 transition-all hover:scale-105',
+                  userData.goal === 'perder_grasa' ? 'border-[var(--color-primary)] bg-[var(--color-bg-light)]' : 'border-gray-300'
+                ]"
+              >
+                <img src="/icons/Perder_grasa.webp" class="h-14 w-auto" />
                 <div>
                   <h4 class="text-xl font-bold text-[var(--color-text)]">Perder grasa</h4>
-                  <p class="text-gray-500">Perder peso y ganar salud</p>
+                  <p class="text-gray-500 text-sm">Perder peso y mejorar tu salud metabólica.</p>
                 </div>
               </div>
 
-              <div 
+              <!-- Ganar músculo -->
+              <div
                 @click="selectGoal('ganar_musculo')"
-                :class="{'bg-[var(--color-text-dark)] border-[#387373]': userData.goal === 'ganar_musculo'}"
-                class="p-4 border rounded-lg shadow-md flex items-center cursor-pointer  transition gap-4">
-                <div>
-                  <img class="w-10 h-auto" src="/icons/Ganar_musculo.webp">
-                </div>
+                :class="[
+                  'cursor-pointer p-6 rounded-xl shadow-md border flex items-center gap-6 transition-all hover:scale-105',
+                  userData.goal === 'ganar_musculo' ? 'border-[var(--color-primary)] bg-[var(--color-bg-light)]' : 'border-gray-300'
+                ]"
+              >
+                <img src="/icons/Ganar_musculo.webp" class="h-14 w-auto" />
                 <div>
                   <h4 class="text-xl font-bold text-[var(--color-text)]">Ganar músculo</h4>
-                  <p class="text-gray-500">Ganar volumen y ganar salud</p>
+                  <p class="text-gray-500 text-sm">Aumentar tu masa muscular y tu fuerza física.</p>
                 </div>
               </div>
 
-              <div 
+              <!-- Mantener peso -->
+              <div
                 @click="selectGoal('mantener_peso')"
-                :class="{'bg-[var(--color-text-dark)] border-[var(--color-primary)]': userData.goal === 'mantener_peso'}"
-              class="p-4 border border-gray-400 rounded-lg shadow-md flex items-center cursor-pointer transition gap-4">
-                <div>
-                  <img class="w-10 h-auto" src="/icons/Mantener_peso.webp">
-                </div>
+                :class="[
+                  'cursor-pointer p-6 rounded-xl shadow-md border flex items-center gap-6 transition-all hover:scale-105',
+                  userData.goal === 'mantener_peso' ? 'border-[var(--color-primary)] bg-[var(--color-bg-light)]' : 'border-gray-300'
+                ]"
+              >
+                <img src="/icons/Mantener_peso.webp" class="h-14 w-auto" />
                 <div>
                   <h4 class="text-xl font-bold text-[var(--color-text)]">Mantener peso</h4>
-                  <p class="text-gray-500">Y mejorar mi salud</p>
+                  <p class="text-gray-500 text-sm">Estabilizar tu peso y continuar mejorando tu salud.</p>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- STEP 4 - AGE -->
-          <div v-else-if="step === 3" key="step3">
-            <label class="block text-gray-600 mb-2">¿Cuál es tu edad?</label>
-            <input v-model.number="userData.age" type="number" class="w-full border p-2 rounded-lg" />
-          </div>
+         <!-- STEP 4 - EDAD -->
+        <div v-else-if="step === 3" key="step3">
+          <h2 class="text-2xl font-bold text-center text-[var(--color-primary)] mb-2">¿Qué edad tienes?</h2>
+          <p class="text-center text-gray-500 mb-6">
+            Esto nos ayuda a calcular tu metabolismo basal. Tranquilo, no lo vamos a contar 😉
+          </p>
 
-          <!-- STEP 5 - HEIGHT -->
-          <div v-else-if="step === 4" key="step4">
-            <label class="block text-gray-600 mb-2">¿Cuál es tu altura? (cm)</label>
-            <input v-model.number="userData.height" type="number" class="w-full border p-2 rounded-lg" />
+          <div class="flex justify-center">
+            <input
+              v-model="userData.birthday"
+              type="date"
+              :max="new Date().toISOString().split('T')[0]"
+              class="w-full border p-2 rounded-lg"
+            />
           </div>
+        </div>
 
-          <!-- STEP 6 - WEIGHT -->
+         <!-- STEP 5 - ALTURA -->
+        <div v-else-if="step === 4" key="step4">
+          <h2 class="text-2xl font-bold text-center text-[var(--color-primary)] mb-2">¿Cuál es tu altura?</h2>
+          <p class="text-center text-gray-500 mb-6">Introduce tu estatura en centímetros para afinar tu cálculo calórico.</p>
+
+          <div class="flex justify-center">
+            <div class="relative">
+              <input
+                v-model.number="userData.height"
+                type="number"
+                min="100"
+                max="250"
+                placeholder="Ej. 175"
+                class="w-32 text-center text-xl border-2 border-gray-300 focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-2 transition rounded-lg px-4 py-2"
+              />
+              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">cm</span>
+            </div>
+          </div>
+        </div>
+
+          <!-- STEP 6 - PESO -->
           <div v-else-if="step === 5" key="step5">
-            <label class="block text-gray-600 mb-2">¿Cuál es tu peso? (kg)</label>
-            <input v-model.number="userData.weight" type="number" class="w-full border p-2 rounded-lg" />
+            <h2 class="text-2xl font-bold text-center text-[var(--color-primary)] mb-2">¿Cuál es tu peso actual?</h2>
+            <p class="text-center text-gray-500 mb-6">Introduce tu peso en kilogramos para estimar correctamente tus necesidades energéticas.</p>
+
+            <div class="flex justify-center">
+              <div class="relative">
+                <input
+                  v-model.number="userData.weight"
+                  type="number"
+                  min="30"
+                  max="250"
+                  placeholder="Ej. 68"
+                  class="w-32 text-center text-xl border-2 border-gray-300 focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-2 transition rounded-lg px-4 py-2"
+                />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">kg</span>
+              </div>
+            </div>
           </div>
 
-          <!-- STEP 7 - ACTIVITY -->
+          <!-- STEP 7 - ACTIVIDAD -->
           <div v-else-if="step === 6" key="step6">
-          <label class="block text-gray-600 mb-2">Nivel de actividad</label>
+            <h2 class="text-2xl font-bold text-center text-[var(--color-primary)] mb-2">Nivel de actividad física</h2>
+            <p class="text-center text-gray-500 mb-6">Selecciona el nivel que más se ajuste a tu rutina semanal.</p>
+
             <div class="flex flex-col gap-4">
-              
-              <div 
+              <!-- Sedentario -->
+              <div
                 @click="selectActivity('sedentario')"
-                :class="{'bg-gray-200': userData.activity === 'sedentario'}"
-                class="p-4 border border-gray-400 rounded-lg shadow-md flex items-center cursor-pointer transition gap-4">
+                :class="userData.activity === 'sedentario' ? 'border-[var(--color-primary)] bg-[var(--color-bg-light)]' : 'border-gray-300'"
+                class="p-4 border rounded-lg shadow-sm flex items-center gap-4 cursor-pointer transition"
+              >
+                <img src="/icons/ic_low_activity.webp" class="w-10 h-auto" />
                 <div>
-                  <img class="w-10 h-auto" src="/icons/ic_low_activity.webp">
-                </div>
-                <div>
-                  <h4 class="text-xl font-bold text-[var(--color-text)]">Sedentario</h4>
-                  <p class="text-gray-500">Poca o ninguna actividad física</p>
+                  <h4 class="text-lg font-semibold text-[var(--color-text)]">Sedentario</h4>
+                  <p class="text-sm text-gray-500">Poca o ninguna actividad física</p>
                 </div>
               </div>
 
-              <div 
+              <!-- Ligero -->
+              <div
                 @click="selectActivity('ligero')"
-                :class="{'bg-gray-200': userData.activity === 'ligero'}"
-                class="p-4 border border-gray-400 rounded-lg shadow-md flex items-center cursor-pointer transition gap-4">
+                :class="userData.activity === 'ligero' ? 'border-[var(--color-primary)] bg-[var(--color-bg-light)]' : 'border-gray-300'"
+                class="p-4 border rounded-lg shadow-sm flex items-center gap-4 cursor-pointer transition"
+              >
+                <img src="/icons/ic_moderate_activity.webp" class="w-10 h-auto" />
                 <div>
-                  <img class="w-10 h-auto" src="/icons/ic_moderate_activity.webp">
-                </div>
-                <div>
-                  <h4 class="text-xl font-bold text-[var(--color-text)]">Ligero</h4>
-                  <p class="text-gray-500">Ejercicio 1-3 veces por semana</p>
+                  <h4 class="text-lg font-semibold text-[var(--color-text)]">Ligero</h4>
+                  <p class="text-sm text-gray-500">Ejercicio 1-3 veces por semana</p>
                 </div>
               </div>
 
-              <div 
+              <!-- Moderado -->
+              <div
                 @click="selectActivity('moderado')"
-                :class="{'bg-gray-200': userData.activity === 'moderado'}"
-                class="p-4 border border-gray-400 rounded-lg shadow-md flex items-center cursor-pointer transition gap-4">
+                :class="userData.activity === 'moderado' ? 'border-[var(--color-primary)] bg-[var(--color-bg-light)]' : 'border-gray-300'"
+                class="p-4 border rounded-lg shadow-sm flex items-center gap-4 cursor-pointer transition"
+              >
+                <img src="/icons/ic_high_activity.webp" class="w-10 h-auto" />
                 <div>
-                  <img class="w-10 h-auto" src="/icons/ic_high_activity.webp">
-                </div>
-                <div>
-                  <h4 class="text-xl font-bold text-[var(--color-text)]">Moderado</h4>
-                  <p class="text-gray-500">Ejercicio 3-5 veces por semana</p>
+                  <h4 class="text-lg font-semibold text-[var(--color-text)]">Moderado</h4>
+                  <p class="text-sm text-gray-500">Ejercicio 3-5 veces por semana</p>
                 </div>
               </div>
 
-              <div 
+              <!-- Activo -->
+              <div
                 @click="selectActivity('activo')"
-                :class="{'bg-gray-200': userData.activity === 'activo'}"
-                class="p-4 border border-gray-400 rounded-lg shadow-md flex items-center cursor-pointer transition gap-4">
+                :class="userData.activity === 'activo' ? 'border-[var(--color-primary)] bg-[var(--color-bg-light)]' : 'border-gray-300'"
+                class="p-4 border rounded-lg shadow-sm flex items-center gap-4 cursor-pointer transition"
+              >
+                <img src="/icons/ic_athletic_activity.webp" class="w-10 h-auto" />
                 <div>
-                  <img class="w-10 h-auto" src="/icons/ic_athletic_activity.webp">
-                </div>
-                <div>
-                  <h4 class="text-xl font-bold text-[var(--color-text)]">Activo</h4>
-                  <p class="text-gray-500">Ejercicio 6-7 veces por semana</p>
+                  <h4 class="text-lg font-semibold text-[var(--color-text)]">Activo</h4>
+                  <p class="text-sm text-gray-500">Ejercicio 6-7 veces por semana</p>
                 </div>
               </div>
-              
             </div>
           </div>
 
@@ -328,51 +409,66 @@ const goToRegister = () => {
         </div>
 
         <div v-else key="result" class="text-center space-y-6">
-          <h3 class="text-xl font-semibold text-gray-800">¡Aquí tienes tu resultado!</h3>
+          <h2 class="text-3xl font-bold text-[var(--color-primary)]">¡Todo listo!</h2>
+          <p class="text-gray-600 text-lg">Estas son tus necesidades diarias estimadas:</p>
 
-          <div class="text-3xl font-bold text-primary">
+          <!-- Total Calorías -->
+          <div class="text-5xl font-extrabold text-[var(--color-primary)]">
             {{ calorieResult }} kcal / día
           </div>
 
-          <div class="text-left space-y-4 max-w-sm mx-auto">
-            <div class="flex justify-between text-gray-700">
-              <span>🥗 Carbohidratos (50%)</span>
-              <span>{{ macros.carbs }}g</span>
-            </div>
-            <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
-              <div class="bg-yellow-400 h-full" style="width: 50%"></div>
-            </div>
-
-            <div class="flex justify-between text-gray-700">
-              <span>🍗 Proteínas (20%)</span>
-              <span>{{ macros.proteins }}g</span>
-            </div>
-            <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
-              <div class="bg-purple-500 h-full" style="width: 20%"></div>
+          <!-- Macronutrientes -->
+          <div class="text-left space-y-6 max-w-md mx-auto bg-[var(--color-bg-light)] p-6 rounded-lg shadow-sm">
+            <!-- Carbs -->
+            <div>
+              <div class="flex justify-between font-medium text-[var(--color-primary)] mb-1">
+                <span>🥗 Carbohidratos (50%)</span>
+                <span>{{ macros.carbs }}g</span>
+              </div>
+              <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                <div class="bg-yellow-400 h-full" style="width: 50%"></div>
+              </div>
             </div>
 
-            <div class="flex justify-between text-gray-700">
-              <span>🥑 Grasas (30%)</span>
-              <span>{{ macros.fats }}g</span>
+            <!-- Proteins -->
+            <div>
+              <div class="flex justify-between font-medium text-[var(--color-primary)] mb-1">
+                <span>🍗 Proteínas (20%)</span>
+                <span>{{ macros.proteins }}g</span>
+              </div>
+              <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                <div class="bg-purple-500 h-full" style="width: 20%"></div>
+              </div>
             </div>
-            <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
-              <div class="bg-orange-500 h-full" style="width: 30%"></div>
+
+            <!-- Fats -->
+            <div>
+              <div class="flex justify-between font-medium text-[var(--color-primary)] mb-1">
+                <span>🥑 Grasas (30%)</span>
+                <span>{{ macros.fats }}g</span>
+              </div>
+              <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                <div class="bg-orange-500 h-full" style="width: 30%"></div>
+              </div>
             </div>
           </div>
 
-          <p class="text-sm text-gray-500 mt-6">
-            Estos valores son orientativos. Para un plan personalizado, crea tu cuenta.
+          <p class="text-sm text-gray-500 max-w-md mx-auto">
+            Estos valores son una estimación. En el dashboard podrás ajustar tus objetivos y seguir tu progreso diario.
           </p>
 
+          <!-- Acciones -->
           <div class="flex flex-col sm:flex-row justify-center gap-4 mt-6">
             <button
-            @click="goToRegister"
-            class="inline-block bg-[var(--color-primary)] text-white px-6 py-2 rounded-full hover:bg-[var(--color-primary)]"
-          >
-            Crear cuenta gratuita
-          </button>
+              class="bg-[var(--color-primary)] text-white px-6 py-3 rounded-full hover:bg-[var(--color-secondary)] transition"
+            >
+              Empezar mi cambio
+            </button>
 
-            <button @click="restart" class="bg-gray-300 text-gray-800 px-6 py-2 rounded-full hover:bg-gray-400">
+            <button
+              @click="restart"
+              class="bg-gray-200 text-gray-800 px-6 py-3 rounded-full hover:bg-gray-300 transition"
+            >
               Reiniciar
             </button>
           </div>
@@ -383,7 +479,7 @@ const goToRegister = () => {
   </div>
 </template>
 
-<style>
+<style scoped>
 .bg-primary {
   background-color: var(--color-primary);
 }
@@ -396,10 +492,12 @@ const goToRegister = () => {
   font-family: 'Material Icons';
 }
 
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.5s ease;
 }
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 </style>

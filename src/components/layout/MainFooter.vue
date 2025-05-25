@@ -38,9 +38,8 @@
         <div>
           <h4 class="text-base font-semibold text-white mb-2">Soporte</h4>
           <ul class="space-y-1">
-            <li><router-link to="/empezar/1" class="nav-link">Comenzar</router-link></li>
-            <li><router-link to="/contacto" class="nav-link">Contacto</router-link></li>
             <li><router-link to="/FAQ" class="nav-link">FAQ</router-link></li>
+            <li><router-link to="/contacto" class="nav-link">Contacto</router-link></li>
           </ul>
         </div>
       </div>

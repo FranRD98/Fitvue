@@ -1,31 +1,44 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuth } from '@/supabase/useAuth'
+import { useUserStore } from '@/stores/user'
 
+const { register, authError } = useUserStore()
 const router = useRouter()
-const { register, authError } = useAuth()
 const email = ref('')
 const password = ref('')
 const userData = ref({})
+const selectedPlan = ref(1)
 
 onMounted(() => {
-  const storedData = localStorage.getItem('userData')
-  if (storedData) {
-    userData.value = JSON.parse(storedData)
+  const storedPlan = localStorage.getItem('selectedPlan')
+  selectedPlan.value = storedPlan ? Number(storedPlan) : 1
+
+  if (!userData.value.plan_id) {
+    userData.value.plan_id = selectedPlan.value
   }
 })
 
 const registerUser = async () => {
-  const { error } = await register({
+  const response = await register({
     email: email.value,
     password: password.value,
     ...userData.value
   })
 
-  if (!error) {
-    localStorage.removeItem('userData')
-    router.push('/dashboard')
+  if (response?.error) {
+    console.log('Registro fallido:', response.error.message)
+    return
+  }
+
+  localStorage.removeItem('userData')
+
+  if (selectedPlan.value === 2) {
+    window.location.href = 'https://buy.stripe.com/test_eVqdR95N6gMG4a19pvdfG00?plan=2'
+  } else if (selectedPlan.value === 3) {
+    window.location.href = 'https://buy.stripe.com/test_bJe8wP5N6bsm6i96djdfG01?plan=3'
+  } else {
+    router.push('/empezar')
   }
 }
 </script>
@@ -73,8 +86,12 @@ const registerUser = async () => {
             />
           </div>
 
-          <p v-if="authError" class="text-red-500 text-sm">{{ authError.message }}</p>
-
+            <p
+              v-if="authError"
+              class="flex items-start gap-3 bg-red-100 border border-red-300 text-red-800 text-sm rounded-md p-4"
+            >
+              <span>{{ authError }}</span>
+            </p>          
           <button
             type="submit"
             class="w-full bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] text-white font-semibold py-2 rounded-lg transition"

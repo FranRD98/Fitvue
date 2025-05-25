@@ -1,4 +1,11 @@
 <script setup>
+import { computed } from 'vue'
+import { IconCrown } from '@tabler/icons-vue'
+import { useUserStore } from '@/stores/user'  // Importamos el store de Pinia
+
+const userStore = useUserStore()  // Usamos el store de usuario
+const { logout } = userStore
+
 const props = defineProps({
   menu: Array,
   activeKey: String
@@ -10,15 +17,47 @@ function setActive(key) {
   emit('close') // cerrar en móvil al seleccionar
 }
 
-import { IconCrown } from '@tabler/icons-vue'
+const planId = userStore.userData?.plan_id ?? 1
+
+const badgeLabel = computed(() => {
+  switch (userStore.userData?.plan_id) {
+    case 2:
+      return 'Premium'
+    case 3:
+      return 'PRO'
+    default:
+      return 'Free'
+  }
+})
+
+const badgeColor = computed(() => {
+  switch (userStore.userData?.plan_id) {
+    case 2:
+      return 'bg-yellow-400 text-yellow-900'
+    case 3:
+      return 'bg-purple-600 text-white'
+    default:
+      return 'bg-gray-300 text-gray-700'
+  }
+})
 </script>
 
 <template>
   <aside class="flex flex-col h-full">
     <div class="py-4 px-6 flex items-center justify-between">
-      <router-link to="/" class="text-4xl font-bold">
+        <router-link to="/" class="text-4xl font-bold flex items-center">
         <span>fit</span><span class="text-[var(--color-primary)]">VUE</span>
-      </router-link>
+    <span
+      v-if="badgeLabel"
+      :class="[
+        'text-xs font-bold px-2 py-0.5 rounded-full uppercase ml-2',
+        badgeColor
+      ]"
+    >
+      {{ badgeLabel }}
+    </span>
+  </router-link>
+      
       <!-- Botón cerrar solo visible en móvil -->
       <button class="md:hidden text-xl" @click="$emit('close')">✕</button>
     </div>
@@ -40,18 +79,38 @@ import { IconCrown } from '@tabler/icons-vue'
       </ul>
     </nav>
 
+
     <!-- Premium: solo visible en desktop -->
-    <div class="mt-auto p-4">
+    <div v-if="planId === 1" class="mt-auto p-4">
       <div class="bg-gradient-to-br from-cyan-900 via-cyan-700 to-cyan-600 text-white p-4 rounded-xl shadow-lg">
         <div class="bg-white/10 rounded-full w-10 h-10 flex items-center justify-center mb-3">
           <IconCrown class="w-6 h-6"/>
         </div>
         <p class="font-semibold mb-1">Actualiza a PREMIUM</p>
-        <p class="text-xs mb-4">Desbloquea nuevas funcionalidades</p>
-        <button class="w-full bg-white text-cyan-900 text-sm font-semibold py-1.5 rounded-lg hover:bg-gray-100">
-          Actualizar
-        </button>
+        <p class="text-xs mb-4">y desbloquea nuevas funcionalidades</p>
+       <a
+        href="https://buy.stripe.com/test_eVqdR95N6gMG4a19pvdfG00"
+        class="block w-full text-center bg-white text-cyan-900 text-sm font-semibold py-1.5 rounded-full hover:bg-gray-100 transition"
+      >
+        Actualizar
+      </a>
       </div>
     </div>
+
+    <!-- Botón de cerrar sesión -->
+    <div class="p-4 border-t border-gray-200">
+      <button
+        @click="logout"
+        class="w-full flex items-center justify-center gap-2 text-sm font-semibold text-gray-600 hover:text-red-600 transition"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 002 2h3a2 2 0 002-2V7a2 2 0 00-2-2h-3a2 2 0 00-2 2v1"/>
+        </svg>
+        Cerrar sesión
+      </button>
+    </div>
+
   </aside>
 </template>

@@ -1,23 +1,26 @@
 <script setup>
-defineProps({
-  title: String,
-  price: String,
-  buttonText: String,
-  highlighted: Boolean,
-  planId: Number,
-  badgeText: {
-    type: String,
-    default: 'Recomendado'
-  },
-  subtitle: {
-    type: String,
-    default: ''
-  },
-  features: {
-    type: Array,
-    default: () => []
-  }
-})
+  defineProps({
+    title: String,
+    price: String,
+    buttonText: String,
+    highlighted: Boolean,
+    planId: Number,
+    badgeText: {
+      type: String,
+      default: 'Recomendado'
+    },
+    subtitle: {
+      type: String,
+      default: ''
+    },
+    features: {
+      type: Array,
+      default: () => []
+    }
+  })
+
+const emit = defineEmits(['select'])
+
 </script>
 
 <template>
@@ -80,11 +83,11 @@ defineProps({
     <hr class="my-6 border-t border-gray-200" />
 
     <!-- CTA -->
-    <router-link
-      :to="`/empezar/${planId}`"
+    <button
+      @click="$emit('select', planId)"
       class="block w-full text-center bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] text-white font-semibold py-3 rounded-full transition-colors"
     >
       {{ buttonText }}
-    </router-link>
+  </button>
   </div>
 </template>

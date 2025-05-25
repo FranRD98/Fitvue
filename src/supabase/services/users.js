@@ -1,31 +1,61 @@
 import { supabase } from '@/supabase/config'
 
-// Obtener todos los usuarios
-export async function getUsers() {
-  const { data, error } = await supabase.from('users').select('*')
-  
+// Obtener todos los usuarios y si es coach solo los que le pertenecen
+export async function getUsers(coachUid = null) {
+  let query = supabase.from('users').select('*')
+
+  if (coachUid) {
+    query = query.eq('coach_uid', coachUid)
+  }
+
+  const { data, error } = await query
+
   if (error) throw error
   return data
 }
 
-export async function createUser(userData, accessToken) {
-  const response = await fetch('https://bumjstjctwiokebjwnzn.supabase.co/functions/v1/hyper-service', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`
-    },
-    body: JSON.stringify(userData),
-  });
+// Obtener todos los usuarios con rol "coach"
+export async function getAllCoaches() {
+  const { data, error } = await supabase
+    .from('users')
+    .select('uid, name, last_name, email')
+    .eq('role', 'coach')
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Error creando usuario');
-  }
-
-  return response.json();
+  if (error) throw error
+  return data
 }
 
+export async function createUser(userData, token) {
+  // Registro en Supabase Auth
+  const { data, error: signUpError } = await supabase.auth.admin.createUser({
+    email: userData.email,
+    password: userData.password,
+    email_confirm: true
+  })
+
+  if (signUpError) throw signUpError
+
+  const userId = data.user?.id
+
+  if (!userId) throw new Error('No se pudo crear el usuario en Auth')
+
+  // Registro en tabla users
+  const { error: insertError } = await supabase
+    .from('users')
+    .insert({
+      uid: userId,
+      email: userData.email,
+      name: userData.name,
+      last_name: userData.last_name,
+      role: userData.role,
+      plan_id: userData.plan_id,
+      created_at: new Date().toISOString()
+    })
+
+  if (insertError) throw insertError
+
+  return { success: true }
+}
 
 // Esto lo dejas como lo tenías para editar
 export async function updateUser(id, updatedData) {
@@ -74,7 +104,6 @@ export async function uploadProfileImage(file, userId) {
   // Devolver la URL pública del archivo
   return data.publicUrl
 }
-
 
 export async function updateUserData(userId, updates) {
   const { error } = await supabase

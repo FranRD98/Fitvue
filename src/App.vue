@@ -9,8 +9,9 @@ const route = useRoute()
 const userStore = useUserStore()
 
 // Esperar a que se obtengan los datos del usuario
-const showLayout = computed(() => !route.path.startsWith('/dashboard'))
-
+const showLayout = computed(() => {
+  return !route.path.startsWith('/dashboard') && !route.path.startsWith('/empezar')
+})
 // Llamar a la función para obtener los datos del usuario al montar
 userStore.fetchUserData()
 userStore.initAuthListener()

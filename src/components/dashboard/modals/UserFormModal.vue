@@ -1,14 +1,20 @@
 <script setup>
-import { ref, watch } from 'vue'
-import { createUser } from '@/supabase/services/users.js'
-import { supabase } from '@/supabase/config.js' 
+import { ref, watch, onMounted } from 'vue'
+import { createUser, getAllCoaches } from '@/supabase/services/users.js'
+import { getRoutines } from '@/supabase/services/routines.js'
+import { getDiets } from '@/supabase/services/diets.js'
+import { supabase } from '@/supabase/config.js'
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore()
+const currentUser = userStore.userData
+const allCoaches = ref([])
 
 const props = defineProps({ show: Boolean, initialData: Object })
 const emit = defineEmits(['close', 'saved'])
 
-const session = supabase.auth.getSession()  // Esto devuelve una promesa ahora, ¡ojo!
-const token = session?.data?.session?.access_token
 const isEditing = ref(false)
+const formError = ref('')
 
 const form = ref({
   name: '',
@@ -16,58 +22,93 @@ const form = ref({
   email: '',
   password: '',
   role: 'user',
-  suscriptionPlan: 'free'
+  plan_id: 1,
+  assigned_routine: null,
+  assigned_diet: null
 })
 
-watch(() => props.initialData, (val) => {
-  if (val) {
-    isEditing.value = true
-    form.value = {
-      name: val.name || '',
-      last_name: val.last_name || '',
-      email: val.email || '',
-      role: val.role || 'user',
-      suscriptionPlan: val.suscriptionPlan || 'free',
-      password: '' // No se muestra ni actualiza en edición
-    }
-  } else {
-    isEditing.value = false
-    form.value = {
-      name: '',
-      last_name: '',
-      email: '',
-      password: '',
-      role: 'user',
-      suscriptionPlan: 'free'
+const routines = ref([])
+const diets = ref([])
+
+onMounted(async () => {
+  if (currentUser?.role === 'admin') {
+    try {
+      allCoaches.value = await getAllCoaches()
+    } catch (err) {
+      console.error('Error cargando coaches:', err)
     }
   }
-}, { immediate: true })
+
+  if (currentUser?.role === 'coach') {
+    try {
+      routines.value = await getRoutines()
+      diets.value = await getDiets(currentUser.uid)
+    } catch (error) {
+      console.error('Error cargando rutinas o dietas:', error)
+    }
+  }
+})
+
+watch(
+  () => props.initialData,
+  (val) => {
+    if (val) {
+      isEditing.value = true
+      form.value = {
+        name: val.name || '',
+        last_name: val.last_name || '',
+        email: val.email || '',
+        role: val.role || 'user',
+        plan_id: val.plan_id || 1,
+        password: '',
+        assigned_routine: val.assigned_routine || null,
+        assigned_diet: val.assigned_diet || null,
+        coach_uid: val.coach_uid || null
+      }
+    } else {
+      isEditing.value = false
+      form.value = {
+        name: '',
+        last_name: '',
+        email: '',
+        password: '',
+        role: 'user',
+        plan_id: 1,
+        assigned_routine: null,
+        assigned_diet: null,
+        coach_uid: null
+      }
+    }
+  },
+  { immediate: true }
+)
 
 const handleSubmit = async () => {
   try {
-    const { data: { session } } = await supabase.auth.getSession();
-    const token = session?.access_token;
+    formError.value = ''
+    const { data: { session } } = await supabase.auth.getSession()
+    const token = session?.access_token
+    if (!token) throw new Error('Debes iniciar sesión')
 
-    if (!token) throw new Error('Debes iniciar sesión');
+    const payload = { ...form.value }
 
-    await createUser(form.value, token);
+    if (!isEditing.value && currentRole.value === 'coach') {
+      payload.coach_uid = userStore.userData.uid
+    }
 
-    emit('saved');
-    emit('close');
+    await createUser(payload, token)
+
+    emit('saved')
+    emit('close')
   } catch (err) {
-    console.error('Error guardando usuario:', err.message);
+    formError.value = err.message || 'Error inesperado'
   }
 }
-
 </script>
 
 <template>
-<div
-  v-if="show"
-  class="fixed inset-0 bg-[rgba(0,0,0,0.6)] backdrop-blur-sm flex justify-center items-center z-50 px-4"
->
+  <div v-if="show" class="fixed inset-0 bg-[rgba(0,0,0,0.6)] backdrop-blur-sm flex justify-center items-center z-50 px-4">
     <div class="bg-white p-6 rounded-lg shadow-xl max-w-lg w-full relative">
-      <!-- Botón de cerrar -->
       <button @click="emit('close')" class="absolute top-3 right-3 text-gray-500 hover:text-red-500 transition" aria-label="Cerrar">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
@@ -75,7 +116,7 @@ const handleSubmit = async () => {
       </button>
 
       <h2 class="text-xl font-bold text-[var(--color-primary)] mb-4">
-        {{ isEditing ? 'Editar Usuario' : 'Nuevo Usuario' }}
+        {{ isEditing ? (currentUser.role === 'coach' ? 'Editar Cliente' : 'Editar Usuario') : (currentUser.role === 'coach' ? 'Nuevo Cliente' : 'Nuevo Usuario') }}
       </h2>
 
       <form @submit.prevent="handleSubmit" class="space-y-4">
@@ -88,21 +129,56 @@ const handleSubmit = async () => {
         <label for="email" class="text-sm font-medium text-gray-700">Email</label>
         <input id="email" v-model="form.email" type="email" placeholder="Email" class="input" required />
 
-        <label v-if="!isEditing" for="password" class="text-sm font-medium text-gray-700">Email</label>
-        <input v-if="!isEditing" id="password"  v-model="form.password" type="password" placeholder="Contraseña" class="input" required />
+        <label v-if="!isEditing" for="password" class="text-sm font-medium text-gray-700">Contraseña</label>
+        <input v-if="!isEditing" id="password" v-model="form.password" type="password" placeholder="Contraseña" class="input" required />
 
-        <label for="role" class="text-sm font-medium text-gray-700">Rol</label>
-        <select id="role" v-model="form.role" class="input">
-          <option value="user">Usuario</option>
-          <option value="coach">Coach</option>
-          <option value="admin">Admin</option>
-        </select>
+        <template v-if="currentUser.role === 'admin'">
+          <label for="role" class="text-sm font-medium text-gray-700">Rol</label>
+          <select id="role" v-model="form.role" class="input">
+            <option value="user">Usuario</option>
+            <option value="coach">Coach</option>
+            <option value="admin">Admin</option>
+          </select>
 
-        <label for="plan" class="text-sm font-medium text-gray-700">Plan</label>
-        <select id="plan" v-model="form.suscriptionPlan" class="input">
-          <option value="free">Free</option>
-          <option value="premium">Premium</option>
-        </select>
+          <label for="plan" class="text-sm font-medium text-gray-700">Plan</label>
+          <select id="plan" v-model="form.plan_id" class="input">
+            <option value="1">Free</option>
+            <option value="2">Premium</option>
+            <option value="3">Pro</option>
+          </select>
+
+          <label for="coach_uid" class="text-sm font-medium text-gray-700">Asignar coach</label>
+          <select id="coach_uid" v-model="form.coach_uid" class="input">
+            <option :value="null">Ninguno</option>
+            <option
+              v-for="coach in allCoaches"
+              :key="coach.uid"
+              :value="coach.uid"
+            >
+              {{ coach.name }} {{ coach.last_name }} ({{ coach.email }})
+            </option>
+          </select>
+        </template>
+
+        <template v-else-if="currentUser.role === 'coach'">
+          <label for="assigned_routine" class="text-sm font-medium text-gray-700">Rutina asignada</label>
+          <select id="assigned_routine" v-model="form.assigned_routine" class="input">
+            <option :value="null">Ninguna</option>
+            <option v-for="routine in routines" :key="routine.id" :value="routine.id">
+              {{ routine.title }}
+            </option>
+          </select>
+
+          <label for="assigned_diet" class="text-sm font-medium text-gray-700">Dieta asignada</label>
+          <select id="assigned_diet" v-model="form.assigned_diet" class="input">
+            <option :value="null">Ninguna</option>
+            <option v-for="diet in diets" :key="diet.id" :value="diet.id">
+              {{ diet.title || 'Dieta #' + diet.id }}
+            </option>
+          </select>
+        </template>
+
+        <p v-if="formError" class="text-red-500 text-sm">{{ formError }}</p>
 
         <div class="flex justify-end mt-4">
           <button type="submit" class="bg-[var(--color-primary)] text-white px-4 py-2 rounded hover:bg-[var(--color-secondary)]">
@@ -130,38 +206,5 @@ const handleSubmit = async () => {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 1px var(--color-primary);
   outline: none;
-}
-
-/* Slide down para abrir caja de comida */
-.slide-fade-enter-active {
-  transition: all 0.3s ease;
-}
-.slide-fade-leave-active {
-  transition: all 0.2s ease;
-}
-.slide-fade-enter-from {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-.slide-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-/* Drop-fade para cada plato */
-.drop-fade-enter-active {
-  transition: all 0.3s ease;
-}
-.drop-fade-leave-active {
-  transition: all 0.2s ease;
-  position: absolute;
-}
-.drop-fade-enter-from {
-  opacity: 0;
-  transform: translateY(-15px);
-}
-.drop-fade-leave-to {
-  opacity: 0;
-  transform: translateY(10px);
 }
 </style>

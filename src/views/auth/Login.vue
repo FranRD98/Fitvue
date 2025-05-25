@@ -62,7 +62,12 @@ const login = async () => {
             <input v-model="password" type="password" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]" placeholder="••••••••">
           </div>
 
-          <p v-if="error" class="text-red-500 text-sm">{{ error }}</p>
+            <p
+              v-if="error"
+              class="flex items-start gap-3 bg-red-100 border border-red-300 text-red-800 text-sm rounded-md p-4"
+            >
+              <span>{{ error }}</span>
+            </p>  
 
           <button type="submit" class="w-full bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] text-white font-semibold py-2 rounded-lg transition">
             Iniciar sesión

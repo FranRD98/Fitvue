@@ -9,39 +9,30 @@ export const useUserStore = defineStore('user', () => {
   const authError = ref('')
   const router = useRouter()
 
-  // Registrar
+ // Registrar
   const register = async ({ email, password, ...profile }) => {
     authError.value = ''
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password
-    })
+    const { data, error: signUpError } = await supabase.auth.signUp({ email, password })
 
     if (signUpError) {
       authError.value = signUpError.message
-      return
+      return { error: signUpError }
     }
 
     const userId = data?.user?.id
-    if (!userId) {
-      authError.value = 'No se pudo obtener el ID del usuario.'
-      return
-    }
+    if (!userId) return { error: new Error('Fallo en creación de usuario') }
 
-    const { error: insertError } = await supabase.from('users').insert([{
-      uuid: userId,
-      email,
-      role: 'user',
-      ...profile,
-      created_at: new Date().toISOString()
-    }])
+    const { error: insertError } = await supabase
+      .from('users')
+      .insert([{ uid: userId, email, role: 'user', ...profile, created_at: new Date().toISOString() }])
 
     if (insertError) {
       authError.value = insertError.message
-    } else {
-      await fetchUserData()
-      router.push('/dashboard')
+      return { error: insertError }
     }
+
+    await fetchUserData()
+    return { success: true }
   }
 
   // Login
@@ -86,6 +77,16 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
+  // Actualizar plan una vez pagado
+  const updatePlan = async (newPlanId) => {
+  if (!user.value) return
+  await supabase.from('users')
+    .update({ plan_id: newPlanId })
+    .eq('uid', user.value.id)
+
+  await fetchUserData()
+}
+
   // Escuchar cambios de sesión
   const initAuthListener = () => {
     supabase.auth.onAuthStateChange((_event, session) => {
@@ -93,6 +94,15 @@ export const useUserStore = defineStore('user', () => {
       if (user.value) fetchUserData()
     })
   }
+
+  const updateUserData = async (uid, updates) => {
+  const { error } = await supabase
+  .from('users')
+  .update(updates)
+  .eq('uid', uid)
+  
+  if (error) throw error
+}
 
   return {
     user,
@@ -102,6 +112,8 @@ export const useUserStore = defineStore('user', () => {
     login,
     logout,
     fetchUserData,
+    updatePlan,
+    updateUserData,
     initAuthListener
   }
 })

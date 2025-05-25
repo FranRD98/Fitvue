@@ -1,5 +1,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import { useUserStore } from '@/stores/user'
+
 import IngredientModal from '@/components/dashboard/modals/IngredientModal.vue'
 import {
   getIngredients,
@@ -15,6 +17,7 @@ const isEditing = ref(false)
 const selectedIngredient = ref(null)
 const viewMode = ref('grid')
 const searchQuery = ref('')
+const userStore = useUserStore()
 
 // Icons
 import {
@@ -27,7 +30,7 @@ import {
 async function loadIngredients() {
   loading.value = true
   try {
-    ingredients.value = await getIngredients()
+    ingredients.value = await getIngredients(userStore.userData.uid)
   } finally {
     loading.value = false
   }
@@ -57,8 +60,7 @@ async function handleSaveFromModal(data) {
   if (isEditing.value && selectedIngredient.value) {
     await updateIngredient(selectedIngredient.value.id, payload)
   } else {
-    await createIngredient(payload)
-  }
+    await createIngredient(payload, userStore.userData.uid)  }
 
   await loadIngredients()
   handleCloseModal()
@@ -210,8 +212,19 @@ onMounted(loadIngredients)
       <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0z" />
       </svg>
-      <p class="text-lg font-semibold">Sin resultados</p>
-      <p class="text-sm">No se encontraron ingredientes que coincidan con los filtros aplicados.</p>
+
+      <p class="text-lg font-semibold">
+        <template v-if="ingredients.length === 0">
+          Aún no has creado ingredientes
+        </template>
+        <template v-else>
+          No se encontraron ingredientes que coincidan con los filtros aplicados
+        </template>
+      </p>
+
+      <p v-if="ingredients.length > 0" class="text-sm">
+        Intenta ajustar la búsqueda o limpia los filtros.
+      </p>
     </div>
   </section>
 </template>

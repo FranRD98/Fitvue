@@ -21,6 +21,7 @@ const selectedDiet = ref(null)
 const loading = ref(true)
 const viewMode = ref('grid')
 const searchQuery = ref('')
+const hasDietsLoaded = ref(false)
 
 const calculateTotalNutrients = (diet) => {
   
@@ -123,7 +124,8 @@ const loadDiets = async () => {
   } catch (e) {
     console.error('Error al cargar dietas o ingredientes:', e)
   } finally {
-    loading.value = false
+      hasDietsLoaded.value = true
+      loading.value = false
   }
 }
 
@@ -179,7 +181,16 @@ watch(
     />
 
     <div v-if="loading">Cargando dietas...</div>
-    <div v-else-if="diets.length === 0">No hay dietas registradas.</div>
+    
+    <div v-else-if="hasDietsLoaded && filteredDiets.length === 0" class="flex flex-col items-center justify-center py-12 text-gray-500">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0z" />
+      </svg>
+      <p class="text-lg font-semibold">
+        {{ diets.length === 0 ? 'Aún no has creado ninguna dieta.' : 'No se encontraron dietas con los filtros aplicados.' }}
+      </p>
+      <p class="text-sm" v-if="diets.length !== 0">Prueba con otra búsqueda o crea una nueva dieta.</p>
+    </div>
 
   <div v-else class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4 w-full">
       <div class="flex-1">

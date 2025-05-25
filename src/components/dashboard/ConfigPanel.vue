@@ -8,7 +8,7 @@ import { uploadProfileImage, updateUserData } from '@/supabase/services/users'
 // Obtener el store y desestructurar con reactividad
 const userStore = useUserStore()
 const { userData } = storeToRefs(userStore)
-const { logout, fetchUserData } = userStore
+const { fetchUserData } = userStore
 
 // Campos del formulario
 const name = ref('')
@@ -145,7 +145,6 @@ watch(
 
       <!-- Botones -->
       <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t">
-        <button @click="logout" class="text-sm text-red-600 hover:underline">Cerrar sesión</button>
         <button
           @click="handleSave"
           :disabled="updating"

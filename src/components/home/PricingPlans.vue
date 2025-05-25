@@ -1,5 +1,14 @@
 <script setup>
+import { useRouter } from 'vue-router'
 import PlanCard from '@/components/home/PlanCard.vue'
+
+const router = useRouter()
+
+/* Function to handle de plan saved in local storage */
+function handlePlanSelect(planId) {
+  localStorage.setItem('selectedPlan', planId)
+  router.push('/sign-in')
+}
 
 const plans = [
   {
@@ -83,6 +92,7 @@ const plans = [
           v-for="(plan, i) in plans"
           :key="i"
           v-bind="plan"
+          @select="handlePlanSelect"
         />
       </div>
     </div>

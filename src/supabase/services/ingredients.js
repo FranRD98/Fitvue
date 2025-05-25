@@ -2,11 +2,12 @@
 import { supabase } from '@/supabase/config'
 
 // Obtener todos los ingredientes
-export async function getIngredients() {
+export async function getIngredients(userId) {
   const { data, error } = await supabase
     .from('ingredients')
     .select('*')
-    .order('created_at', { ascending: false }) // opcional
+    .eq('created_by', userId)
+    .order('created_at', { ascending: false })
 
   if (error) {
     console.error('Error al obtener ingredientes:', error)
@@ -31,10 +32,10 @@ export async function getIngredientById(id) {
 }
 
 // Crear nuevo ingrediente
-export async function createIngredient(data) {
+export async function createIngredient(data, userId) {
   const { error } = await supabase
     .from('ingredients')
-    .insert([{ ...data }])
+    .insert([{ ...data, created_by: userId }])
 
   if (error) throw error
 }
