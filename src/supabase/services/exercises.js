@@ -1,18 +1,28 @@
 import { supabase } from '@/supabase/config';
 
 // Obtener todos los ejercicios
-export async function getExercises() {
+export async function getExercises(userId) {
+  const { data: adminUsers } = await supabase
+    .from('users')
+    .select('uid')
+    .eq('role', 'admin')
+
+  const adminIds = (adminUsers || []).map(u => u.uid)
+
   const { data, error } = await supabase
-  .from('exercises')
-  .select('*, exercises_categories(category_name)')
-  .order('exercises_categories(category_name)', { ascending: true });
+    .from('exercises')
+    .select(`
+      *,
+      exercises_categories (category_name)
+    `)
+    .in('created_by', [userId, ...adminIds])
 
   if (error) {
-    console.error('Error al obtener los ejercicios:', error);
-    return [];  // En caso de error, devuelve un array vacío
+    console.error('Error al obtener los ejercicios:', error)
+    return []
   }
 
-  return data;  // Devuelve los ejercicios con la categoría
+  return data
 }
 
 export async function getExerciseById(id) {

@@ -32,7 +32,7 @@
       start()
 
       try {
-        exercises.value = await getExercises()
+        exercises.value = await getExercises(userStore.userData?.uid)        
         exerciseCategories.value = await getExerciseCategories()
       } catch (err) {
         console.error('Error al cargar ejercicios:', error)
@@ -47,6 +47,20 @@
     selectedExercise.value = exercise
     showModal.value = true
   }
+
+const loadExercises = async () => {
+  if (!userStore.userData?.uid) return
+
+  start()
+  try {
+    exercises.value = await getExercises()
+    exerciseCategories.value = await getExerciseCategories()
+  } catch (err) {
+    console.error('Error al cargar ejercicios:', err)
+  } finally {
+    finish()
+  }
+}
 
   const handleDelete = async (exercise) => {
     if (confirm(`¿Seguro que quieres eliminar el ejercicio "${exercise.name}"?`)) {
@@ -150,7 +164,7 @@
           @click="openEditModal(exercise)"
         >
         <img
-          :src="exercise.image || `https://placehold.co/600x400?text=${encodeURIComponent(exercise.name)}`"
+          :src="(!exercise.image || exercise.image === '') ? `https://placehold.co/600x400?text=${encodeURIComponent(exercise.name)}` : exercise.image"          
           alt="Imagen del ejercicio"
           class="w-full aspect-video object-cover"
         />

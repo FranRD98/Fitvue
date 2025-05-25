@@ -1,113 +1,22 @@
-<template>
-  <div v-if="show" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-center items-center px-4">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-6xl h-[90vh] flex flex-col relative overflow-hidden">
-      <!-- Botón de cerrar -->
-      <button @click="emit('close')" class="absolute top-3 right-3 text-gray-500 hover:text-red-500 transition" aria-label="Cerrar">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-        </svg>
-      </button>
-
-      <!-- Navegación superior -->
-      <div class="flex border-b divide-x">
-        <div
-          class="flex-1 text-center py-4 cursor-pointer hover:bg-gray-100"
-          :class="{ 'bg-gray-100 font-semibold text-[var(--color-primary)]': selectedTab === 'info' }"
-          @click="selectedTab = 'info'"
-        >
-          Información
-        </div>
-        <div
-          class="flex-1 text-center py-4 cursor-pointer hover:bg-gray-100"
-          :class="{ 'bg-gray-100 font-semibold text-[var(--color-primary)]': selectedTab === 'history' }"
-          @click="selectedTab = 'history'"
-        >
-          Historial
-        </div>
-        <div
-          class="flex-1 text-center py-4 cursor-pointer hover:bg-gray-100"
-          :class="{ 'bg-gray-100 font-semibold text-[var(--color-primary)]': selectedTab === 'tutorial' }"
-          @click="selectedTab = 'tutorial'"
-        >
-          Tutorial
-        </div>
-      </div>
-
-      <!-- Contenido inferior -->
-      <transition name="fade" mode="out-in">
-        <div :key="selectedTab" class="p-6 overflow-y-auto flex-1">
-          <!-- Info -->
-          <div v-if="selectedTab === 'info'" class="space-y-4">
-            <h2 class="text-xl font-semibold text-[var(--color-primary)]">
-              {{ exercise.id ? 'Editar ejercicio' : 'Crear ejercicio' }}
-            </h2>
-            <form @submit.prevent="submitForm" class="space-y-4">
-              <input v-model="exercise.name" placeholder="Ejercicio" class="input" required />
-              <input v-model="exercise.description" placeholder="Descripción corta" class="input" />
-
-              <label class="block text-sm font-medium text-gray-700">Grupo muscular</label>
-              <select v-model="exercise.id_category" class="w-full border border-gray-300 p-2 rounded" required>
-                <option disabled value="">Selecciona un grupo muscular</option>
-                <option v-for="category in exerciseCategories" :key="category.id" :value="category.id">
-                  {{ category.category_name }}
-                </option>
-              </select>
-
-              <label class="block text-sm font-medium text-gray-700">Imagen</label>
-              <div class="image-upload-container">
-                <input type="file" accept="image/*" @change="handleImageChange" class="hidden" id="image-upload-input" />
-                <label for="image-upload-input" class="cursor-pointer border-dashed border-2 border-gray-300 p-6 text-center rounded-lg hover:border-gray-400 block">
-                  <span v-if="!exercise.image" class="text-gray-600">Haz clic para subir una imagen</span>
-                  <div v-if="exercise.image" class="relative mt-4">
-                    <img :src="exercise.image" alt="Imagen del ejercicio" class="w-full h-40 object-cover rounded" />
-                    <button
-                      @click.prevent="deleteImage"
-                      class="absolute top-2 right-2 w-6 h-6 bg-white bg-opacity-75 rounded-full flex items-center justify-center shadow hover:bg-opacity-100"
-                      title="Eliminar imagen"
-                    >✖</button>
-                  </div>
-                </label>
-              </div>
-
-              <div class="text-right">
-                <button
-                  type="submit"
-                  class="bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg hover:bg-[var(--color-secondary)]"
-                >
-                  {{ exercise.id ? 'Guardar cambios' : 'Crear ejercicio' }}
-                </button>
-              </div>
-            </form>
-          </div>
-
-          <!-- Historial -->
-          <div v-else-if="selectedTab === 'history'">
-            <p class="text-gray-500">Aquí irá el historial de levantamientos. (Aún por implementar)</p>
-          </div>
-
-          <!-- Tutorial -->
-          <div v-else-if="selectedTab === 'tutorial'">
-            <p class="text-gray-500">Aquí se mostrará el tutorial del ejercicio. (Aún por implementar)</p>
-          </div>
-        </div>
-      </transition>
-    </div>
-  </div>
-</template>
-
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
+import { useUserStore } from '@/stores/user'
 import { createExercise, getExerciseCategories, updateExercise } from '@/supabase/services/exercises';
 
 const props = defineProps({ show: Boolean, initialData: Object })
 const emit = defineEmits(['close', 'saved'])
 
+const userStore = useUserStore()
 const selectedTab = ref('info')
 const exerciseCategories = ref([])
 const loading = ref(true)
 
-const exercise = ref({ name: '', description: '', id_category: '', image: '' })
+const exercise = ref({ name: '', description: '', id_category: '', image: '', created_by: '' })
 const imageFile = ref(null)
+
+const isEditable = computed(() => {
+  return !exercise.value.id || exercise.value.created_by === userStore.userData?.uid
+})
 
 onMounted(async () => {
   try {
@@ -159,7 +68,10 @@ const deleteImage = async () => {
 const submitForm = async () => {
   if (imageFile.value) await uploadImage();
   if (exercise.value.id) await updateExercise(exercise.value.id, exercise.value)
-  else await createExercise(exercise.value)
+  else {
+    exercise.value.created_by = userStore.userData?.uid
+    await createExercise(exercise.value)
+  }
   emit('saved')
   close()
 };
@@ -170,7 +82,7 @@ function close() {
 }
 
 function resetForm() {
-  exercise.value = { name: '', description: '', id_category: '', image: '' }
+  exercise.value = { name: '', description: '', id_category: '', image: '', created_by: '' }
   imageFile.value = null
 }
 
@@ -204,14 +116,96 @@ const resizeImage = (file, maxWidth = 800) => {
       canvas.toBlob((blob) => {
         const resizedFile = new File([blob], file.name, { type: file.type })
         resolve(resizedFile)
-      }, file.type, 0.8) // compresión al 80%
+      }, file.type, 0.8)
     }
 
     reader.readAsDataURL(file)
   })
 }
-
 </script>
+
+<template>
+  <div v-if="show" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-center items-center px-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-6xl h-[90vh] flex flex-col relative overflow-hidden">
+      <button @click="emit('close')" class="absolute top-3 right-3 text-gray-500 hover:text-red-500 transition" aria-label="Cerrar">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+        </svg>
+      </button>
+
+      <div class="flex border-b divide-x">
+        <div class="flex-1 text-center py-4 cursor-pointer hover:bg-gray-100" :class="{ 'bg-gray-100 font-semibold text-[var(--color-primary)]': selectedTab === 'info' }" @click="selectedTab = 'info'">
+          Información
+        </div>
+        <div class="flex-1 text-center py-4 cursor-pointer hover:bg-gray-100" :class="{ 'bg-gray-100 font-semibold text-[var(--color-primary)]': selectedTab === 'history' }" @click="selectedTab = 'history'">
+          Historial
+        </div>
+        <div class="flex-1 text-center py-4 cursor-pointer hover:bg-gray-100" :class="{ 'bg-gray-100 font-semibold text-[var(--color-primary)]': selectedTab === 'tutorial' }" @click="selectedTab = 'tutorial'">
+          Tutorial
+        </div>
+      </div>
+
+      <transition name="fade" mode="out-in">
+        <div :key="selectedTab" class="p-6 overflow-y-auto flex-1">
+          <div v-if="selectedTab === 'info'" class="space-y-4">
+            
+            <!-- Mensaje de advertencia -->
+            <p v-if="!isEditable" class="text-sm text-red-500 mt-2">
+              ⚠️ No puedes modificar los datos de un ejercicio de la plataforma.
+            </p>
+            <h2 class="text-xl font-semibold text-[var(--color-primary)]">
+              {{ exercise.id ? 'Editar ejercicio' : 'Crear ejercicio' }}
+            </h2>
+
+            <form @submit.prevent="submitForm" class="space-y-4">
+              <input v-model="exercise.name" :disabled="!isEditable" placeholder="Ejercicio" class="input" required />
+              <input v-model="exercise.description" :disabled="!isEditable" placeholder="Descripción corta" class="input" />
+
+              <label class="block text-sm font-medium text-gray-700">Grupo muscular</label>
+              <select v-model="exercise.id_category" :disabled="!isEditable" class="w-full border border-gray-300 p-2 rounded" required>
+                <option disabled value="">Selecciona un grupo muscular</option>
+                <option v-for="category in exerciseCategories" :key="category.id" :value="category.id">
+                  {{ category.category_name }}
+                </option>
+              </select>
+
+              <label v-if="isEditable" class="block text-sm font-medium text-gray-700">Imagen</label>
+              <div v-if="isEditable" class="image-upload-container">
+                <input type="file" accept="image/*" @change="handleImageChange" class="hidden" id="image-upload-input" :disabled="!isEditable" />
+                <label for="image-upload-input" class="cursor-pointer border-dashed border-2 border-gray-300 p-6 text-center rounded-lg hover:border-gray-400 block">
+                  <span v-if="!exercise.image" class="text-gray-600">Haz clic para subir una imagen</span>
+                  <div v-if="exercise.image" class="relative mt-4">
+                    <img :src="exercise.image" alt="Imagen del ejercicio" class="w-full h-40 object-cover rounded" />
+                    <button
+                      v-if="isEditable"
+                      @click.prevent="deleteImage"
+                      class="absolute top-2 right-2 w-6 h-6 bg-white bg-opacity-75 rounded-full flex items-center justify-center shadow hover:bg-opacity-100"
+                      title="Eliminar imagen"
+                    >✖</button>
+                  </div>
+                </label>
+              </div>
+
+              <div class="text-right">
+                <button v-if="isEditable" type="submit" class="bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg hover:bg-[var(--color-secondary)]">
+                  {{ exercise.id ? 'Guardar cambios' : 'Crear ejercicio' }}
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div v-else-if="selectedTab === 'history'">
+            <p class="text-gray-500">Aquí irá el historial de levantamientos. (Aún por implementar)</p>
+          </div>
+
+          <div v-else-if="selectedTab === 'tutorial'">
+            <p class="text-gray-500">Aquí se mostrará el tutorial del ejercicio. (Aún por implementar)</p>
+          </div>
+        </div>
+      </transition>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .input {

@@ -1,9 +1,11 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { getReviewById } from '@/supabase/services/progress'
+import { IconArrowLeft } from '@tabler/icons-vue'
 
 const route = useRoute()
+const router = useRouter()
 const review = ref(null)
 const loading = ref(true)
 
@@ -38,6 +40,10 @@ function formatDate(date) {
   })
 }
 
+function goBack() {
+  router.back()
+}
+
 onMounted(async () => {
   const { userId, reviewId } = route.params
   if (!userId || !reviewId) return
@@ -53,27 +59,38 @@ onMounted(async () => {
 </script>
 
 <template>
-<section class="w-full max-w-7xl mx-auto p-6">
-    <div v-if="loading" class="text-center text-gray-500 py-10">Cargando revisión...</div>
+  <section class="w-full max-w-6xl mx-auto px-4 py-10 animate-fade-slide">
+    
+    <!-- Volver atrás -->
+    <button
+      @click="goBack"
+      class="flex items-center gap-2 text-sm text-[var(--color-primary)] hover:underline mb-6"
+    >
+      <IconArrowLeft class="w-4 h-4" />
+      Volver
+    </button>
 
-    <div v-else-if="!review" class="text-center text-gray-500 py-10">No se encontró la revisión.</div>
+    <!-- Cargando / No data -->
+    <div v-if="loading" class="text-center text-gray-500 py-20">Cargando revisión...</div>
+    <div v-else-if="!review" class="text-center text-gray-500 py-20">No se encontró la revisión.</div>
 
+    <!-- Contenido -->
     <div v-else>
-      <!-- Header -->
-      <div class="mb-8">
-        <h1 class="text-3xl font-bold text-[var(--color-primary)]">Revisión del {{ formatDate(review.created_at) }}</h1>
-        <p class="text-sm text-gray-500 mt-1">Visualiza tus medidas corporales detalladas.</p>
+      <div class="mb-10">
+        <h1 class="text-3xl font-bold text-[var(--color-primary)] mb-1">
+          Revisión del {{ formatDate(review.created_at) }}
+        </h1>
+        <p class="text-sm text-gray-500">Mediciones físicas tomadas en esta fecha.</p>
       </div>
 
-      <!-- Medidas -->
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         <div
           v-for="item in formattedFields"
           :key="item.key"
-          class="bg-gray-50 p-4 rounded-lg shadow-sm"
+          class="bg-white border border-gray-200 p-5 rounded-xl shadow-sm hover:shadow-md transition"
         >
-          <h3 class="text-sm text-gray-500">{{ item.label }}</h3>
-          <p class="text-xl font-semibold text-[var(--color-primary)]">{{ item.value }} cm</p>
+          <h3 class="text-sm font-medium text-gray-500 mb-1">{{ item.label }}</h3>
+          <p class="text-2xl font-semibold text-[var(--color-primary)]">{{ item.value }} cm</p>
         </div>
       </div>
     </div>
@@ -81,17 +98,18 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-section {
-  animation: fadeSlide 0.3s ease-out;
-}
-@keyframes fadeSlide {
-  0% {
+@keyframes fade-slide {
+  from {
     opacity: 0;
     transform: translateY(12px);
   }
-  100% {
+  to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.animate-fade-slide {
+  animation: fade-slide 0.4s ease-out;
 }
 </style>

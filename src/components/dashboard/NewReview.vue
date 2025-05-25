@@ -3,6 +3,7 @@ import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
 import { createReview } from '@/supabase/services/progress'
+import { IconArrowLeft } from '@tabler/icons-vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -28,6 +29,10 @@ const userData = ref({
   quadriceps: '',
   calves: ''
 })
+
+function goBack() {
+  router.back()
+}
 
 onMounted(() => {
   if (userStore.userData?.uid) {
@@ -88,7 +93,14 @@ function handleBack() {
 <template>
 <div class="fixed inset-0 bg-[var(--color-primary)] bg-opacity-60 backdrop-blur-sm flex items-start justify-center overflow-y-auto py-6 z-50">
 <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] h-auto flex flex-col relative overflow-hidden">
-      
+            <!-- Volver atrás -->
+    <button
+      @click="goBack"
+      class="flex items-center gap-2 text-sm text-[var(--color-primary)] hover:underline mt-4 ml-4"
+    >
+      <IconArrowLeft class="w-4 h-4" />
+      Volver
+    </button>
       <!-- Encabezado -->
       <div class="text-center py-6 border-b">
         <h2 class="text-xl font-bold text-[var(--color-primary)]">Paso {{ step + 1 }} de {{ totalSteps }}</h2>
@@ -107,12 +119,12 @@ function handleBack() {
         <div :key="step" class="flex-1 relative flex flex-col items-center justify-center text-center p-6 gap-6">
           <h3 class="text-xl font-semibold text-gray-700">{{ currentStep.label }}</h3>
 
-          <img
+          <!--<img
             :src="currentStep.image"
             alt="Imagen del paso"
             class="w-full max-w-sm h-64 object-cover rounded-xl shadow-md"
             loading="lazy"
-          />
+          />-->
 
           <input
             ref="inputRef"
