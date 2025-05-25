@@ -10,7 +10,7 @@ const userStore = useUserStore()
 
 // Esperar a que se obtengan los datos del usuario
 const showLayout = computed(() => {
-  return !route.path.startsWith('/dashboard') && !route.path.startsWith('/empezar')
+  return !route.path.startsWith('/dashboard') && !route.path.startsWith('/empezar') && !route.path.startsWith('/user')
 })
 // Llamar a la función para obtener los datos del usuario al montar
 userStore.fetchUserData()

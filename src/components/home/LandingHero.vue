@@ -30,7 +30,7 @@
         La herramienta definitiva para entrenamientos, nutrición y bienestar
       </p>
 
-      <router-link to="empezar/1"
+      <router-link to="sign-in"
       class="mt-8 bg-white md:bg-[var(--color-primary)] w-3/4 sm:w-1/2 md:w-1/4 px-6 py-3 rounded-full text-[var(--color-primary)] md:text-white text-lg font-semibold transition duration-300 hover:bg-white hover:text-[var(--color-primary)]">
         Empezar gratis
       </router-link>
