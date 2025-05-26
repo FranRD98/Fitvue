@@ -16,7 +16,6 @@
   const exercises = ref([])
   const exerciseCategories = ref([])
   const showModal = ref(false)
-  const isAdmin = true
   const selectedExercise = ref(null)
   const viewMode = ref('grid')
   const searchQuery = ref('')
@@ -85,7 +84,6 @@ const loadExercises = async () => {
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-3xl font-bold text-[var(--color-primary)]">Ejercicios</h1>
       <button
-        v-if="isAdmin"
         @click="showModal = true"
         class="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg shadow hover:bg-[var(--color-secondary)] transition"
       >
