@@ -1,12 +1,11 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
-import { getPlates } from '@/supabase/services/plates'
+import { getPlates, getMacros } from '@/supabase/services/plates'
 import { createDiet, updateDiet } from '@/supabase/services/diets'
-import { getMacros } from '@/supabase/services/plates'
+import { getIngredients } from '@/supabase/services/ingredients'
 import { useUserStore } from '@/stores/user'
 
-
-const props = defineProps({ show: Boolean, initialData: Object, currentUserId: String })
+const props = defineProps({ show: Boolean, initialData: Object })
 const emit = defineEmits(['close', 'saved'])
 
 const plates = ref([])
@@ -18,7 +17,7 @@ const userStore = useUserStore()
 const diet = ref({
   title: '',
   description: '',
-  user_id: props.currentUserId,
+  user_id: '',
   meals: []
 })
 
@@ -36,7 +35,7 @@ function resetForm() {
   diet.value = {
     title: '',
     description: '',
-    user_id: props.currentUserId ?? null,
+    user_id: '',
     meals: []
   }
 
@@ -49,60 +48,84 @@ function resetForm() {
   ]
 }
 
-watch(
-  () => props.initialData,
-  async (newData) => {
-    if (newData) {
-      diet.value = { ...newData };
+watch(() => props.initialData, async (newData) => {
+  if (newData) {
+    const uid = userStore.userData?.uid;
+    diet.value = {
+      title: newData.title,
+      description: newData.description,
+      user_id: newData.user_id || uid,
+      id: newData.id,
+      meals: []
+    };
 
-      // Reiniciar comidas por defecto + personalizadas
-      selectedMeals.value = [
-        { name: 'Desayuno', enabled: false, items: [] },
-        { name: 'Almuerzo', enabled: false, items: [] },
-        { name: 'Comida', enabled: false, items: [] },
-        { name: 'Merienda', enabled: false, items: [] },
-        { name: 'Cena', enabled: false, items: [] }
-      ];
-
-      // Restaurar las comidas de la dieta
-      newData.meals?.forEach((meal) => {
-        const existing = selectedMeals.value.find(m => m.name === meal.name);
-        if (existing) {
-          existing.enabled = true;
-          existing.items = meal.items || [];
-        } else {
-          selectedMeals.value.push({
-            name: meal.name,
-            enabled: true,
-            items: meal.items || []
-          });
-        }
-      });
-    } else {
-      resetForm();
+    // Asegúrate de que plates.value esté actualizado
+    if (!plates.value.length) {
+      plates.value = await getPlates(uid);
     }
-  },
-  { immediate: true }
-);
+
+    selectedMeals.value = [
+      { name: 'Desayuno', enabled: false, items: [] },
+      { name: 'Almuerzo', enabled: false, items: [] },
+      { name: 'Comida', enabled: false, items: [] },
+      { name: 'Merienda', enabled: false, items: [] },
+      { name: 'Cena', enabled: false, items: [] }
+    ];
+
+    newData.meals?.forEach((meal) => {
+      const target = selectedMeals.value.find(m => m.name === meal.name);
+
+      const enrichedPlates = (meal.items || []).map(plate => {
+        // Buscar el plato completo en plates.value
+        const fullPlate = plates.value.find(p => p.id === plate.id);
+        return fullPlate || plate; // Usar el plato completo si se encuentra, de lo contrario, usar el original
+      });
+
+      if (target) {
+        target.enabled = true;
+        target.items = enrichedPlates;
+      } else {
+        selectedMeals.value.push({
+          name: meal.name,
+          enabled: true,
+          items: enrichedPlates
+        });
+      }
+    });
+  } else {
+    resetForm();
+  }
+}, { immediate: true });
+
+
+
 
 // Carga inicial
 onMounted(async () => {
+  const uid = userStore.userData?.uid
+    if (!uid) return
+
+
   plates.value = await getPlates(userStore.userData.uid)
+  
+  if (!props.initialData) {
+    diet.value.user_id = uid
+  }
 
   if (props.initialData) {
-    diet.value = { ...props.initialData }
+  diet.value = { ...props.initialData }
 
-    // Rellenar selectedMeals
-    diet.value.meals?.forEach(meal => {
-      const match = selectedMeals.value.find(m => m.name === meal.name)
-      if (match) {
-        match.enabled = true
-        match.items = meal.items
-      } else {
-        selectedMeals.value.push({ ...meal, enabled: true })
-      }
-    })
-  }
+  props.initialData.meals?.forEach(meal => {
+    const match = selectedMeals.value.find(m => m.name === meal.name)
+    if (match) {
+      match.enabled = true
+      match.items = meal.items
+    } else {
+      selectedMeals.value.push({ ...meal, enabled: true })
+    }
+  })
+}
+
 })
 
 // Añadir plato
@@ -178,31 +201,36 @@ const totalMacros = computed(() => {
 
 // Guardar
 async function submitForm() {
-  // Eliminar los campos de totales antes de guardar la dieta
-  const cleanedDiet = { ...diet.value };
-  delete cleanedDiet.totalCalories;
-  delete cleanedDiet.totalProtein;
-  delete cleanedDiet.totalCarbs;
-  delete cleanedDiet.totalFats;
+  const uid = userStore.userData?.uid
 
-  // Filtramos solo las comidas activadas con platos
-  cleanedDiet.meals = selectedMeals.value.filter(m => m.enabled && m.items.length > 0);
+  if (!diet.value.user_id && uid) {
+    diet.value.user_id = uid
+  }
+
+  const cleanedDiet = { ...diet.value }
+
+  delete cleanedDiet.totalCalories
+  delete cleanedDiet.totalProtein
+  delete cleanedDiet.totalCarbs
+  delete cleanedDiet.totalFats
+
+  cleanedDiet.meals = selectedMeals.value.filter(m => m.enabled && m.items.length > 0)
 
   if (!cleanedDiet.user_id || typeof cleanedDiet.user_id !== 'string') {
-    alert('Error: no se ha podido determinar el usuario. Intenta recargar la página.');
-    return;
+    alert('Error: no se ha podido determinar el usuario. Intenta recargar la página.')
+    return
   }
 
-  // Enviar la dieta limpia (sin los campos no deseados)
   if (cleanedDiet.id) {
-    await updateDiet(cleanedDiet.id, cleanedDiet);
+    await updateDiet(cleanedDiet.id, cleanedDiet)
   } else {
-    await createDiet(cleanedDiet);
+    await createDiet(cleanedDiet)
   }
 
-  emit('saved');
-  emit('close');
+  emit('saved')
+  emit('close')
 }
+
 
 
 // Cerrar modal

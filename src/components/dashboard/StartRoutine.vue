@@ -63,8 +63,24 @@ function handleBack() {
 
 
 <template>
-  <div v-if="loading" class="text-center p-6">Cargando rutina...</div>
+  <!-- Estado de carga -->
+  <div v-if="loading" class="text-center p-6 text-white">Cargando rutina...</div>
 
+  <!-- Si NO hay rutina después de cargar -->
+  <div v-else-if="!routine || !routine.days || routine.days.length === 0" class="flex justify-center items-center text-center p-10">
+    <div class="bg-white p-6 rounded-xl shadow-lg max-w-md w-full text-gray-700 border border-red-200">
+      <h2 class="text-lg font-semibold mb-4 text-red-600">Rutina no asignada</h2>
+      <p class="mb-4">Debes asignarte una rutina antes de registrar un entrenamiento.</p>
+      <button
+        @click="$router.back()"
+        class="bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] text-white font-medium py-2 px-4 rounded"
+      >
+        Volver atrás
+      </button>
+    </div>
+  </div>
+
+  <!-- Si hay rutina válida -->
   <div v-else class="fixed inset-0 bg-[var(--color-primary)] bg-opacity-60 backdrop-blur-sm flex justify-center items-start overflow-y-auto py-6 z-50">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] h-auto flex flex-col relative overflow-hidden">
 
@@ -130,6 +146,7 @@ function handleBack() {
     </div>
   </div>
 </template>
+
 
 <style scoped>
 .input {

@@ -24,46 +24,27 @@ const searchQuery = ref('')
 const hasDietsLoaded = ref(false)
 
 const calculateTotalNutrients = (diet) => {
-  
   let totalCalories = 0;
   let totalProtein = 0;
   let totalCarbs = 0;
   let totalFats = 0;
 
-  // Aquí suponemos que `getIngredientById` es una función que recibe el `ingredientId` 
-  // y devuelve el ingrediente con sus propiedades nutricionales.
-  const getIngredientById = (id) => {
-    // Aquí debería ir tu lógica para recuperar el ingrediente desde tu base de datos,
-    // posiblemente usando un API o alguna otra consulta.
-    return allIngredients.value.find(ingredient => ingredient.id === id);
-  };
-
-  // Recorremos todas las comidas
   diet.meals?.forEach(meal => {
     meal.items?.forEach(plate => {
       plate.items?.forEach(item => {
+        const ingredient = item.ingredient;
+        const quantity = item.quantity || 0;
 
-        // Verificamos si el item tiene un `ingredientId`
-        if (item.ingredientId) {
-          const ingredient = getIngredientById(item.ingredientId);
-          
-          if (ingredient) {
-            const quantity = item.quantity || 0;  // Cantidad en gramos
-
-            // Acumulamos los nutrientes multiplicando por la cantidad
-            totalCalories += (ingredient.calories || 0) * (quantity / 100);
-            totalProtein += (ingredient.protein || 0) * (quantity / 100);
-            totalCarbs += (ingredient.carbs || 0) * (quantity / 100);
-            totalFats += (ingredient.fats || 0) * (quantity / 100);
-          } else {
-            console.warn(`Ingrediente con ID ${item.ingredientId} no encontrado.`);
-          }
+        if (ingredient) {
+          totalCalories += (ingredient.calories || 0) * (quantity / 100);
+          totalProtein += (ingredient.protein || 0) * (quantity / 100);
+          totalCarbs += (ingredient.carbs || 0) * (quantity / 100);
+          totalFats += (ingredient.fats || 0) * (quantity / 100);
         }
       });
     });
   });
 
-  // Devolvemos los totales calculados
   return {
     totalCalories,
     totalProtein,
@@ -71,6 +52,7 @@ const calculateTotalNutrients = (diet) => {
     totalFats
   };
 };
+
 
 const enrichDietItems = (dietList, ingredients) => {
   return dietList.map(diet => {

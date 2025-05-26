@@ -43,32 +43,40 @@ export async function getPlates(uid = null) {
 }
 
 export function getMacros(plate) {
+  // Si es un plato con ingredientes
+  if (plate?.items?.length > 0 && plate.items[0]?.ingredient) {
+    return {
+      calories: plate.items.reduce((total, item) => {
+        if (!item.ingredient || item.quantity == null) return total
+        return total + (parseFloat(item.ingredient.calories || 0) * item.quantity) / 100
+      }, 0).toFixed(1),
+
+      protein: plate.items.reduce((total, item) => {
+        if (!item.ingredient || item.quantity == null) return total
+        return total + (parseFloat(item.ingredient.protein || 0) * item.quantity) / 100
+      }, 0).toFixed(1),
+
+      carbs: plate.items.reduce((total, item) => {
+        if (!item.ingredient || item.quantity == null) return total
+        return total + (parseFloat(item.ingredient.carbs || 0) * item.quantity) / 100
+      }, 0).toFixed(1),
+
+      fats: plate.items.reduce((total, item) => {
+        if (!item.ingredient || item.quantity == null) return total
+        return total + (parseFloat(item.ingredient.fats || 0) * item.quantity) / 100
+      }, 0).toFixed(1)
+    }
+  }
+
+  // Si es un plato simple directo (por macros planos)
   return {
-    calories: plate.items.reduce((total, item) => {
-      if (!item.ingredient || item.quantity == null) return total
-      const per100g = parseFloat(item.ingredient.calories) || 0
-      return total + (per100g * item.quantity) / 100
-    }, 0).toFixed(1),
-
-    protein: plate.items.reduce((total, item) => {
-      if (!item.ingredient || item.quantity == null) return total
-      const per100g = parseFloat(item.ingredient.protein) || 0
-      return total + (per100g * item.quantity) / 100
-    }, 0).toFixed(1),
-
-    carbs: plate.items.reduce((total, item) => {
-      if (!item.ingredient || item.quantity == null) return total
-      const per100g = parseFloat(item.ingredient.carbs) || 0
-      return total + (per100g * item.quantity) / 100
-    }, 0).toFixed(1),
-
-    fats: plate.items.reduce((total, item) => {
-      if (!item.ingredient || item.quantity == null) return total
-      const per100g = parseFloat(item.ingredient.fats) || 0
-      return total + (per100g * item.quantity) / 100
-    }, 0).toFixed(1)
+    calories: parseFloat(plate.calories) || 0,
+    protein: parseFloat(plate.protein) || 0,
+    carbs: parseFloat(plate.carbs) || 0,
+    fats: parseFloat(plate.fats) || 0
   }
 }
+
 
 // Crear nuevo plato
 export async function createPlate(plateData, userId) {
