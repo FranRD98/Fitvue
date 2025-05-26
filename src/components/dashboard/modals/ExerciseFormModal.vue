@@ -1,7 +1,13 @@
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue'
 import { useUserStore } from '@/stores/user'
-import { createExercise, getExerciseCategories, updateExercise } from '@/supabase/services/exercises';
+import { supabase } from '@/supabase/config'
+import {
+  createExercise,
+  updateExercise,
+  getExerciseCategories,
+  getExerciseHistory
+} from '@/supabase/services/exercises'
 
 const props = defineProps({ show: Boolean, initialData: Object })
 const emit = defineEmits(['close', 'saved'])
@@ -9,9 +15,16 @@ const emit = defineEmits(['close', 'saved'])
 const userStore = useUserStore()
 const selectedTab = ref('info')
 const exerciseCategories = ref([])
+const exerciseHistory = ref([])
 const loading = ref(true)
 
-const exercise = ref({ name: '', description: '', id_category: '', image: '', created_by: '' })
+const exercise = ref({
+  name: '',
+  description: '',
+  id_category: '',
+  image: '',
+  created_by: ''
+})
 const imageFile = ref(null)
 
 const isEditable = computed(() => {
@@ -20,15 +33,6 @@ const isEditable = computed(() => {
 
 onMounted(async () => {
   try {
-     if (!userStore.userData?.uid) {
-      // Esperar a que se cargue
-      watch(() => userStore.userData, (val) => {
-        if (val?.uid) {
-          exercise.value.created_by = val.uid
-        }
-      }, { immediate: true })
-    }
-
     exerciseCategories.value = await getExerciseCategories()
   } catch (error) {
     console.error('Error al obtener categorías:', error)
@@ -39,51 +43,73 @@ onMounted(async () => {
 
 watch(
   () => props.initialData,
-  (newVal) => {
-    if (newVal) exercise.value = { ...newVal }
-    else resetForm()
+  async (newVal) => {
+    if (newVal) {
+      exercise.value = { ...newVal }
+      if (selectedTab.value === 'info') {
+        await loadExerciseHistory()
+      }
+    } else {
+      resetForm()
+    }
   },
   { immediate: true }
 )
 
+watch(
+  () => selectedTab.value,
+  async (newTab) => {
+    if (newTab === 'history' && exercise.value.id) {
+      await loadExerciseHistory()
+    }
+  }
+)
+
+async function loadExerciseHistory() {
+  try {
+    exerciseHistory.value = await getExerciseHistory(exercise.value.id, userStore.userData?.uid)
+  } catch (e) {
+    console.error('Error cargando historial:', e)
+  }
+}
+
 const uploadImage = async () => {
-  if (!imageFile.value) return;
-  const file = imageFile.value;
-  const filePath = `icons/exercises/${Date.now()}-${file.name}`;
-  const { data, error } = await supabase.storage.from('fitvue').upload(filePath, file);
-  if (error) return console.error('Error al subir imagen:', error);
-  const imageUrl = supabase.storage.from('fitvue').getPublicUrl(filePath).data.publicUrl;
-  exercise.value.image = imageUrl;
+  if (!imageFile.value) return
+  const file = imageFile.value
+  const filePath = `icons/exercises/${Date.now()}-${file.name}`
+
+  const { error } = await supabase.storage.from('fitvue').upload(filePath, file)
+  if (error) return console.error('Error al subir imagen:', error)
+
+  const imageUrl = supabase.storage.from('fitvue').getPublicUrl(filePath).data.publicUrl
+  exercise.value.image = imageUrl
 
   if (exercise.value.id) {
-    const { error: updateError } = await supabase
-      .from('exercises')
-      .update({ image: imageUrl })
-      .match({ id: exercise.value.id });
-    if (updateError) console.error('Error actualizando imagen:', updateError);
+    await supabase.from('exercises').update({ image: imageUrl }).eq('id', exercise.value.id)
   }
-};
+}
 
 const deleteImage = async () => {
-  const imageUrl = exercise.value.image;
-  if (!imageUrl || imageUrl.startsWith('blob:')) return;
-  const path = imageUrl.split('/storage/v1/object/public/fitvue/')[1];
-  if (path) await supabase.storage.from('fitvue').remove([path]);
-  if (exercise.value.id) await supabase.from('exercises').update({ image: '' }).eq('id', exercise.value.id);
-  exercise.value.image = '';
-  imageFile.value = null;
-};
+  const imageUrl = exercise.value.image
+  if (!imageUrl || imageUrl.startsWith('blob:')) return
+  const path = imageUrl.split('/storage/v1/object/public/fitvue/')[1]
+  if (path) await supabase.storage.from('fitvue').remove([path])
+  if (exercise.value.id) await supabase.from('exercises').update({ image: '' }).eq('id', exercise.value.id)
+  exercise.value.image = ''
+  imageFile.value = null
+}
 
 const submitForm = async () => {
-  if (imageFile.value) await uploadImage();
-  if (exercise.value.id) await updateExercise(exercise.value.id, exercise.value)
-  else {
+  if (imageFile.value) await uploadImage()
+  if (exercise.value.id) {
+    await updateExercise(exercise.value.id, exercise.value)
+  } else {
     exercise.value.created_by = userStore.userData?.uid
     await createExercise(exercise.value)
   }
   emit('saved')
   close()
-};
+}
 
 function close() {
   resetForm()
@@ -91,19 +117,20 @@ function close() {
 }
 
 function resetForm() {
-  exercise.value = { 
-  name: '', 
-  description: '', 
-  id_category: '', 
-  image: '', 
-  created_by: '' }
+  exercise.value = {
+    name: '',
+    description: '',
+    id_category: '',
+    image: '',
+    created_by: ''
+  }
   imageFile.value = null
+  exerciseHistory.value = []
 }
 
 const handleImageChange = async (event) => {
   const file = event.target.files[0]
   if (!file) return
-
   const resizedFile = await resizeImage(file, 800)
   exercise.value.image = URL.createObjectURL(resizedFile)
   imageFile.value = resizedFile
@@ -113,11 +140,9 @@ const resizeImage = (file, maxWidth = 800) => {
   return new Promise((resolve) => {
     const img = new Image()
     const reader = new FileReader()
-
     reader.onload = (e) => {
       img.src = e.target.result
     }
-
     img.onload = () => {
       const canvas = document.createElement('canvas')
       const scaleFactor = maxWidth / img.width
@@ -132,8 +157,15 @@ const resizeImage = (file, maxWidth = 800) => {
         resolve(resizedFile)
       }, file.type, 0.8)
     }
-
     reader.readAsDataURL(file)
+  })
+}
+
+function formatDate(dateString) {
+  return new Date(dateString).toLocaleDateString('es-ES', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
   })
 }
 </script>
@@ -141,58 +173,60 @@ const resizeImage = (file, maxWidth = 800) => {
 <template>
   <div v-if="show" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-center items-center px-4">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-6xl h-[90vh] flex flex-col relative overflow-hidden">
+      
+      <!-- Botón cerrar -->
       <button @click="emit('close')" class="absolute top-3 right-3 text-gray-500 hover:text-red-500 transition" aria-label="Cerrar">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
         </svg>
       </button>
 
+      <!-- Tabs -->
       <div class="flex border-b divide-x">
-        <div class="flex-1 text-center py-4 cursor-pointer hover:bg-gray-100" :class="{ 'bg-gray-100 font-semibold text-[var(--color-primary)]': selectedTab === 'info' }" @click="selectedTab = 'info'">
-          Información
-        </div>
-        <div class="flex-1 text-center py-4 cursor-pointer hover:bg-gray-100" :class="{ 'bg-gray-100 font-semibold text-[var(--color-primary)]': selectedTab === 'history' }" @click="selectedTab = 'history'">
-          Historial
-        </div>
+        <div class="flex-1 text-center py-4 cursor-pointer hover:bg-gray-100"
+             :class="{ 'bg-gray-100 font-semibold text-[var(--color-primary)]': selectedTab === 'info' }"
+             @click="selectedTab = 'info'">Información</div>
+
+        <div class="flex-1 text-center py-4 cursor-pointer hover:bg-gray-100"
+             :class="{ 'bg-gray-100 font-semibold text-[var(--color-primary)]': selectedTab === 'history' }"
+             @click="selectedTab = 'history'">Historial</div>
       </div>
 
+      <!-- Contenido dinámico -->
       <transition name="fade" mode="out-in">
         <div :key="selectedTab" class="p-6 overflow-y-auto flex-1">
+          
+          <!-- Info -->
           <div v-if="selectedTab === 'info'" class="space-y-4">
-            
-            <!-- Mensaje de advertencia -->
-            <p v-if="!isEditable" class="text-sm text-red-500 mt-2">
-              ⚠️ No puedes modificar los datos de un ejercicio de la plataforma.
-            </p>
+            <p v-if="!isEditable" class="text-sm text-red-500 mt-2">⚠️ No puedes modificar un ejercicio de la plataforma.</p>
             <h2 class="text-xl font-semibold text-[var(--color-primary)]">
               {{ exercise.id ? 'Editar ejercicio' : 'Crear ejercicio' }}
             </h2>
 
             <form @submit.prevent="submitForm" class="space-y-4">
-              <input v-model="exercise.name" :disabled="!isEditable" placeholder="Ejercicio" class="input" required />
-              <input v-model="exercise.description" :disabled="!isEditable" placeholder="Descripción corta" class="input" />
+              <input v-model="exercise.name" :disabled="!isEditable" placeholder="Nombre del ejercicio" class="input" required />
+              <input v-model="exercise.description" :disabled="!isEditable" placeholder="Descripción" class="input" />
 
               <label class="block text-sm font-medium text-gray-700">Grupo muscular</label>
               <select v-model="exercise.id_category" :disabled="!isEditable" class="w-full border border-gray-300 p-2 rounded" required>
-                <option disabled value="">Selecciona un grupo muscular</option>
+                <option disabled value="">Selecciona un grupo</option>
                 <option v-for="category in exerciseCategories" :key="category.id" :value="category.id">
                   {{ category.category_name }}
                 </option>
               </select>
 
+              <!-- Imagen -->
               <label v-if="isEditable" class="block text-sm font-medium text-gray-700">Imagen</label>
               <div v-if="isEditable" class="image-upload-container">
-                <input type="file" accept="image/*" @change="handleImageChange" class="hidden" id="image-upload-input" :disabled="!isEditable" />
+                <input type="file" accept="image/*" @change="handleImageChange" class="hidden" id="image-upload-input" />
                 <label for="image-upload-input" class="cursor-pointer border-dashed border-2 border-gray-300 p-6 text-center rounded-lg hover:border-gray-400 block">
                   <span v-if="!exercise.image" class="text-gray-600">Haz clic para subir una imagen</span>
                   <div v-if="exercise.image" class="relative mt-4">
                     <img :src="exercise.image" alt="Imagen del ejercicio" class="w-full h-40 object-cover rounded" />
                     <button
-                      v-if="isEditable"
                       @click.prevent="deleteImage"
                       class="absolute top-2 right-2 w-6 h-6 bg-white bg-opacity-75 rounded-full flex items-center justify-center shadow hover:bg-opacity-100"
-                      title="Eliminar imagen"
-                    >✖</button>
+                      title="Eliminar imagen">✖</button>
                   </div>
                 </label>
               </div>
@@ -205,10 +239,33 @@ const resizeImage = (file, maxWidth = 800) => {
             </form>
           </div>
 
+          <!-- Historial -->
           <div v-else-if="selectedTab === 'history'">
-            <p class="text-gray-500">Aquí irá el historial de levantamientos. (Aún por implementar)</p>
-          </div>
+            <h2 class="text-xl font-semibold text-[var(--color-primary)] mb-4">Historial de levantamientos</h2>
 
+            <table v-if="exerciseHistory.length" class="min-w-full text-left text-sm border">
+              <thead class="bg-gray-200 text-gray-600 font-medium">
+                <tr>
+                  <th class="py-3 px-2">Fecha</th>
+                  <th class="px-2">Series registradas</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white">
+                <tr v-for="(entry, index) in exerciseHistory" :key="index" class="border-t border-gray-200">
+                  <td class="py-3 px-2 font-medium">{{ formatDate(entry.created_at) }}</td>
+                  <td class="py-3 px-2 text-sm">
+                    <ul class="space-y-1">
+                      <li v-for="(set, i) in entry.sets" :key="i">
+                        Serie {{ i + 1 }}: <strong>{{ set.reps }}</strong> reps x <strong>{{ set.weight }}</strong> kg
+                      </li>
+                    </ul>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <p v-else class="text-gray-500">No hay datos registrados para este ejercicio.</p>
+          </div>
         </div>
       </transition>
     </div>
@@ -244,10 +301,28 @@ const resizeImage = (file, maxWidth = 800) => {
   border-radius: 0.5rem;
 }
 
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.3s ease;
 }
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  padding: 0.75rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background-color: #f3f4f6;
+}
+
 </style>

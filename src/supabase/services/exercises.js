@@ -166,3 +166,20 @@ export async function saveExerciseProgress(userId, routineId, day, exerciseInput
     throw error
   }
 }
+
+
+export async function getExerciseHistory(exerciseId, userId) {
+  const { data, error } = await supabase
+    .from('exercises_progress')
+    .select('created_at, sets')
+    .eq('exercise_id', exerciseId)
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error al obtener el historial de ejercicios:', error);
+    return [];
+  }
+
+  return data;
+}
