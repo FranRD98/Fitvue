@@ -16,6 +16,34 @@ export async function getDiets(userId) {
   return data
 }
 
+// Obtener rutina asignada del coach
+export async function getCoachAssignedDiet(uid) {
+  
+  // Paso 1: Obtener el ID de la rutina asignada
+  const { data: userData, error: userError } = await supabase
+    .from('users')
+    .select('assigned_diet')
+    .eq('uid', uid)
+    .single()
+
+  if (userError) throw userError
+
+  const dietId = userData.assigned_diet
+
+  if (!dietId) return null // No hay rutina asignada
+
+  // Paso 2: Obtener los datos de la rutina usando ese ID
+  const { data: dietData, error: dietError } = await supabase
+    .from('diets')
+    .select('*')
+    .eq('id', dietId)
+    .single()
+
+  if (dietError) throw dietError
+
+  return dietData
+}
+
 // Crear nueva dieta
 export async function createDiet(data) {
   const { data: insertedData, error } = await supabase

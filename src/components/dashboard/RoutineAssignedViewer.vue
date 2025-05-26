@@ -1,9 +1,10 @@
 <script setup>
-defineProps({
-  show: Boolean,
-  routine: Object
-})
-defineEmits(['close'])
+  defineProps({
+    show: Boolean,
+    routine: Object
+  })
+
+  defineEmits(['close'])
 </script>
 
 

@@ -1,20 +1,20 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
-import { getDiets, deleteDiet } from '@/supabase/services/diets'
-import { getIngredients, getIngredientById } from '@/supabase/services/ingredients'
-import DietFormModal from '@/components/dashboard/modals/DietFormModal.vue'
 import { useUserStore } from '@/stores/user'  // Importamos el store de Pinia
 
-// Icons
-import {
-  IconPlus,
-  IconLayoutGrid,
-  IconLayoutList,
-  IconTrash
-} from '@tabler/icons-vue'
+import { getDiets, deleteDiet, getCoachAssignedDiet } from '@/supabase/services/diets'
+import { getIngredients } from '@/supabase/services/ingredients'
+import DietFormModal from '@/components/dashboard/modals/DietFormModal.vue'
+import DietAssignedViewer from '@/components/dashboard/DietAssignedViewer.vue'
 
-const userStore = useUserStore()  // Usamos el store de usuario
+
+// Icons
+import { IconPlus, IconLayoutGrid, IconLayoutList, IconTrash, IconLockOff, IconRocket, IconLockOpen2 } from '@tabler/icons-vue'
+
 const diets = ref([])
+
+const viewAssignedDiet = ref(false)
+const userStore = useUserStore()  // Usamos el store de usuario
 const allIngredients = ref([])
 const showModal = ref(false)
 const selectedDiet = ref(null)
@@ -22,6 +22,8 @@ const loading = ref(true)
 const viewMode = ref('grid')
 const searchQuery = ref('')
 const hasDietsLoaded = ref(false)
+
+const assignedCoachDiet = ref(null)
 
 const calculateTotalNutrients = (diet) => {
   let totalCalories = 0;
@@ -94,15 +96,23 @@ const enrichDietItems = (dietList, ingredients) => {
 
 const loadDiets = async () => {
   if (!userStore.userData?.uid) return
+
   loading.value = true
+
   try {
     const [dietsRaw, ingredients] = await Promise.all([
       getDiets(userStore.userData.uid),
-      getIngredients()
+      getIngredients(userStore.userData.uid)
     ])
 
     allIngredients.value = ingredients
     diets.value = enrichDietItems(dietsRaw, ingredients)
+
+const rawAssignedDiet = await getCoachAssignedDiet(userStore.userData?.uid)
+assignedCoachDiet.value = rawAssignedDiet
+  ? enrichDietItems([rawAssignedDiet], ingredients)[0]
+  : null
+  
   } catch (e) {
     console.error('Error al cargar dietas o ingredientes:', e)
   } finally {
@@ -111,10 +121,24 @@ const loadDiets = async () => {
   }
 }
 
+
 const openEditModal = (diet) => {
-  selectedDiet.value = diet
-  showModal.value = true
+
+  if (
+    userStore.userData?.plan_id !== 1 &&
+    assignedCoachDiet.value &&
+    diet.id === assignedCoachDiet.value.id
+  ) {
+    viewAssignedDiet.value = true // Mostrar la vista solo lectura
+
+  } else {
+      selectedDiet.value = diet
+      showModal.value = true
+  }
 }
+
+
+
 
 const handleDelete = async (diet) => {
   if (confirm(`¿Seguro que quieres eliminar la dieta "${diet.title}"?`)) {
@@ -146,13 +170,53 @@ watch(
   <section>
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
       <h1 class="text-3xl font-bold text-[var(--color-primary)]">Dietas</h1>
-      <button
-        @click="showModal = true"
-        class="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg shadow hover:bg-[var(--color-secondary)] transition"
-      >
-        <IconPlus class="w-5 h-5" />
-        Nueva dieta
-      </button>
+
+        <div class="flex gap-4 items-center">
+
+        <!-- Usuario con plan PREMIUM y rutina asignada -->
+        <button
+          v-if="userStore.userData?.plan_id !== 1 && assignedCoachDiet"
+          @click="openEditModal(assignedCoachDiet)"
+          class="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg cursor-pointer
+                hover:bg-green-700 transition-all duration-200"
+          title="Dieta asignada — listo para despegar 🚀"
+        >
+          <IconRocket class="w-5 h-5" />
+          Dieta del coach
+        </button>
+
+        <!-- Usuario con plan PREMIUM pero sin dieta asignada aún -->
+        <button
+          v-else-if="userStore.userData?.plan_id !== 1 && !assignedCoachDiet"
+          disabled
+          class="flex items-center gap-2 bg-neutral-200 text-neutral-500 px-4 py-2 rounded-lg cursor-not-allowed"
+          title="Aún no tienes una dieta asignada"
+        >
+          <IconLockOpen2 class="w-5 h-5" />
+          Sin dieta del coach
+        </button>
+
+        <!-- Usuario con plan Free -->
+        <button
+          v-else-if="userStore.userData?.plan_id === 1"
+          disabled
+          class="flex items-center gap-2 bg-yellow-100 text-yellow-700 border border-yellow-300 px-4 py-2 rounded-lg cursor-not-allowed"
+          title="Actualiza a Pro para recibir una dieta personalizada"
+        >
+          <IconLockOff class="w-5 h-5" />
+          Requiere plan Pro
+        </button>
+
+        <!-- Crear dieta -->
+        <button
+          @click="showModal = true"
+          class="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg shadow hover:bg-[var(--color-secondary)] transition"
+        >
+          <IconPlus class="w-5 h-5" />
+          Nueva dieta
+        </button>
+
+            </div>
     </div>
 
     <DietFormModal
@@ -161,6 +225,14 @@ watch(
       @close="showModal = false; selectedDiet = null"
       @saved="loadDiets"
     />
+
+    <!-- Vista solo lectura de la dieta asignada -->
+      <DietAssignedViewer
+        v-if="viewAssignedDiet"
+        :show="viewAssignedDiet"
+        :diet="assignedCoachDiet"
+        @close="viewAssignedDiet = false"
+      />
 
     <div v-if="loading">Cargando dietas...</div>
     

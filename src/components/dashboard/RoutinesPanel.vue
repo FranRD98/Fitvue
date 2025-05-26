@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useUserStore } from '@/stores/user'
+import { useUserStore } from '@/stores/user'  // Importamos el store de Pinia
 import { getRoutinesByUser, assignRoutineToUser, getAssignedRoutine, unassignRoutineFromUser, updateRoutine, getCoachAssignedRoutine } from '@/supabase/services/routines.js'
 import RoutineFormModal from '@/components/dashboard/modals/RoutineFormModal.vue'
 import RoutineAssignedViewer from '@/components/dashboard/RoutineAssignedViewer.vue'
@@ -8,15 +8,18 @@ import RoutineAssignedViewer from '@/components/dashboard/RoutineAssignedViewer.
 import { IconPlus, IconLayoutGrid, IconLayoutList, IconLockOff, IconRocket, IconLockOpen2 } from '@tabler/icons-vue'
 import { useDelayedSkeleton } from '@/composables/useDelayedSkeleton'
 
+const routines = ref([])
+
 const viewAssignedRoutine = ref(false)
 const userStore = useUserStore()
-const routines = ref([])
 const showModal = ref(false)
 const selectedRoutine = ref(null)
+
 const assignedRoutine = ref(null)
 const assignedRoutineId = ref(null)
 const assignedCoachRoutine = ref(null)
 const assignedCoachRoutineId = ref(null)
+
 const viewMode = ref('grid')
 const searchQuery = ref('')
 const hasSearch = computed(() => searchQuery.value.trim().length > 0)
@@ -51,13 +54,6 @@ const loadRoutines = async () => {
     assignedCoachRoutine.value = await getCoachAssignedRoutine(userStore.userData?.uid)  
     assignedCoachRoutineId.value = assignedCoachRoutine.value?.id || null
 
-    console.log("Rutina asignada usuario: "+assignedRoutineId.value)
-    console.log(assignedRoutine.value)
-
-    console.log("Rutina asignada COACH: "+assignedCoachRoutineId.value)
-    console.log(assignedCoachRoutine.value)
-
-
   } catch (error) {
     console.error('Error al cargar rutinas:', error)
 
@@ -79,10 +75,6 @@ const openEditModal = (routine) => {
     selectedRoutine.value = routine
     showModal.value = true
   }
-}
-
-const closeViewRoutine = () => {
-  viewAssignedRoutine.value = false
 }
 
 const countExercises = (routine) => {
@@ -160,12 +152,12 @@ const handleUnassign = async () => {
       </div>
     </div>
 
-    <RoutineFormModal
-      :show="showModal"
-      :initialData="selectedRoutine"
-      @close="showModal = false; selectedRoutine = null"
-      @saved="loadRoutines"
-    />
+      <RoutineFormModal
+        :show="showModal"
+        :initialData="selectedRoutine"
+        @close="showModal = false; selectedRoutine = null"
+        @saved="loadRoutines"
+      />
 
       <!-- Vista solo lectura de rutina asignada -->
       <RoutineAssignedViewer
