@@ -38,7 +38,20 @@ onMounted(() => {
   if (userStore.userData?.uid) {
     userData.value.user_id = userStore.userData.uid
   }
+
+  // Espera al DOM y enfoca el input
+  nextTick(() => {
+    const waitForInput = () => {
+      if (inputRef.value) {
+        inputRef.value.focus()
+      } else {
+        requestAnimationFrame(waitForInput)
+      }
+    }
+    waitForInput()
+  })
 })
+
 
 watch(step, async () => {
   await nextTick()
@@ -46,19 +59,19 @@ watch(step, async () => {
 })
 
 const steps = [
-  { model: 'weight', label: '¿Cuál es tu peso corporal actual?', image: 'https://images.pexels.com/photos/6975463/pexels-photo-6975463.jpeg?auto=compress&cs=tinysrgb&w=800' },
-  { model: 'neck', label: '¿Cuánto mide tu cuello?', image: '/images/neck.png' },
-  { model: 'shoulders', label: '¿Cuánto miden tus hombros?', image: '/images/shoulders.png' },
-  { model: 'chest', label: '¿Cuánto mide tu pecho?', image: '/images/chest.png' },
-  { model: 'biceps_relaxed', label: '¿Cuánto mide tu bíceps relajado?', image: '/images/biceps_relaxed.png' },
-  { model: 'biceps_flexed', label: '¿Y tu bíceps contraído?', image: '/images/biceps_flexed.png' },
-  { model: 'forearm', label: '¿Medida del antebrazo?', image: '/images/forearm.png' },
-  { model: 'wrist', label: '¿Tamaño de la muñeca?', image: '/images/wrist.png' },
-  { model: 'waist', label: '¿Cuánto mide tu cintura?', image: '/images/waist.png' },
-  { model: 'abdomen', label: '¿Medida del abdomen?', image: '/images/abdomen.png' },
-  { model: 'hips', label: '¿Cuánto mide tu cadera?', image: '/images/hips.png' },
-  { model: 'quadriceps', label: '¿Tamaño de los cuádriceps?', image: '/images/quadriceps.png' },
-  { model: 'calves', label: '¿Y tus gemelos?', image: '/images/calves.png' }
+  { model: 'weight', label: '¿Cuál es tu peso corporal actual?', image: 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/reviews/weight.png' },
+  { model: 'neck', label: '¿Cuánto mide tu cuello?', image: 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/reviews/neck.png' },
+  { model: 'shoulders', label: '¿Cuánto miden tus hombros?', image: 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/reviews/shoulders.png' },
+  { model: 'chest', label: '¿Cuánto mide tu pecho?', image: 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/reviews/chest.png' },
+  { model: 'biceps_relaxed', label: '¿Cuánto mide tu bíceps relajado?', image: 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/reviews/biceps-relaxed.png' },
+  { model: 'biceps_flexed', label: '¿Y tu bíceps contraído?', image: 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/reviews/biceps-flexed.png' },
+  { model: 'forearm', label: '¿Medida del antebrazo?', image: 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/reviews/forearm.png' },
+  { model: 'wrist', label: '¿Tamaño de la muñeca?', image: 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/reviews/wrist.png' },
+  { model: 'waist', label: '¿Cuánto mide tu cintura?', image: 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/reviews/waist.png' },
+  { model: 'abdomen', label: '¿Medida del abdomen?', image: 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/reviews/abs.png' },
+  { model: 'hips', label: '¿Cuánto mide tu cadera?', image: 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/reviews/hips.png' },
+  { model: 'quadriceps', label: '¿Tamaño de los cuádriceps?', image: 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/reviews/quad.png' },
+  { model: 'calves', label: '¿Y tus gemelos?', image: 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/reviews/calve.png' }
 ]
 
 const currentStep = computed(() => steps[step.value])
@@ -88,6 +101,20 @@ function handleBack() {
     step.value--
   }
 }
+
+watch(step, async () => {
+  await nextTick()
+  // Espera repetidamente hasta que el input exista y luego hace focus
+  const waitForInput = () => {
+    if (inputRef.value) {
+      inputRef.value.focus()
+    } else {
+      requestAnimationFrame(waitForInput)
+    }
+  }
+  waitForInput()
+})
+
 </script>
 
 <template>
@@ -106,25 +133,28 @@ function handleBack() {
         <h2 class="text-xl font-bold text-[var(--color-primary)]">Paso {{ step + 1 }} de {{ totalSteps }}</h2>
 
         <!-- Barra de progreso -->
-        <div class="relative h-2 w-full bg-gray-200 rounded-full overflow-hidden mt-2 mx-6">
-          <div
-            class="absolute top-0 left-0 h-full bg-[var(--color-primary)] transition-all duration-500"
-            :style="{ width: ((step + 1) / totalSteps * 100) + '%' }"
-          ></div>
+        <div class="w-full px-6 mt-2">
+          <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              class="h-full bg-[var(--color-primary)] transition-all duration-300 ease-in-out"
+              :style="{ width: `${((step + 1) / totalSteps) * 100}%` }"
+            ></div>
+          </div>
         </div>
+
       </div>
 
       <!-- Contenido -->
-      <transition :name="direction === 'forward' ? 'slide-left' : 'slide-right'" mode="out-in">
+      <transition name="fade" mode="out-in">
         <div :key="step" class="flex-1 relative flex flex-col items-center justify-center text-center p-6 gap-6">
           <h3 class="text-xl font-semibold text-gray-700">{{ currentStep.label }}</h3>
 
-          <!--<img
+          <img
             :src="currentStep.image"
             alt="Imagen del paso"
-            class="w-full max-w-sm h-64 object-cover rounded-xl shadow-md"
+            class="w-auto max-w-sm h-64 object-cover"
             loading="lazy"
-          />-->
+          />
 
           <input
             ref="inputRef"
@@ -169,36 +199,23 @@ function handleBack() {
   font-size: 1rem;
   line-height: 1.5rem;
   outline: none;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .input:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 1px var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary);
 }
 
-.slide-left-enter-active, .slide-left-leave-active,
-.slide-right-enter-active, .slide-right-leave-active {
-  transition: transform 0.4s ease, opacity 0.4s ease;
-  position: absolute;
-  width: 100%;
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.4s ease;
 }
-
-.slide-left-enter-from {
-  transform: translateX(100%);
-  opacity: 0;
-}
-.slide-left-leave-to {
-  transform: translateX(-100%);
+.fade-enter-from, .fade-leave-to {
   opacity: 0;
 }
 
-.slide-right-enter-from {
-  transform: translateX(-100%);
-  opacity: 0;
+.input:hover {
+  border-color: #9ca3af; /* gris medio */
 }
-.slide-right-leave-to {
-  transform: translateX(100%);
-  opacity: 0;
-}
+
 </style>
