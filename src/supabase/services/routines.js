@@ -127,8 +127,48 @@ export async function getRoutineById(id) {
 
 
 // Obtener rutina asignada actual
-export async function getAssignedRoutine(routineId) {
+export async function getAssignedRoutine(uid) {
   
+  // Paso 1: Obtener el ID de la rutina asignada
+  const { data: userData, error: userError } = await supabase
+    .from('users')
+    .select('assigned_routine')
+    .eq('uid', uid)
+    .single()
+
+  if (userError) throw userError
+
+  const routineId = userData.assigned_routine
+  if (!routineId) return null // No hay rutina asignada
+
+  // Paso 2: Obtener los datos de la rutina usando ese ID
+  const { data: routineData, error: routineError } = await supabase
+    .from('routines')
+    .select('*') // Podés ajustar si solo querés ciertos campos
+    .eq('id', routineId)
+    .single()
+
+  if (routineError) throw routineError
+
+  return routineData
+}
+
+// Obtener rutina asignada del coach
+export async function getCoachAssignedRoutine(uid) {
+  
+  // Paso 1: Obtener el ID de la rutina asignada
+  const { data: userData, error: userError } = await supabase
+    .from('users')
+    .select('assigned_routine_by_coach')
+    .eq('uid', uid)
+    .single()
+
+  if (userError) throw userError
+
+  const routineId = userData.assigned_routine_by_coach
+  if (!routineId) return null // No hay rutina asignada
+
+  // Paso 2: Obtener los datos de la rutina usando ese ID
   const { data: routineData, error: routineError } = await supabase
     .from('routines')
     .select('*') // Podés ajustar si solo querés ciertos campos

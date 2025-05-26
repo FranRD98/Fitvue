@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
-import { getRoutinesByUser, assignRoutineToUser, getAssignedRoutine, unassignRoutineFromUser, updateRoutine } from '@/supabase/services/routines.js'
+import { getRoutinesByUser, assignRoutineToUser, getAssignedRoutine, unassignRoutineFromUser, updateRoutine, getCoachAssignedRoutine } from '@/supabase/services/routines.js'
 import RoutineFormModal from '@/components/dashboard/modals/RoutineFormModal.vue'
 import RoutineAssignedViewer from '@/components/dashboard/RoutineAssignedViewer.vue'
 
@@ -15,6 +15,8 @@ const showModal = ref(false)
 const selectedRoutine = ref(null)
 const assignedRoutine = ref(null)
 const assignedRoutineId = ref(null)
+const assignedCoachRoutine = ref(null)
+const assignedCoachRoutineId = ref(null)
 const viewMode = ref('grid')
 const searchQuery = ref('')
 const hasSearch = computed(() => searchQuery.value.trim().length > 0)
@@ -43,8 +45,18 @@ const loadRoutines = async () => {
   
   try {
     routines.value = await getRoutinesByUser(userStore.userData?.uid)
-    assignedRoutine.value = await getAssignedRoutine(userStore.userData?.assigned_routine)  
+    assignedRoutine.value = await getAssignedRoutine(userStore.userData?.uid)  
     assignedRoutineId.value = assignedRoutine.value?.id || null
+
+    assignedCoachRoutine.value = await getCoachAssignedRoutine(userStore.userData?.uid)  
+    assignedCoachRoutineId.value = assignedCoachRoutine.value?.id || null
+
+    console.log("Rutina asignada usuario: "+assignedRoutineId.value)
+    console.log(assignedRoutine.value)
+
+    console.log("Rutina asignada COACH: "+assignedCoachRoutineId.value)
+    console.log(assignedCoachRoutine.value)
+
 
   } catch (error) {
     console.error('Error al cargar rutinas:', error)
@@ -59,8 +71,8 @@ onMounted(loadRoutines)
 const openEditModal = (routine) => {
   if (
     userStore.userData?.plan_id !== 1 &&
-    assignedRoutine.value &&
-    routine.id === assignedRoutine.value.id
+    assignedCoachRoutine.value &&
+    routine.id === assignedCoachRoutine.value.id
   ) {
     viewAssignedRoutine.value = true // Mostrar la vista solo lectura
   } else {
@@ -105,8 +117,8 @@ const handleUnassign = async () => {
 
         <!-- Usuario con plan PREMIUM y rutina asignada -->
         <button
-          v-if="userStore.userData?.plan_id !== 1 && assignedRoutine"
-          @click="openEditModal(assignedRoutine)"
+          v-if="userStore.userData?.plan_id !== 1 && assignedCoachRoutine"
+          @click="openEditModal(assignedCoachRoutine)"
           class="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg cursor-pointer
                 hover:bg-green-700 transition-all duration-200"
           title="Rutina asignada — listo para despegar 🚀"
@@ -117,7 +129,7 @@ const handleUnassign = async () => {
 
         <!-- Usuario con plan PREMIUM pero sin rutina asignada aún -->
         <button
-          v-else-if="userStore.userData?.plan_id !== 1 && !assignedRoutine"
+          v-else-if="userStore.userData?.plan_id !== 1 && !assignedCoachRoutine"
           disabled
           class="flex items-center gap-2 bg-neutral-200 text-neutral-500 px-4 py-2 rounded-lg cursor-not-allowed"
           title="Aún no tienes una rutina asignada"
@@ -159,7 +171,7 @@ const handleUnassign = async () => {
       <RoutineAssignedViewer
         v-if="viewAssignedRoutine"
         :show="viewAssignedRoutine"
-        :routine="assignedRoutine"
+        :routine="assignedCoachRoutine"
         @close="viewAssignedRoutine = false"
       />
 
@@ -217,7 +229,7 @@ const handleUnassign = async () => {
             <div class="flex justify-between">
               
               <!-- Checkbox publicar Rutina -->
-              <div class="mt-4 flex justify-end">
+              <div v-if="userStore.userData?.role === 'admin'" class="mt-4 flex justify-end">
                 <label class="flex items-center gap-2 cursor-pointer select-none" @click.stop>
                   <input
                     type="checkbox"
@@ -246,7 +258,7 @@ const handleUnassign = async () => {
                   <input
                     type="checkbox"
                     class="sr-only"
-                    :checked="assignedRoutineId === routine.id"
+                    :checked="assignedRoutineId"
                     @change="($event) => {
                       if ($event.target.checked) {
                         handleAssign(routine.id)
