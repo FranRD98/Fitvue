@@ -57,8 +57,8 @@ export const useUserStore = defineStore('user', () => {
   }
 
   // Obtener usuario actual y datos extendidos
-const session = ref(null)
-
+  const session = ref(null)
+    
 const fetchUserData = async () => {
   const { data: sessionData } = await supabase.auth.getSession()
   session.value = sessionData?.session || null // <-- Guarda toda la sesión

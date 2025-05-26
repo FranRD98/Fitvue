@@ -9,9 +9,6 @@ export async function getExercises(userId) {
 
   const adminIds = (adminUsers || []).map(u => u.uid)
 
-  console.log('ADMINS')
-  console.log(adminUsers)
-
   const { data, error } = await supabase
     .from('exercises')
     .select(`
@@ -38,8 +35,6 @@ export async function getExerciseById(id) {
   if (error) throw error
   return data
 }
-
-
 
 // Obtener categorías de ejercicios
 export async function getExerciseCategories() {
@@ -118,4 +113,56 @@ export async function deleteExercise(exerciseId) {
   }
 
   return data; // Si es necesario, devuelve algún resultado después de eliminar
+}
+
+export async function getLastExerciseProgress(exerciseId, userId) {
+  const { data, error } = await supabase
+    .from('exercises_progress')
+    .select('sets, created_at')
+    .eq('user_id', userId)
+    .eq('exercise_id', exerciseId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+
+  if (error) {
+    console.error(error)
+    return null
+  }
+
+  return data?.[0] || null
+}
+
+export async function saveExerciseProgress(userId, routineId, day, exerciseInputs) {
+  const date = new Date().toISOString()
+  const progressEntries = []
+
+  for (const exercise of exerciseInputs) {
+    if (!exercise.exerciseId || !exercise.sets?.length) continue
+
+    progressEntries.push({
+      user_id: userId,
+      id_routine: routineId,
+      exercise_id: String(exercise.exerciseId), // ⚠️ Aseguramos que sea string
+      exercise_name: exercise.name,
+      day,
+      sets: exercise.sets, // JSON con peso y reps
+      created_at: date
+    })
+  }
+
+  console.log('📦 Datos a guardar:', progressEntries)
+
+  if (!progressEntries.length) {
+    console.warn('No hay sets válidos para guardar.')
+    return
+  }
+
+  const { error } = await supabase
+    .from('exercises_progress')
+    .insert(progressEntries)
+
+  if (error) {
+    console.error('❌ Error al guardar en Supabase:', error)
+    throw error
+  }
 }

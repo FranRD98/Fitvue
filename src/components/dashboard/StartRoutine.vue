@@ -1,35 +1,35 @@
 <script setup>
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
-import { useRoute } from 'vue-router'
-import { getAssignedRoutine } from '@/supabase/services/routines'
+import { useRoute, useRouter } from 'vue-router'
+import { getAssignedRoutine, getCoachAssignedRoutine } from '@/supabase/services/routines'
+import { getLastExerciseProgress, saveExerciseProgress } from '@/supabase/services/exercises'
 
 const route = useRoute()
+const router = useRouter()
+
 const routine = ref(null)
 const loading = ref(true)
 const step = ref(0)
-const direction = ref('forward')
 const inputRefs = ref([])
 const exerciseInputs = ref([])
+const selectedDay = ref(null)
+const showDaySelector = ref(false)
+const userId = ref(null)
 
-const currentDay = computed(() => routine.value?.days?.[0])
-const exercises = computed(() => currentDay.value?.exercises || [])
-const currentExercise = computed(() => exercises.value[step.value])
-const totalSteps = computed(() => exercises.value.length)
+const currentExercise = computed(() => selectedDay.value?.exercises?.[step.value])
+const totalSteps = computed(() => selectedDay.value?.exercises?.length || 0)
 
 onMounted(async () => {
-  const { userId } = route.params
-  if (!userId) return
+  userId.value = route.params.userId
+  if (!userId.value) return
 
   try {
-    const data = await getAssignedRoutine(userId)
-    routine.value = data
+    const routineData = await getCoachAssignedRoutine(userId.value) || await getAssignedRoutine(userId.value)
+    routine.value = routineData
 
-    // Prepara el input model
-    exerciseInputs.value = data.days?.[0]?.exercises?.map(ex => ({
-      exerciseId: ex.id,
-      name: ex.name,
-      sets: Array(ex.sets).fill({ reps: '', weight: '' })
-    })) || []
+    if (routineData?.days?.length) {
+      showDaySelector.value = true
+    }
   } catch (error) {
     console.error('Error al cargar la rutina:', error)
   } finally {
@@ -37,37 +37,72 @@ onMounted(async () => {
   }
 })
 
+const handleDaySelection = async (dayObj) => {
+  selectedDay.value = dayObj
+  step.value = 0
+  showDaySelector.value = false
+
+  exerciseInputs.value = await Promise.all(
+    dayObj.exercises.map(async (exercise) => {
+      const lastProgress = await getLastExerciseProgress(exercise.id, userId.value)
+
+      const lastSets = lastProgress?.sets || []
+      const sets = Array.from({ length: exercise.sets }).map((_, i) => ({
+        reps: '',
+        weight: '',
+        lastReps: lastSets[i]?.reps || null,
+        lastWeight: lastSets[i]?.weight || null
+      }))
+
+      return {
+        exerciseId: exercise.id,
+        name: exercise.name,
+        sets,
+        lastDate: lastProgress?.created_at ? new Date(lastProgress.created_at).toLocaleDateString('es-ES') : null
+      }
+    })
+  )
+}
+
 watch(step, async () => {
   await nextTick()
   inputRefs.value[0]?.focus()
 })
 
-function handleNext() {
+const handleNext = async () => {
   if (step.value < totalSteps.value - 1) {
-    direction.value = 'forward'
     step.value++
   } else {
-    console.log('Datos de entrenamiento:', exerciseInputs.value)
-    alert('¡Rutina finalizada!')
+    try {
+      await saveExerciseProgress(
+        userId.value,
+        routine.value.id,
+        selectedDay.value.day,
+        exerciseInputs.value
+      )
+      alert('¡Progreso guardado con éxito!')
+    } catch (error) {
+      console.error(error)
+      alert('Error al guardar el progreso.')
+    } finally {
+      router.push('/dashboard')
+    }
   }
 }
 
-function handleBack() {
+const handleBack = () => {
   if (step.value > 0) {
-    direction.value = 'backward'
     step.value--
   }
 }
 </script>
 
-
-
 <template>
-  <!-- Estado de carga -->
+  <!-- Cargando -->
   <div v-if="loading" class="text-center p-6 text-white">Cargando rutina...</div>
 
-  <!-- Si NO hay rutina después de cargar -->
-  <div v-else-if="!routine || !routine.days || routine.days.length === 0" class="flex justify-center items-center text-center p-10">
+  <!-- Sin rutina -->
+  <div v-else-if="!routine || !routine.days?.length" class="flex justify-center items-center text-center p-10">
     <div class="bg-white p-6 rounded-xl shadow-lg max-w-md w-full text-gray-700 border border-red-200">
       <h2 class="text-lg font-semibold mb-4 text-red-600">Rutina no asignada</h2>
       <p class="mb-4">Debes asignarte una rutina antes de registrar un entrenamiento.</p>
@@ -80,14 +115,31 @@ function handleBack() {
     </div>
   </div>
 
-  <!-- Si hay rutina válida -->
+  <!-- Selección de día -->
+  <div v-else-if="showDaySelector" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex justify-center items-center z-50">
+    <div class="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
+      <h2 class="text-xl font-bold text-[var(--color-primary)] mb-4">Selecciona un día</h2>
+      <ul class="space-y-2">
+        <li v-for="day in routine.days" :key="day.day">
+          <button
+            @click="handleDaySelection(day)"
+            class="w-full px-4 py-2 bg-[var(--color-primary)] text-white rounded hover:bg-[var(--color-secondary)] transition"
+          >
+            {{ day.day }}
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Rutina paso a paso -->
   <div v-else class="fixed inset-0 bg-[var(--color-primary)] bg-opacity-60 backdrop-blur-sm flex justify-center items-start overflow-y-auto py-6 z-50">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] h-auto flex flex-col relative overflow-hidden">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl h-auto flex flex-col relative overflow-hidden max-h-[90vh]">
 
       <!-- Header -->
       <div class="text-center py-6 border-b">
         <h2 class="text-xl font-bold text-[var(--color-primary)]">
-          {{ routine.title }} — {{ currentDay.day }}
+          {{ routine.title }} — {{ selectedDay.day }}
         </h2>
         <div class="relative h-2 w-full bg-gray-200 rounded-full overflow-hidden mt-2 mx-6">
           <div
@@ -97,34 +149,54 @@ function handleBack() {
         </div>
       </div>
 
-      <!-- Ejercicio actual -->
-      <transition :name="direction === 'forward' ? 'slide-left' : 'slide-right'" mode="out-in">
-        <div :key="step" class="flex-1 flex flex-col items-center justify-center text-center p-6 gap-6">
-          <h3 class="text-xl font-semibold text-gray-700">{{ currentExercise.name }}</h3>
+      <!-- Ejercicio -->
+      <div :key="step" class="flex-1 flex flex-col items-center text-center p-6 gap-6 overflow-y-auto">
+        <h3 class="text-xl font-semibold text-gray-700">{{ currentExercise.name }}</h3>
 
-          <div class="w-full max-w-sm space-y-4">
-            <div
-              v-for="(set, i) in exerciseInputs[step]?.sets"
-              :key="i"
-              class="input w-1/2 text-center"
-            >
-              <input
-                ref="inputRefs"
-                v-model="exerciseInputs[step].sets[i].reps"
-                type="number"
-                class="input w-1/2"
-                placeholder="Reps"
-              />
-              <input
-                v-model="exerciseInputs[step].sets[i].weight"
-                type="number"
-                class="input w-1/2"
-                placeholder="Peso (kg)"
-              />
-            </div>
-          </div>
+        <p class="text-sm text-gray-500 mb-4">
+          Último peso registrado: <strong>{{ exerciseInputs[step]?.lastWeight }} kg</strong>
+          <span v-if="exerciseInputs[step]?.lastDate"> ({{ exerciseInputs[step].lastDate }})</span>
+        </p>
+
+        <div class="w-full max-w-sm space-y-6">
+          <div
+  v-for="(set, i) in exerciseInputs[step]?.sets"
+  :key="i"
+  class="bg-gray-50 p-4 rounded-lg shadow-sm border"
+>
+  <h4 class="text-lg font-bold text-[var(--color-primary)] mb-2">Serie {{ i + 1 }}</h4>
+
+  <div class="grid grid-cols-2 gap-4">
+    <div class="flex flex-col">
+      <label class="text-sm text-left text-gray-600 mb-2">Peso (kg)</label>
+      <input
+        v-model="set.weight"
+        type="number"
+        class="input"
+        :placeholder="set.lastWeight !== null ? `Anterior: ${set.lastWeight} kg` : 'Peso'"
+      />
+
+    </div>
+
+    <div class="flex flex-col">
+      <label class="text-sm text-left text-gray-600 mb-2">Reps</label>
+      <input
+        v-model="set.reps"
+        type="number"
+        class="input"
+        :placeholder="set.lastReps !== null ? `Anterior: ${set.lastReps}` : 'Reps'"
+      />
+    </div>
+  </div>
+
+  <p v-if="exerciseInputs[step]?.lastDate" class="text-xs text-gray-400 mt-2">
+    Último entrenamiento: {{ exerciseInputs[step].lastDate }}
+  </p>
+</div>
+
+
         </div>
-      </transition>
+      </div>
 
       <!-- Navegación -->
       <div class="p-6 flex justify-between items-center border-t">
@@ -147,7 +219,6 @@ function handleBack() {
   </div>
 </template>
 
-
 <style scoped>
 .input {
   padding: 0.5rem 0.75rem;
@@ -162,28 +233,4 @@ function handleBack() {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 1px var(--color-primary);
 }
-.slide-left-enter-active, .slide-left-leave-active,
-.slide-right-enter-active, .slide-right-leave-active {
-  transition: transform 0.4s ease, opacity 0.4s ease;
-  position: absolute;
-  width: 100%;
-}
-.slide-left-enter-from {
-  transform: translateX(100%);
-  opacity: 0;
-}
-.slide-left-leave-to {
-  transform: translateX(-100%);
-  opacity: 0;
-}
-.slide-right-enter-from {
-  transform: translateX(-100%);
-  opacity: 0;
-}
-.slide-right-leave-to {
-  transform: translateX(100%);
-  opacity: 0;
-}
 </style>
-
-

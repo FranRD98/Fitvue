@@ -26,12 +26,13 @@ export async function getAllCoaches() {
 }
 
 // Crear usuario desde panel de coach
-export async function createUserByCoach(userData) {
+export async function createUserByCoach(userData, token) {
   try {
     const response = await fetch('https://bumjstjctwiokebjwnzn.supabase.co/functions/v1/create_user_by_coach', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
       },
       body: JSON.stringify(userData)
     })
@@ -45,41 +46,6 @@ export async function createUserByCoach(userData) {
     console.error('Error en createUserByCoach:', error.message)
     throw error
   }
-}
-
-// Crear usuario
-export async function createUser(userData) {
-  // 1. Crear usuario en Supabase Auth
-  const { data, error: signUpError } = await supabase.auth.admin.createUser({
-    email: userData.email,
-    password: userData.password,
-    email_confirm: true,
-  })
-
-  if (signUpError) throw signUpError
-
-  const uid = data.user?.id
-  if (!uid) throw new Error('No se pudo obtener el UID del usuario creado')
-
-  // 2. Insertar en la tabla `users`
-  const { error: dbError } = await supabase
-    .from('users')
-    .insert({
-      uid,
-      email: userData.email,
-      name: userData.name,
-      last_name: userData.last_name,
-      role: userData.role || 'user',
-      plan_id: userData.plan_id || 1,
-      assigned_routine: userData.assigned_routine || null,
-      assigned_diet: userData.assigned_diet || null,
-      coach_uid: userData.coach_uid || null,
-      created_at: new Date().toISOString()
-    })
-
-  if (dbError) throw dbError
-
-  return { success: true, uid }
 }
 
 // Actualizar datos de users

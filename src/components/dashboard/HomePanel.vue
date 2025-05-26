@@ -23,7 +23,6 @@
         const data = await getReviewsById(uid)
         reviews.value = data
 
-        console.log(userStore.userData)
       } catch (err) {
         console.error('Error cargando reviews:', err)
       } finally {

@@ -1,4 +1,3 @@
-// src/supabase/services/progress.js
 import { supabase } from '@/supabase/config'
 
 // Crear una revisión

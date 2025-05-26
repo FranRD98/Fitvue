@@ -88,23 +88,34 @@ const handleSubmit = async () => {
   try {
     const token = userStore.session?.access_token
     if (!token) {
-      formError.value = 'Sesión inválida o expirada'
+      formError.value = 'Sesión no válida o expirada.'
       return
+    }
+
+    const payload = {
+      email: form.value.email,
+      name: form.value.name,
+      last_name: form.value.last_name,
+      coach_uid: userStore.userData.uid,
+      assigned_diet: form.value.assigned_diet || null,
+      assigned_routine_by_coach: form.value.assigned_routine || null,    }
+
+    // Solo añadimos la contraseña si estamos creando
+    if (!isEditing.value) {
+      if (!form.value.password) {
+        formError.value = 'La contraseña es obligatoria para crear un usuario.'
+        return
+      }
+      payload.password = form.value.password
     }
 
     const response = await fetch('https://bumjstjctwiokebjwnzn.supabase.co/functions/v1/create_user_by_coach', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}` // Aquí usamos el token del usuario actual
+        Authorization: `Bearer ${token}`
       },
-      body: JSON.stringify({
-        email: form.value.email,
-        password: form.value.password,
-        name: form.value.name,
-        last_name: form.value.last_name,
-        coach_uid: userStore.userData.uid
-      })
+      body: JSON.stringify(payload)
     })
 
     const result = await response.json()

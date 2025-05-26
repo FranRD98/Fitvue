@@ -37,7 +37,7 @@ const togglePublished = async (routine) => {
   try {
     const newValue = !routine.published
     await updateRoutine(routine.id, { published: newValue })
-    routine.published = newValue // actualizamos localmente para evitar refetch
+    routine.published = newValue
   } catch (error) {
     console.error('Error al publicar rutina:', error)
   }
@@ -53,7 +53,6 @@ const loadRoutines = async () => {
 
     assignedCoachRoutine.value = await getCoachAssignedRoutine(userStore.userData?.uid)  
     assignedCoachRoutineId.value = assignedCoachRoutine.value?.id || null
-
   } catch (error) {
     console.error('Error al cargar rutinas:', error)
 

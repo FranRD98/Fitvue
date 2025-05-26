@@ -49,7 +49,7 @@ const routine = ref({
 
 // Cargar datos al montar
 onMounted(async () => {
-  exercises.value = await getExercises()
+  exercises.value = await getExercises(userStore.userData.uid)
   categories.value = await getRoutineCategories()
 })
 
