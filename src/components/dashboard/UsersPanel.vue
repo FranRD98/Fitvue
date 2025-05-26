@@ -9,7 +9,7 @@ import {
 } from '@tabler/icons-vue'
 
 const userStore = useUserStore()
-const currentRole = computed(() => userStore.userData?.role)
+const role = computed(() => userStore.userData?.role)
 const hasUsersLoaded = ref(false)
 
 const users = ref([])
@@ -24,7 +24,7 @@ const selectedRole = ref('')
 const loadUsers = async () => {
   loading.value = true
   try {
-    const coachUid = currentRole.value === 'coach' ? userStore.userData?.uid : null
+    const coachUid = role.value === 'coach' ? userStore.userData?.uid : null
     users.value = await getUsers(coachUid)
   } catch (error) {
     console.error('Error al obtener usuarios:', error)
@@ -73,11 +73,11 @@ const filteredUsers = computed(() => {
     <!-- Header -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
       <h1 class="text-3xl font-bold text-[var(--color-primary)]">
-        {{ currentRole === 'coach' ? 'Clientes' : 'Usuarios' }}
+        {{ role === 'coach' ? 'Clientes' : 'Usuarios' }}
       </h1>
       <button @click="openCreateModal" class="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg shadow hover:bg-[var(--color-secondary)] transition">
         <IconPlus class="w-5 h-5" />
-        {{ currentRole === 'coach' ? 'Nuevo cliente' : 'Nuevo usuario' }}
+        {{ role === 'coach' ? 'Nuevo cliente' : 'Nuevo usuario' }}
       </button>
     </div>
 
@@ -103,7 +103,7 @@ const filteredUsers = computed(() => {
       </div>
 
       <!-- Solo si no es coach -->
-      <template v-if="currentRole !== 'coach'">
+      <template v-if="role !== 'coach'">
         <!-- Plan -->
         <div>
           <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Plan</label>
@@ -142,8 +142,8 @@ const filteredUsers = computed(() => {
             <th class="py-3 px-2">Nombre</th>
             <th class="px-2">Email</th>
             <th class="px-2">Creado</th>
-            <th v-if="currentRole !== 'coach'" class="px-2">Plan</th>
-            <th v-if="currentRole !== 'coach'" class="px-2">Rol</th>
+            <th v-if="role !== 'coach'" class="px-2">Plan</th>
+            <th v-if="role !== 'coach'" class="px-2">Rol</th>
             <th class="px-2 text-right">Acciones</th>
           </tr>
         </thead>
@@ -159,8 +159,8 @@ const filteredUsers = computed(() => {
             </td>
             <td class="py-3 px-2 whitespace-nowrap">{{ user.email }}</td>
             <td class="py-3 px-2 whitespace-nowrap">{{ new Date(user.created_at).toLocaleDateString() || '—' }}</td>
-            <td v-if="currentRole !== 'coach'" class="py-3 px-2 capitalize">{{ user.plan_id || '—' }}</td>
-            <td v-if="currentRole !== 'coach'" class="py-3 px-2 capitalize">{{ user.role || '—' }}</td>
+            <td v-if="role !== 'coach'" class="py-3 px-2 capitalize">{{ user.plan_id || '—' }}</td>
+            <td v-if="role !== 'coach'" class="py-3 px-2 capitalize">{{ user.role || '—' }}</td>
             <td class="py-3 px-2 text-right">
               <button
                 @click.prevent.stop="handleDelete(user)"
@@ -178,10 +178,10 @@ const filteredUsers = computed(() => {
     <!-- Sin resultados -->
     <div v-else-if="hasUsersLoaded" class="text-center text-gray-500 mt-10 px-4">
       <template v-if="users.length === 0">
-        Aún no has creado ningún {{ currentRole === 'coach' ? 'cliente' : 'usuario' }}.
+        Aún no has creado ningún {{ role === 'coach' ? 'cliente' : 'usuario' }}.
       </template>
       <template v-else>
-        No se encontraron {{ currentRole === 'coach' ? 'clientes' : 'usuarios' }} con esos criterios.
+        No se encontraron {{ role === 'coach' ? 'clientes' : 'usuarios' }} con esos criterios.
       </template>
     </div>
   </section>

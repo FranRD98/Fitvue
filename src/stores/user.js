@@ -57,25 +57,27 @@ export const useUserStore = defineStore('user', () => {
   }
 
   // Obtener usuario actual y datos extendidos
-  const fetchUserData = async () => {
+const session = ref(null)
 
-    const { data: sessionData } = await supabase.auth.getSession()
-    user.value = sessionData?.session?.user || null
+const fetchUserData = async () => {
+  const { data: sessionData } = await supabase.auth.getSession()
+  session.value = sessionData?.session || null // <-- Guarda toda la sesión
+  user.value = sessionData?.session?.user || null
 
-    if (user.value) {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('uid', user.value.id)
-        .single()
+  if (user.value) {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('uid', user.value.id)
+      .single()
 
-      if (error) {
-        console.error('Error cargando datos del usuario:', error)
-      }
-
-      userData.value = data
+    if (error) {
+      console.error('Error cargando datos del usuario:', error)
     }
+
+    userData.value = data
   }
+}
 
   // Actualizar plan una vez pagado
   const updatePlan = async (newPlanId) => {
@@ -104,16 +106,17 @@ export const useUserStore = defineStore('user', () => {
   if (error) throw error
 }
 
-  return {
-    user,
-    userData,
-    authError,
-    register,
-    login,
-    logout,
-    fetchUserData,
-    updatePlan,
-    updateUserData,
-    initAuthListener
-  }
+return {
+  user,
+  userData,
+  session, // 👈 Agregado
+  authError,
+  register,
+  login,
+  logout,
+  fetchUserData,
+  updatePlan,
+  updateUserData,
+  initAuthListener
+}
 })

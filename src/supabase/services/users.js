@@ -25,49 +25,90 @@ export async function getAllCoaches() {
   return data
 }
 
-export async function createUser(userData, token) {
-  // Registro en Supabase Auth
+// Crear usuario desde panel de coach
+export async function createUserByCoach(userData) {
+  try {
+    const response = await fetch('https://bumjstjctwiokebjwnzn.supabase.co/functions/v1/create_user_by_coach', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(userData)
+    })
+
+    const result = await response.json()
+
+    if (!response.ok) throw new Error(result.error || 'Error al crear usuario')
+
+    return result
+  } catch (error) {
+    console.error('Error en createUserByCoach:', error.message)
+    throw error
+  }
+}
+
+// Crear usuario
+export async function createUser(userData) {
+  // 1. Crear usuario en Supabase Auth
   const { data, error: signUpError } = await supabase.auth.admin.createUser({
     email: userData.email,
     password: userData.password,
-    email_confirm: true
+    email_confirm: true,
   })
 
   if (signUpError) throw signUpError
 
-  const userId = data.user?.id
+  const uid = data.user?.id
+  if (!uid) throw new Error('No se pudo obtener el UID del usuario creado')
 
-  if (!userId) throw new Error('No se pudo crear el usuario en Auth')
-
-  // Registro en tabla users
-  const { error: insertError } = await supabase
+  // 2. Insertar en la tabla `users`
+  const { error: dbError } = await supabase
     .from('users')
     .insert({
-      uid: userId,
+      uid,
       email: userData.email,
       name: userData.name,
       last_name: userData.last_name,
-      role: userData.role,
-      plan_id: userData.plan_id,
+      role: userData.role || 'user',
+      plan_id: userData.plan_id || 1,
+      assigned_routine: userData.assigned_routine || null,
+      assigned_diet: userData.assigned_diet || null,
+      coach_uid: userData.coach_uid || null,
       created_at: new Date().toISOString()
     })
 
-  if (insertError) throw insertError
+  if (dbError) throw dbError
 
-  return { success: true }
+  return { success: true, uid }
 }
 
-// Esto lo dejas como lo tenías para editar
-export async function updateUser(id, updatedData) {
-  // Asumimos que estás usando Supabase client-side para esto
-  const { supabase } = useSupabase(); // o como lo tengas configurado
+// Actualizar datos de users
+export async function updateUser(uid, userData) {
+  // 1. Si hay cambios en el email o la contraseña → actualizar en Auth
+  if (userData.email || userData.password) {
+    const authUpdatePayload = {}
 
-  const { error } = await supabase
+    if (userData.email) authUpdatePayload.email = userData.email
+    if (userData.password) authUpdatePayload.password = userData.password
+
+    const { error: authError } = await supabase.auth.admin.updateUserById(uid, authUpdatePayload)
+    if (authError) throw authError
+  }
+
+  // 2. Actualizar en la tabla `users` (sin la contraseña)
+  const {
+    password,
+    ...rest
+  } = userData
+
+  const { error: dbError } = await supabase
     .from('users')
-    .update(updatedData)
-    .eq('id', id);
+    .update(rest)
+    .eq('uid', uid)
 
-  if (error) throw error;
+  if (dbError) throw dbError
+
+  return { success: true }
 }
 
 // Eliminar usuario

@@ -154,9 +154,6 @@ const resizeImage = (file, maxWidth = 800) => {
         <div class="flex-1 text-center py-4 cursor-pointer hover:bg-gray-100" :class="{ 'bg-gray-100 font-semibold text-[var(--color-primary)]': selectedTab === 'history' }" @click="selectedTab = 'history'">
           Historial
         </div>
-        <div class="flex-1 text-center py-4 cursor-pointer hover:bg-gray-100" :class="{ 'bg-gray-100 font-semibold text-[var(--color-primary)]': selectedTab === 'tutorial' }" @click="selectedTab = 'tutorial'">
-          Tutorial
-        </div>
       </div>
 
       <transition name="fade" mode="out-in">
@@ -212,9 +209,6 @@ const resizeImage = (file, maxWidth = 800) => {
             <p class="text-gray-500">Aquí irá el historial de levantamientos. (Aún por implementar)</p>
           </div>
 
-          <div v-else-if="selectedTab === 'tutorial'">
-            <p class="text-gray-500">Aquí se mostrará el tutorial del ejercicio. (Aún por implementar)</p>
-          </div>
         </div>
       </transition>
     </div>

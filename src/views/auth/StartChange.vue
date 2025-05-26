@@ -117,6 +117,34 @@ const restart = () => {
   }
 }
 
+const finalizeSetup = async () => {
+  if (userStore.userData?.uid) {
+    try {
+      await userStore.updateUserData(userStore.userData.uid, {
+        name: userData.value.name,
+        last_name: userData.value.last_name,
+        birthday: new Date(userData.value.birthday),
+        plan_id: userData.value.plan_id,
+        height: userData.value.height,
+        weight: userData.value.weight,
+        age: userData.value.age,
+        activity: userData.value.activity,
+        role: userData.value.plan_id === 3 ? 'coach' : 'user',
+        profile_image: userData.value.profile_image,
+        completedForm: true,
+        goal: userData.value.goal,
+        gender: userData.value.gender
+      })
+
+      await userStore.fetchUserData()
+      router.push('/dashboard')
+    } catch (error) {
+      console.error('Error finalizando el setup:', error)
+      alert('Ocurrió un error al guardar tus datos. Por favor, intenta de nuevo.')
+    }
+  }
+}
+
 const selectGoal = (goal) => {
   userData.value.goal = goal
 }
@@ -460,6 +488,7 @@ const calculateCalories = () => {
           <!-- Acciones -->
           <div class="flex flex-col sm:flex-row justify-center gap-4 mt-6">
             <button
+              @click="finalizeSetup"
               class="bg-[var(--color-primary)] text-white px-6 py-3 rounded-full hover:bg-[var(--color-secondary)] transition"
             >
               Empezar mi cambio

@@ -1,13 +1,12 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
-import { createUser, getAllCoaches } from '@/supabase/services/users.js'
+import { createUserByCoach, getAllCoaches, updateUser } from '@/supabase/services/users.js'
 import { getRoutines } from '@/supabase/services/routines.js'
 import { getDiets } from '@/supabase/services/diets.js'
 import { supabase } from '@/supabase/config.js'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
-const currentUser = userStore.userData
 const allCoaches = ref([])
 
 const props = defineProps({ show: Boolean, initialData: Object })
@@ -31,7 +30,7 @@ const routines = ref([])
 const diets = ref([])
 
 onMounted(async () => {
-  if (currentUser?.role === 'admin') {
+  if (userStore.userData?.role === 'admin') {
     try {
       allCoaches.value = await getAllCoaches()
     } catch (err) {
@@ -39,10 +38,10 @@ onMounted(async () => {
     }
   }
 
-  if (currentUser?.role === 'coach') {
+  if (userStore.userData?.role === 'coach') {
     try {
       routines.value = await getRoutines()
-      diets.value = await getDiets(currentUser.uid)
+      diets.value = await getDiets(userStore.userData.uid)
     } catch (error) {
       console.error('Error cargando rutinas o dietas:', error)
     }
@@ -84,24 +83,42 @@ watch(
 )
 
 const handleSubmit = async () => {
+  formError.value = ''
+
   try {
-    formError.value = ''
-    const { data: { session } } = await supabase.auth.getSession()
-    const token = session?.access_token
-    if (!token) throw new Error('Debes iniciar sesión')
-
-    const payload = { ...form.value }
-
-    if (!isEditing.value && currentRole.value === 'coach') {
-      payload.coach_uid = userStore.userData.uid
+    const token = userStore.session?.access_token
+    if (!token) {
+      formError.value = 'Sesión inválida o expirada'
+      return
     }
 
-    await createUser(payload, token)
+    const response = await fetch('https://bumjstjctwiokebjwnzn.supabase.co/functions/v1/create_user_by_coach', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}` // Aquí usamos el token del usuario actual
+      },
+      body: JSON.stringify({
+        email: form.value.email,
+        password: form.value.password,
+        name: form.value.name,
+        last_name: form.value.last_name,
+        coach_uid: userStore.userData.uid
+      })
+    })
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      formError.value = result.error || 'Error al crear el usuario'
+      return
+    }
 
     emit('saved')
     emit('close')
   } catch (err) {
-    formError.value = err.message || 'Error inesperado'
+    console.error(err)
+    formError.value = 'Error inesperado al crear el usuario'
   }
 }
 </script>
@@ -116,7 +133,7 @@ const handleSubmit = async () => {
       </button>
 
       <h2 class="text-xl font-bold text-[var(--color-primary)] mb-4">
-        {{ isEditing ? (currentUser.role === 'coach' ? 'Editar Cliente' : 'Editar Usuario') : (currentUser.role === 'coach' ? 'Nuevo Cliente' : 'Nuevo Usuario') }}
+        {{ isEditing ? (userStore.userData.role === 'coach' ? 'Editar Cliente' : 'Editar Usuario') : (userStore.userData.role === 'coach' ? 'Nuevo Cliente' : 'Nuevo Usuario') }}
       </h2>
 
       <form @submit.prevent="handleSubmit" class="space-y-4">
@@ -132,7 +149,7 @@ const handleSubmit = async () => {
         <label v-if="!isEditing" for="password" class="text-sm font-medium text-gray-700">Contraseña</label>
         <input v-if="!isEditing" id="password" v-model="form.password" type="password" placeholder="Contraseña" class="input" required />
 
-        <template v-if="currentUser.role === 'admin'">
+        <template v-if="userStore.userData.role === 'admin'">
           <label for="role" class="text-sm font-medium text-gray-700">Rol</label>
           <select id="role" v-model="form.role" class="input">
             <option value="user">Usuario</option>
@@ -160,7 +177,7 @@ const handleSubmit = async () => {
           </select>
         </template>
 
-        <template v-else-if="currentUser.role === 'coach'">
+        <template v-else-if="userStore.userData.role === 'coach'">
           <label for="assigned_routine" class="text-sm font-medium text-gray-700">Rutina asignada</label>
           <select id="assigned_routine" v-model="form.assigned_routine" class="input">
             <option :value="null">Ninguna</option>
