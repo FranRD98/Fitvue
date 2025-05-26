@@ -1,17 +1,14 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
-import {
-  getRoutinesByUser,
-  assignRoutineToUser,
-  getAssignedRoutine,
-  unassignRoutineFromUser,
-  updateRoutine
-} from '@/supabase/services/routines.js'
+import { getRoutinesByUser, assignRoutineToUser, getAssignedRoutine, unassignRoutineFromUser, updateRoutine } from '@/supabase/services/routines.js'
 import RoutineFormModal from '@/components/dashboard/modals/RoutineFormModal.vue'
-import { IconPlus, IconLayoutGrid, IconLayoutList } from '@tabler/icons-vue'
+import RoutineAssignedViewer from '@/components/dashboard/RoutineAssignedViewer.vue'
+
+import { IconPlus, IconLayoutGrid, IconLayoutList, IconLockOff, IconRocket, IconLockOpen2 } from '@tabler/icons-vue'
 import { useDelayedSkeleton } from '@/composables/useDelayedSkeleton'
 
+const viewAssignedRoutine = ref(false)
 const userStore = useUserStore()
 const routines = ref([])
 const showModal = ref(false)
@@ -43,12 +40,15 @@ const togglePublished = async (routine) => {
 
 const loadRoutines = async () => {
   start()
+  
   try {
     routines.value = await getRoutinesByUser(userStore.userData?.uid)
-    assignedRoutine.value = await getAssignedRoutine(userStore.userData?.uid)
+    assignedRoutine.value = await getAssignedRoutine(userStore.userData?.assigned_routine)  
     assignedRoutineId.value = assignedRoutine.value?.id || null
+
   } catch (error) {
     console.error('Error al cargar rutinas:', error)
+
   } finally {
     finish()
   }
@@ -57,8 +57,20 @@ const loadRoutines = async () => {
 onMounted(loadRoutines)
 
 const openEditModal = (routine) => {
-  selectedRoutine.value = routine
-  showModal.value = true
+  if (
+    userStore.userData?.plan_id !== 1 &&
+    assignedRoutine.value &&
+    routine.id === assignedRoutine.value.id
+  ) {
+    viewAssignedRoutine.value = true // Mostrar la vista solo lectura
+  } else {
+    selectedRoutine.value = routine
+    showModal.value = true
+  }
+}
+
+const closeViewRoutine = () => {
+  viewAssignedRoutine.value = false
 }
 
 const countExercises = (routine) => {
@@ -85,16 +97,55 @@ const handleUnassign = async () => {
 
 <template>
   <section>
-    <!-- Encabezado -->
+    <!-- Encabezado actualizado -->
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-3xl font-bold text-[var(--color-primary)]">Rutinas</h1>
-      <button
-        @click="showModal = true"
-        class="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg shadow hover:bg-[var(--color-secondary)] transition"
-      >
-        <IconPlus class="w-5 h-5" />
-        Nueva rutina
-      </button>
+
+      <div class="flex gap-4 items-center">
+
+        <!-- Usuario con plan PREMIUM y rutina asignada -->
+        <button
+          v-if="userStore.userData?.plan_id !== 1 && assignedRoutine"
+          @click="openEditModal(assignedRoutine)"
+          class="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg cursor-pointer
+                hover:bg-green-700 transition-all duration-200"
+          title="Rutina asignada — listo para despegar 🚀"
+        >
+          <IconRocket class="w-5 h-5" />
+          Rutina del coach
+        </button>
+
+        <!-- Usuario con plan PREMIUM pero sin rutina asignada aún -->
+        <button
+          v-else-if="userStore.userData?.plan_id !== 1 && !assignedRoutine"
+          disabled
+          class="flex items-center gap-2 bg-neutral-200 text-neutral-500 px-4 py-2 rounded-lg cursor-not-allowed"
+          title="Aún no tienes una rutina asignada"
+        >
+          <IconLockOpen2 class="w-5 h-5" />
+          Sin rutina del coach
+        </button>
+
+        <!-- Usuario con plan Free -->
+        <button
+          v-else-if="userStore.userData?.plan_id === 1"
+          disabled
+          class="flex items-center gap-2 bg-yellow-100 text-yellow-700 border border-yellow-300 px-4 py-2 rounded-lg cursor-not-allowed"
+          title="Actualiza a Pro para recibir una rutina personalizada"
+        >
+          <IconLockOff class="w-5 h-5" />
+          Requiere plan Pro
+        </button>
+
+        <!-- Crear rutina -->
+        <button
+          @click="showModal = true"
+          class="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg shadow hover:bg-[var(--color-secondary)] transition cursor-pointer"
+        >
+          <IconPlus class="w-5 h-5" />
+          Nueva rutina
+        </button>
+      </div>
     </div>
 
     <RoutineFormModal
@@ -103,6 +154,14 @@ const handleUnassign = async () => {
       @close="showModal = false; selectedRoutine = null"
       @saved="loadRoutines"
     />
+
+      <!-- Vista solo lectura de rutina asignada -->
+      <RoutineAssignedViewer
+        v-if="viewAssignedRoutine"
+        :show="viewAssignedRoutine"
+        :routine="assignedRoutine"
+        @close="viewAssignedRoutine = false"
+      />
 
     <!-- Delay sin mostrar nada -->
     <div v-if="loading && !showSkeleton" />
@@ -216,19 +275,7 @@ const handleUnassign = async () => {
         </div>
 
       <div>
-        <!-- Rutina Asignada Destacada -->
-        <div v-if="assignedRoutine" class="col-span-full bg-green-100 shadow-lg rounded-xl p-5 border border-green-300 z-10">
-          <h2 class="text-lg font-bold text-green-800 mb-2">Rutina Asignada por coach</h2>
-          <h3 class="text-md font-semibold text-green-900">{{ assignedRoutine.title }}</h3>
-          <p class="text-sm text-green-700 mb-2">{{ assignedRoutine.description }}</p>
-          <p class="text-xs text-green-600">Ejercicios: {{ countExercises(assignedRoutine) }}</p>
-          <button
-            @click="openEditModal(assignedRoutine)"
-            class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded transition"
-          >
-            Ver / Editar
-          </button>
-        </div>
+        
       </div>
 
       </div>
