@@ -1,9 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { getRoutineById, getRoutineCategories } from '@/supabase/services/routines.js'
 
 const route = useRoute()
+const router = useRouter()
+
 const routine = ref(null)
 const categoryName = ref('')
 const loading = ref(true)
@@ -13,13 +15,20 @@ onMounted(async () => {
   try {
     const id = route.params.id
     const data = await getRoutineById(id)
-    const categories = await getRoutineCategories()
+
+    if (!data || data.published === false) {
+      return router.push('/404')
+    }
 
     routine.value = data
+
+    const categories = await getRoutineCategories()
     const cat = categories.find(cat => cat.id === data.id_category)
     categoryName.value = cat?.name || 'General'
+
   } catch (error) {
     console.error('Error cargando rutina:', error)
+    router.push('/404')
   } finally {
     loading.value = false
   }

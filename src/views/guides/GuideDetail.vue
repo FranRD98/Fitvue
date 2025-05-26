@@ -1,32 +1,36 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
-
+import { useRoute, useRouter } from 'vue-router'
 import { getGuidesById } from '@/supabase/services/guides.js'
 
 const route = useRoute()
+const router = useRouter()
+
 const guideId = route.params.id
 const category = route.params.category
 const guide = ref(null)
 const loading = ref(true)
 
-// Cargar la guía
 onMounted(async () => {
   try {
-    guide.value = await getGuidesById(guideId)
+    const fetchedGuide = await getGuidesById(guideId)
 
-    console.log(guide.value)
+    if (!fetchedGuide?.published) {
+      // Si no está publicada, redirige al 404
+      return router.push('/404')
+    }
+
+    guide.value = fetchedGuide
   } catch (err) {
     console.error('Error al cargar la guía:', err)
+    router.push('/404')
   } finally {
     loading.value = false
   }
 })
-
 </script>
 
 <template>
-  
   <section class="max-w-6xl mx-auto px-6 py-12">
     <div v-if="loading" class="text-center text-gray-500">Cargando guía...</div>
 
@@ -46,11 +50,12 @@ onMounted(async () => {
         <div class="text-sm text-gray-500 mb-4 flex flex-wrap gap-4">
           <span><strong>Autor:</strong> {{ guide.author }}</span>
           <span><strong>Categoría:</strong> {{ category || 'Sin categoría' }}</span>
-          <span><strong>Publicado:</strong> {{ new Date(guide.created_at).toLocaleDateString('es-ES') || 'N/A' }}</span>        </div>
+          <span><strong>Publicado:</strong> {{ new Date(guide.created_at).toLocaleDateString('es-ES') || 'N/A' }}</span>
+        </div>
 
         <!-- Contenido detallado -->
         <div class="space-y-8">
-            <p class="text-gray-600 text-justify">{{ guide.content }}</p>
+          <p class="text-gray-600 text-justify whitespace-pre-line">{{ guide.content }}</p>
         </div>
       </div>
     </div>
@@ -58,4 +63,3 @@ onMounted(async () => {
     <div v-else class="text-red-500 text-center mt-10">No se encontró la guía.</div>
   </section>
 </template>
-
