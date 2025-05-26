@@ -2,20 +2,35 @@ import { supabase } from '@/supabase/config';
 
 // Obtener todos los ejercicios
 export async function getExercises(userId) {
-  const { data: adminUsers } = await supabase
+  if (!userId) {
+    console.error('Falta el userId en getExercises()')
+    return []
+  }
+
+  // 1. Obtener todos los admin uids
+  const { data: adminUsers, error: adminError } = await supabase
     .from('users')
     .select('uid')
     .eq('role', 'admin')
 
-  const adminIds = (adminUsers || []).map(u => u.uid)
+  if (adminError) {
+    console.error('Error al obtener usuarios admin:', adminError)
+    return []
+  }
 
+  const adminIds = adminUsers.map(user => user.uid)
+
+  // 2. Asegurarse de que userId está en la lista
+  const allowedIds = Array.from(new Set([userId, ...adminIds]))
+
+  // 3. Obtener los ejercicios de esos IDs
   const { data, error } = await supabase
     .from('exercises')
     .select(`
       *,
       exercises_categories (category_name)
     `)
-    .in('created_by', [userId, ...adminIds])
+    .in('created_by', allowedIds)
 
   if (error) {
     console.error('Error al obtener los ejercicios:', error)
@@ -24,6 +39,7 @@ export async function getExercises(userId) {
 
   return data
 }
+
 
 export async function getExerciseById(id) {
   const { data, error } = await supabase
@@ -55,7 +71,7 @@ export async function getExerciseCategories() {
 
 // Crear ejercicio
 export async function createExercise(exerciseData) {
-  const { name, description, id_category, image } = exerciseData;
+  const { name, description, id_category, image, created_by } = exerciseData;
 
   const { data, error } = await supabase
     .from('exercises')
@@ -66,7 +82,8 @@ export async function createExercise(exerciseData) {
         id_category,
         image,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        created_by
       }
     ]);
 

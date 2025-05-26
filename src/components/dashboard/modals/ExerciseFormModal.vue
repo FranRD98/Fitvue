@@ -20,6 +20,15 @@ const isEditable = computed(() => {
 
 onMounted(async () => {
   try {
+     if (!userStore.userData?.uid) {
+      // Esperar a que se cargue
+      watch(() => userStore.userData, (val) => {
+        if (val?.uid) {
+          exercise.value.created_by = val.uid
+        }
+      }, { immediate: true })
+    }
+
     exerciseCategories.value = await getExerciseCategories()
   } catch (error) {
     console.error('Error al obtener categorías:', error)
@@ -82,7 +91,12 @@ function close() {
 }
 
 function resetForm() {
-  exercise.value = { name: '', description: '', id_category: '', image: '', created_by: '' }
+  exercise.value = { 
+  name: '', 
+  description: '', 
+  id_category: '', 
+  image: '', 
+  created_by: '' }
   imageFile.value = null
 }
 

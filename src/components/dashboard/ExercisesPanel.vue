@@ -52,7 +52,7 @@ const loadExercises = async () => {
 
   start()
   try {
-    exercises.value = await getExercises()
+    exercises.value = await getExercises(userStore.userData.uid)
     exerciseCategories.value = await getExerciseCategories()
   } catch (err) {
     console.error('Error al cargar ejercicios:', err)
@@ -75,6 +75,12 @@ const loadExercises = async () => {
       return matchesSearch && matchesCategory
     })
   })
+
+  const canDeleteExercise = (exercise) => {
+    const currentUser = userStore.userData
+    return currentUser?.role === 'admin' || exercise.created_by === currentUser?.uid
+}
+
 </script>
 
 
@@ -187,12 +193,14 @@ const loadExercises = async () => {
             </p>
 
               <button
+                v-if="canDeleteExercise(exercise)"
                 @click.prevent.stop="handleDelete(exercise)"
                 class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full transition duration-200"
                 title="Eliminar"
               >
                 <IconTrash class="w-5 h-5" />
               </button>
+
 
             </div>
           </div>
@@ -231,12 +239,13 @@ const loadExercises = async () => {
           <td class="py-3 px-2 text-gray-600 line-clamp-2">{{ exercise.description }}</td>
           <td class="py-3 px-2 text-right relative">
             <button
-                @click.prevent.stop="handleDelete(exercise)"
-                class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full transition duration-200"
-                title="Eliminar"
-              >
-                <IconTrash class="w-5 h-5" />
-              </button>
+              v-if="canDeleteExercise(exercise)"
+              @click.prevent.stop="handleDelete(exercise)"
+              class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full transition duration-200"
+              title="Eliminar"
+            >
+              <IconTrash class="w-5 h-5" />
+            </button>
           </td>
         </tr>
       </tbody>
