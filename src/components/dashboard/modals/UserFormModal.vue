@@ -96,7 +96,7 @@ const handleSubmit = async () => {
       email: form.value.email,
       name: form.value.name,
       last_name: form.value.last_name,
-      coach_uid: userStore.userData.uid,
+      coach_uid: form.value.coach_uid || userStore.userData.uid, 
       assigned_diet: form.value.assigned_diet || null,
       assigned_routine_by_coach: form.value.assigned_routine || null,    }
 
