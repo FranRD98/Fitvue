@@ -23,7 +23,7 @@ const registerUser = async () => {
   const response = await register({
     email: email.value,
     password: password.value,
-    ...userData.value
+    plan_id: selectedPlan.value // <-- importante
   })
 
   if (response?.error) {
@@ -31,8 +31,10 @@ const registerUser = async () => {
     return
   }
 
-  localStorage.removeItem('userData')
+  // Guardamos el plan también en localStorage por si acaso
+  localStorage.setItem('pendingPlan', selectedPlan.value)
 
+  // Redirigimos a Stripe
   if (selectedPlan.value === 2) {
     window.location.href = 'https://buy.stripe.com/test_eVqdR95N6gMG4a19pvdfG00?plan=2'
   } else if (selectedPlan.value === 3) {

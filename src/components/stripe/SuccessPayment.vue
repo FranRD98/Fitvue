@@ -10,39 +10,40 @@ const userStore = useUserStore()
 
 onMounted(async () => {
   const plan = Number(route.query.plan)
+  const storedPlan = Number(localStorage.getItem('pendingPlan'))
 
-  // Si no es plan de pago, ir directamente al dashboard
-  if (![2, 3].includes(plan)) {
+  // Validamos que plan venga de query o localStorage
+  const validPlan = [2, 3].includes(plan) ? plan : [2, 3].includes(storedPlan) ? storedPlan : null
+
+  if (!validPlan) {
+    console.warn('No se pudo determinar el plan válido')
     router.push('/dashboard')
     return
   }
 
-  // Actualizamos los datos
+  // Actualizamos los datos del usuario
   await userStore.fetchUserData()
-
   const userId = userStore.userData?.uid
+
   if (userId) {
     const { error } = await supabase
       .from('users')
-      .update({ plan_id: plan })
+      .update({ plan_id: validPlan })
       .eq('uid', userId)
 
-    if (error) {
-      console.error('Error actualizando plan:', error)
-    }
+    if (error) console.error('Error actualizando plan:', error)
   }
 
-  // Redirección en función de si ha realizado el formulario inicial
+  localStorage.removeItem('pendingPlan')
+
   if (userStore.userData?.completedForm) {
-
-    // Actualizamos los datos
     await userStore.fetchUserData()
-
     router.push('/dashboard')
   } else {
     router.push('/empezar')
   }
 })
+
 </script>
 
 <template>
