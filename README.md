@@ -15,7 +15,7 @@ Diseñada para usuarios individuales y entrenadores personales, **FitVue** centr
 
 ### 💎 Usuario Premium
 - Registro y seguimiento de revisiones físicas.
-- Generación automática de rutinas y dietas personalizadas.
+- Rutinas y dietas personalizadas por coach fitVUE.
 - Visualización de gráficos de evolución, radar charts y más.
 
 ### 🧑‍🏫 Usuario Profesional (Pro)
@@ -38,59 +38,48 @@ Diseñada para usuarios individuales y entrenadores personales, **FitVue** centr
 
 ## 🛠️ Tecnologías utilizadas
 
-- **Frontend:** VueJS ⚡  
-- **Backend y BBDD:** Supabase 🔥  
-- **Autenticación:** Supabase Auth 🔐  
-- **Estilos:** TailwindCSS 🎨  
-- **Gestión de estado:** Pinia 🌐  
+- **Frontend:** VueJS  
+- **Backend y BBDD:** Supabase  
+- **Autenticación:** Supabase Auth 
+- **Estilos:** TailwindCSS   
+- **Gestión de estado:** Pinia  
 
 ---
 
 ## 🖼️ Vista previa de la plataforma
 
-### 🧭 Landing y Login
-| Landing | Login |
-|--------|-------|
-| ![Landing](./public/github/Landing.jpeg) | ![Login](./public/github/Login.jpeg) |
+### 🧭 Landing
+![Landing](./public/github/Landing.jpeg)
 
----
+### 🔐 Login
+![Login](./public/github/Login.jpeg)
 
-### 🏠 Panel principal
-| Web | Móvil |
-|-----|-------|
-| ![HomePanel](./public/github/HomePanel_PremiumUser.jpeg) | ![HomePanelMobile](./public/github/HomePanelMobile_PremiumUser.jpeg) |
+### 🏠 Panel principal (Desktop)
+![HomePanel](./public/github/HomePanel_PremiumUser.jpeg)
 
----
+### 📱 Panel principal (Móvil)
+![HomePanelMobile](./public/github/HomePanelMobile_PremiumUser.jpeg)
 
-### 📊 Seguimiento del progreso
+### 📊 Revisión física
+![ReviewDetail](./public/github/ReviewDetail_PremiumUser.jpeg)
 
-| Revisión física | Nueva revisión |
-|----------------|----------------|
-| ![ReviewDetail](./public/github/ReviewDetail_PremiumUser.jpeg) | ![NewReview](./public/github/NewReview_PremiumUser.jpeg) |
+### ➕ Nueva revisión
+![NewReview](./public/github/NewReview_PremiumUser.jpeg) |
 
----
+### 💪 Historial de levantamientos
+![LiftingHistory](./public/github/LiftingExerciseHistory_PremiumUser.jpeg)
 
-### 💪 Ejercicios y levantamientos
+### ➕ Crear ejercicio
+![NewExercise](./public/github/NewExercise_PremiumUser.jpeg) |
 
-| Historial de levantamientos | Crear ejercicio |
-|-----------------------------|------------------|
-| ![LiftingHistory](./public/github/LiftingExerciseHistory_PremiumUser.jpeg) | ![NewExercise](./public/github/NewExercise_PremiumUser.jpeg) |
+### 🥗 Crear dieta personalizada
+![NewDiet](./public/github/NewDiet_PremiumUser.jpeg) |
 
----
+### 👥 Panel de clientes (Pro)
+![ClientsPanel](./public/github/ClientsPanel_ProUser.jpeg)
 
-### 🥗 Planificación personalizada
-
-| Crear dieta personalizada |
-|---------------------------|
-| ![NewDiet](./public/github/NewDiet_PremiumUser.jpeg) |
-
----
-
-### 👥 Gestión por el profesional
-
-| Panel de clientes | Panel de rutinas |
-|-------------------|------------------|
-| ![ClientsPanel](./public/github/ClientsPanel_ProUser.jpeg) | ![RoutinesPanel](./public/github/RoutinesPanel_ProUser.jpeg) |
+### 📋 Panel de rutinas (Pro)
+![RoutinesPanel](./public/github/RoutinesPanel_ProUser.jpeg) |
 
 ---
 
@@ -125,11 +114,5 @@ Diseñada para usuarios individuales y entrenadores personales, **FitVue** centr
 ## 💬 Contribuciones
 
 Toda sugerencia, mejora o pull request es más que bienvenida 🙌
-
----
-
-## 🌍 Demo
-
-🔗 [https://fitvue.netlify.app/](https://fitvue.netlify.app/)
 
 ---
