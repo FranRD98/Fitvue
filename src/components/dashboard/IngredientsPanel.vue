@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useUserStore } from '@/stores/user'
 
 import IngredientModal from '@/components/dashboard/modals/IngredientModal.vue'
@@ -26,6 +26,23 @@ import {
   IconLayoutList,
   IconTrash
 } from '@tabler/icons-vue'
+
+/* Paginación */
+const currentPage = ref(1)
+const itemsPerPage = ref(16)
+
+const totalPages = computed(() => {
+  return Math.ceil(filteredIngredients.value.length / itemsPerPage.value)
+})
+
+const paginatedIngredients = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  return filteredIngredients.value.slice(start, start + itemsPerPage.value)
+})
+
+watch(searchQuery, () => {
+  currentPage.value = 1
+})
 
 async function loadIngredients() {
   loading.value = true
@@ -133,7 +150,7 @@ onMounted(loadIngredients)
     <!-- Grid View -->
 <div v-if="viewMode === 'grid' && filteredIngredients.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
      <div
-        v-for="ingredient in filteredIngredients"
+        v-for="ingredient in paginatedIngredients"
         :key="ingredient.id"
         class="bg-white rounded-xl shadow-lg p-5 hover:shadow-md transition flex flex-col justify-between cursor-pointer w-full"
         @click="openEditModal(ingredient)"
@@ -183,7 +200,7 @@ onMounted(loadIngredients)
       </thead>
       <tbody class="bg-white">
         <tr
-          v-for="ingredient in filteredIngredients"
+          v-for="ingredient in paginatedIngredients"
           :key="ingredient.id"
           class="border-t border-gray-200 hover:bg-gray-100 transition cursor-pointer"
           @click="openEditModal(ingredient)"
@@ -226,6 +243,30 @@ onMounted(loadIngredients)
         Intenta ajustar la búsqueda o limpia los filtros.
       </p>
     </div>
+
+    <!-- Paginación -->
+    <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 mt-6">
+      <button
+        @click="currentPage--"
+        :disabled="currentPage === 1"
+        class="px-3 py-1 rounded border disabled:opacity-50"
+      >
+        Anterior
+      </button>
+
+      <span class="text-sm font-medium">
+        Página {{ currentPage }} de {{ totalPages }}
+      </span>
+
+      <button
+        @click="currentPage++"
+        :disabled="currentPage === totalPages"
+        class="px-3 py-1 rounded border disabled:opacity-50"
+      >
+        Siguiente
+      </button>
+    </div>
+
   </section>
 </template>
 

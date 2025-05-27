@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { getUsers, deleteUser } from '@/supabase/services/users.js'
 import { useUserStore } from '@/stores/user'
 import UserFormModal from '@/components/dashboard/modals/UserFormModal.vue'
@@ -20,6 +20,24 @@ const selectedUser = ref(null)
 const searchQuery = ref('')
 const selectedPlan = ref('')
 const selectedRole = ref('')
+
+/* Paginación */
+const currentPage = ref(1)
+const itemsPerPage = ref(16)
+
+const totalPages = computed(() => {
+  return Math.ceil(filteredUsers.value.length / itemsPerPage.value)
+})
+
+const paginatedUsers = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  return filteredUsers.value.slice(start, start + itemsPerPage.value)
+})
+
+watch([searchQuery, selectedPlan, selectedRole], () => {
+  currentPage.value = 1
+})
+
 
 const loadUsers = async () => {
   loading.value = true
@@ -149,7 +167,7 @@ const filteredUsers = computed(() => {
         </thead>
         <tbody class="bg-white">
           <tr
-            v-for="user in filteredUsers"
+            v-for="user in paginatedUsers"
             :key="user.id"
             class="border-t border-gray-200 hover:bg-gray-100 transition"
             @click="openEditModal(user)"
@@ -173,6 +191,30 @@ const filteredUsers = computed(() => {
           </tr>
         </tbody>
       </table>
+
+      <!-- Paginación -->
+      <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 mt-6">
+        <button
+          @click="currentPage--"
+          :disabled="currentPage === 1"
+          class="px-3 py-1 rounded border disabled:opacity-50"
+        >
+          Anterior
+        </button>
+
+        <span class="text-sm font-medium">
+          Página {{ currentPage }} de {{ totalPages }}
+        </span>
+
+        <button
+          @click="currentPage++"
+          :disabled="currentPage === totalPages"
+          class="px-3 py-1 rounded border disabled:opacity-50"
+        >
+          Siguiente
+        </button>
+      </div>
+
     </div>
 
     <!-- Sin resultados -->

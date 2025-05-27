@@ -25,6 +25,24 @@ const hasDietsLoaded = ref(false)
 
 const assignedCoachDiet = ref(null)
 
+/* Paginación */
+const currentPage = ref(1)
+const itemsPerPage = ref(16)
+
+const totalPages = computed(() => {
+  return Math.ceil(filteredDiets.value.length / itemsPerPage.value)
+})
+
+const paginatedDiets = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  return filteredDiets.value.slice(start, start + itemsPerPage.value)
+})
+
+watch(searchQuery, () => {
+  currentPage.value = 1
+})
+
+
 const calculateTotalNutrients = (diet) => {
   let totalCalories = 0;
   let totalProtein = 0;
@@ -278,7 +296,7 @@ watch(
     <!-- Grid view -->
     <div v-if="viewMode === 'grid' && filteredDiets.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       <div
-        v-for="diet in filteredDiets"
+        v-for="diet in paginatedDiets"
         :key="diet.id"
         class="bg-white rounded-xl shadow-lg p-5 hover:shadow-md transition flex flex-col justify-between cursor-pointer w-full"
         @click="openEditModal(diet)"
@@ -333,7 +351,7 @@ watch(
       </thead>
       <tbody class="bg-white">
         <tr
-          v-for="diet in filteredDiets"
+          v-for="diet in paginatedDiets"
           :key="diet.id"
           class="border-t border-gray-200 hover:bg-gray-100 transition"
           @click="openEditModal(diet)"
@@ -361,5 +379,29 @@ watch(
       </tbody>
     </table>
      </div>
+
+     <!-- Paginación -->
+    <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 mt-6">
+      <button
+        @click="currentPage--"
+        :disabled="currentPage === 1"
+        class="px-3 py-1 rounded border disabled:opacity-50"
+      >
+        Anterior
+      </button>
+
+      <span class="text-sm font-medium">
+        Página {{ currentPage }} de {{ totalPages }}
+      </span>
+
+      <button
+        @click="currentPage++"
+        :disabled="currentPage === totalPages"
+        class="px-3 py-1 rounded border disabled:opacity-50"
+      >
+        Siguiente
+      </button>
+    </div>
+
   </section>
 </template>

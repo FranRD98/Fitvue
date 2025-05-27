@@ -21,6 +21,25 @@
   const searchQuery = ref('')
   const selectedCategory = ref('')
 
+
+  /* Paginación */
+  const currentPage = ref(1)
+  const itemsPerPage = ref(16) 
+
+  const totalPages = computed(() => {
+    return Math.ceil(filteredExercises.value.length / itemsPerPage.value)
+  })
+
+  const paginatedExercises = computed(() => {
+    const start = (currentPage.value - 1) * itemsPerPage.value
+  
+    return filteredExercises.value.slice(start, start + itemsPerPage.value)
+  })
+
+watch([searchQuery, selectedCategory], () => {
+  currentPage.value = 1
+})
+
   const { loading, showSkeleton, start, finish } = useDelayedSkeleton(300) // <-- 300ms
 
   watch(
@@ -156,7 +175,7 @@ const loadExercises = async () => {
     <!-- Grid -->
     <div v-if="viewMode === 'grid' && filteredExercises.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         <div
-          v-for="exercise in filteredExercises"
+        v-for="exercise in paginatedExercises"
           :key="exercise.id"
           class="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col transition cursor-pointer w-full"
           @click="openEditModal(exercise)"
@@ -213,7 +232,7 @@ const loadExercises = async () => {
       </thead>
       <tbody class="bg-white">
         <tr
-          v-for="exercise in filteredExercises"
+        v-for="exercise in paginatedExercises"
           :key="exercise.id"
           @click="openEditModal(exercise)"
           class="border-t border-gray-200 hover:bg-gray-100 transition cursor-pointer"
@@ -251,6 +270,30 @@ const loadExercises = async () => {
       <p class="text-lg font-semibold">Sin resultados</p>
       <p class="text-sm">No se encontraron ejercicios que coincidan con los filtros aplicados.</p>
     </div>
+
+    <!-- Pagination -->
+    <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 mt-6">
+      <button
+        @click="currentPage--"
+        :disabled="currentPage === 1"
+        class="px-3 py-1 rounded border disabled:opacity-50"
+      >
+        Anterior
+      </button>
+
+      <span class="text-sm font-medium">
+        Página {{ currentPage }} de {{ totalPages }}
+      </span>
+
+      <button
+        @click="currentPage++"
+        :disabled="currentPage === totalPages"
+        class="px-3 py-1 rounded border disabled:opacity-50"
+      >
+        Siguiente
+      </button>
+    </div>
+
 
   </section>
 </template>

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { getPlates, deletePlate } from '@/supabase/services/plates'
 import { getIngredients } from '@/supabase/services/ingredients'
 import { useUserStore } from '@/stores/user'
@@ -24,6 +24,24 @@ const userStore = useUserStore()
 
 const showModal = ref(false)
 const selectedPlate = ref(null)
+
+/* Paginación */
+const currentPage = ref(1)
+const itemsPerPage = ref(16)
+
+const totalPages = computed(() => {
+  return Math.ceil(filteredPlates.value.length / itemsPerPage.value)
+})
+
+const paginatedPlates = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  return filteredPlates.value.slice(start, start + itemsPerPage.value)
+})
+
+watch(searchQuery, () => {
+  currentPage.value = 1
+})
+
 
 async function loadPlates() {
   loading.value = true
@@ -111,7 +129,7 @@ function getIngredientName(id) {
         <!-- VISTA GRID -->
     <div v-if="viewMode === 'grid' && filteredPlates.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       <div
-        v-for="plate in filteredPlates"
+        v-for="plate in paginatedPlates"
         :key="plate.id"
         class="bg-white p-4 rounded-lg shadow cursor-pointer hover:shadow-md transition flex flex-col justify-between w-full"
         @click="openEditModal(plate)"
@@ -163,7 +181,7 @@ function getIngredientName(id) {
       </thead>
       <tbody class="bg-white divide-y divide-gray-100">
         <tr
-          v-for="plate in filteredPlates"
+          v-for="plate in paginatedPlates"
           :key="plate.id"
           class="hover:bg-gray-50 transition cursor-pointer"
           @click="openEditModal(plate)"
@@ -206,5 +224,29 @@ function getIngredientName(id) {
         Intenta modificar la búsqueda o limpia los filtros.
       </p>
     </div>
+
+    <!-- Paginación -->
+    <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 mt-6">
+      <button
+        @click="currentPage--"
+        :disabled="currentPage === 1"
+        class="px-3 py-1 rounded border disabled:opacity-50"
+      >
+        Anterior
+      </button>
+
+      <span class="text-sm font-medium">
+        Página {{ currentPage }} de {{ totalPages }}
+      </span>
+
+      <button
+        @click="currentPage++"
+        :disabled="currentPage === totalPages"
+        class="px-3 py-1 rounded border disabled:opacity-50"
+      >
+        Siguiente
+      </button>
+    </div>
+
   </section>
 </template>

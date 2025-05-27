@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useUserStore } from '@/stores/user'  // Importamos el store de Pinia
 import { getRoutinesByUser, assignRoutineToUser, getAssignedRoutine, unassignRoutineFromUser, updateRoutine, getCoachAssignedRoutine } from '@/supabase/services/routines.js'
 import RoutineFormModal from '@/components/dashboard/modals/RoutineFormModal.vue'
@@ -23,6 +23,26 @@ const assignedCoachRoutineId = ref(null)
 const viewMode = ref('grid')
 const searchQuery = ref('')
 const hasSearch = computed(() => searchQuery.value.trim().length > 0)
+
+/* Paginación */
+const currentPage = ref(1)
+const itemsPerPage = ref(16)
+
+const totalPages = computed(() => {
+  return Math.ceil(filteredRoutines.value.length / itemsPerPage.value)
+})
+
+const paginatedRoutines = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  return filteredRoutines.value.slice(start, start + itemsPerPage.value)
+})
+
+watch(searchQuery, () => {
+  currentPage.value = 1
+})
+
+
+
 
 // Skeleton/loading state
 const { loading, showSkeleton, start, finish } = useDelayedSkeleton(200)
@@ -207,7 +227,7 @@ const handleUnassign = async () => {
       <!-- Vista Grid -->
       <div v-if="viewMode === 'grid' && filteredRoutines.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         <div
-          v-for="routine in filteredRoutines"
+          v-for="routine in paginatedRoutines"
           :key="routine.id"
           class="bg-white shadow rounded-xl overflow-hidden flex flex-col hover:shadow-md transition cursor-pointer justify-between w-full"
           @click="openEditModal(routine)"
@@ -299,7 +319,7 @@ const handleUnassign = async () => {
         </thead>
         <tbody class="bg-white">
           <tr
-            v-for="routine in filteredRoutines"
+            v-for="routine in paginatedRoutines"
             :key="routine.id"
             @click="openEditModal(routine)"
             class="border-t border-gray-200 hover:bg-gray-100 transition cursor-pointer"
@@ -350,6 +370,30 @@ const handleUnassign = async () => {
         </p>
       </div>
     </div>
+
+    <!-- Paginación -->
+    <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 mt-6">
+      <button
+        @click="currentPage--"
+        :disabled="currentPage === 1"
+        class="px-3 py-1 rounded border disabled:opacity-50"
+      >
+        Anterior
+      </button>
+
+      <span class="text-sm font-medium">
+        Página {{ currentPage }} de {{ totalPages }}
+      </span>
+
+      <button
+        @click="currentPage++"
+        :disabled="currentPage === totalPages"
+        class="px-3 py-1 rounded border disabled:opacity-50"
+      >
+        Siguiente
+      </button>
+    </div>
+
 
   </section>
 </template>
