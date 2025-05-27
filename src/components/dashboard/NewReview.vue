@@ -118,8 +118,8 @@ watch(step, async () => {
 </script>
 
 <template>
-<div class="fixed inset-0 bg-[var(--color-primary)] bg-opacity-60 backdrop-blur-sm flex items-start justify-center overflow-y-auto py-6 z-50">
-<div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] h-auto flex flex-col relative overflow-hidden">
+<div class="fixed inset-0 bg-[var(--color-primary)] bg-opacity-60 backdrop-blur-sm flex items-start justify-center overflow-y-auto py-6 px-4 z-50">
+<div class="bg-white rounded-xl shadow-xl w-full max-w-[90vw] sm:max-w-xl md:max-w-2xl max-h-[90vh] h-auto flex flex-col relative overflow-hidden">
             <!-- Volver atrás -->
     <button
       @click="goBack"
@@ -152,7 +152,7 @@ watch(step, async () => {
           <img
             :src="currentStep.image"
             alt="Imagen del paso"
-            class="w-auto max-w-sm h-64 object-cover"
+            class="w-full max-w-xs sm:max-w-sm h-40 sm:h-56 object-contain"
             loading="lazy"
           />
 
