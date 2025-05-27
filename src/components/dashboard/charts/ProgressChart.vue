@@ -15,7 +15,7 @@ ChartJS.register(
   Tooltip, Legend,
   LineElement, PointElement,
   CategoryScale, LinearScale,
-  ChartDataLabels // 👈 Importante
+  ChartDataLabels
 )
 
 const props = defineProps({
@@ -25,8 +25,11 @@ const props = defineProps({
   }
 })
 
+// Ordenar por fecha ASCENDENTE
+const sortedReviews = [...props.reviews].sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+
 // Fechas para el eje X
-const labels = props.reviews.map(r =>
+const labels = sortedReviews.map(r =>
   new Date(r.created_at).toLocaleDateString('es-ES', {
     day: '2-digit',
     month: 'short'
@@ -38,7 +41,7 @@ const chartData = {
   datasets: [
     {
       label: 'Peso corporal (kg)',
-      data: props.reviews.map(r => r.weight),
+      data: sortedReviews.map(r => r.weight),
       borderColor: '#3B82F6',
       backgroundColor: '#3B82F660',
       tension: 0.3,

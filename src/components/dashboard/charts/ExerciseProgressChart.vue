@@ -24,12 +24,16 @@ const props = defineProps({
   }
 })
 
-// Extraer máximos por día
-const labels = props.history.map(entry =>
+// Ordenar por fecha ASCENDENTE (más antiguo primero)
+const sortedHistory = [...props.history].sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+
+// Fechas para el eje X
+const labels = sortedHistory.map(entry =>
   new Date(entry.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
 )
 
-const maxWeights = props.history.map(entry => {
+// Obtener el peso máximo de cada día
+const maxWeights = sortedHistory.map(entry => {
   const weights = entry.sets.map(set => set.weight)
   return weights.length ? Math.max(...weights) : 0
 })
