@@ -2,12 +2,8 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { supabase } from '@/supabase/config'
-import {
-  createExercise,
-  updateExercise,
-  getExerciseCategories,
-  getExerciseHistory
-} from '@/supabase/services/exercises'
+import { createExercise, updateExercise, getExerciseCategories, getExerciseHistory } from '@/supabase/services/exercises'
+import ExerciseProgressChart from '@/components/dashboard/charts/ExerciseProgressChart.vue'
 
 const props = defineProps({ show: Boolean, initialData: Object })
 const emit = defineEmits(['close', 'saved'])
@@ -242,6 +238,8 @@ function formatDate(dateString) {
           <!-- Historial -->
           <div v-else-if="selectedTab === 'history'">
             <h2 class="text-xl font-semibold text-[var(--color-primary)] mb-4">Historial de levantamientos</h2>
+
+            <ExerciseProgressChart :history="exerciseHistory" class="mb-8" />
 
             <table v-if="exerciseHistory.length" class="min-w-full text-left text-sm border">
               <thead class="bg-gray-200 text-gray-600 font-medium">

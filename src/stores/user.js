@@ -109,7 +109,7 @@ const fetchUserData = async () => {
 return {
   user,
   userData,
-  session, // 👈 Agregado
+  session,
   authError,
   register,
   login,

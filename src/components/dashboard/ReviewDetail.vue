@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getReviewById } from '@/supabase/services/progress'
 import { IconArrowLeft } from '@tabler/icons-vue'
+import ReviewRadarChart from '@/components/dashboard/charts/ReviewRadarChart.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -24,6 +25,24 @@ const fieldLabels = {
   quadriceps: 'Cuádriceps',
   calves: 'Gemelos'
 }
+
+const radarData = computed(() => {
+  if (!review.value) return {}
+
+  const radarFields = [
+    'neck', 'shoulders', 'chest',
+    'biceps_relaxed', 'biceps_flexed',
+    'forearm', 'waist', 'abdomen',
+    'hips', 'quadriceps', 'calves'
+  ]
+
+  return radarFields.reduce((acc, key) => {
+    if (review.value[key] !== null && review.value[key] !== undefined) {
+      acc[fieldLabels[key]] = review.value[key]
+    }
+    return acc
+  }, {})
+})
 
 const formattedFields = computed(() => {
   if (!review.value) return []
@@ -83,16 +102,26 @@ onMounted(async () => {
         <p class="text-sm text-gray-500">Mediciones físicas tomadas en esta fecha.</p>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        <div
-          v-for="item in formattedFields"
-          :key="item.key"
-          class="bg-white border border-gray-200 p-5 rounded-xl shadow-sm hover:shadow-md transition"
-        >
-          <h3 class="text-sm font-medium text-gray-500 mb-1">{{ item.label }}</h3>
-          <p class="text-2xl font-semibold text-[var(--color-primary)]">{{ item.value }} cm</p>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+        <!-- Gráfico -->
+        <div>
+          <ReviewRadarChart v-if="Object.keys(radarData).length" :data="radarData" />
+        </div>
+
+        <!-- Cards de medidas -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div
+            v-for="item in formattedFields"
+            :key="item.key"
+            class="bg-white border border-gray-200 p-5 rounded-xl shadow-sm hover:shadow-md transition"
+          >
+            <h3 class="text-sm font-medium text-gray-500 mb-1">{{ item.label }}</h3>
+            <p class="text-2xl font-semibold text-[var(--color-primary)]">{{ item.value }} cm</p>
+          </div>
         </div>
       </div>
+
     </div>
   </section>
 </template>

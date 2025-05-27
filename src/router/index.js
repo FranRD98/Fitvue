@@ -27,6 +27,7 @@ import NewReview from '@/components/dashboard/NewReview.vue'
 import ReviewDetail from '@/components/dashboard/ReviewDetail.vue'
 import StartRoutine from '@/components/dashboard/StartRoutine.vue'
 import SuccessPayment from '@/components/stripe/SuccessPayment.vue'
+import FullReviewHistory from '@/components/dashboard/FullReviewHistory.vue'
 
 const routes = [
   { path: '/', component: Home, meta: { public: true } },
@@ -51,6 +52,7 @@ const routes = [
   { path: '/dashboard/newReview', component: NewReview },
   { path: '/user/:userId/:reviewId', component: ReviewDetail },
   { path: '/user/:userId/iniciar-rutina', component: StartRoutine },
+  { path: '/dashboard/historial', name: 'Historial', component: FullReviewHistory},
 
   // Pagamiento (stripe)
   { path: '/pago-aceptado', component: SuccessPayment },
