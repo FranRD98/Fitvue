@@ -1,15 +1,17 @@
 <script setup>
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { createPlate, updatePlate } from '@/supabase/services/plates'
+import { getIngredients } from '@/supabase/services/ingredients'
 
 const props = defineProps({
   show: Boolean,
-  plate: Object,
-  ingredients: Array
+  plate: Object
 })
 const emit = defineEmits(['close', 'saved'])
+
 const userStore = useUserStore()
+const ingredients = ref([])
 
 const form = ref({
   name: '',
@@ -18,7 +20,19 @@ const form = ref({
 
 const isEditing = computed(() => !!props.plate)
 
-// Si no hay plato, inicializar form.items con una fila vacía
+onMounted(async () => {
+  try {
+    const userId = userStore.userData?.uid
+    if (!userId) return
+
+    const fetched = await getIngredients(userId)
+    ingredients.value = fetched.sort((a, b) => a.name.localeCompare(b.name))
+  } catch (err) {
+    console.error('Error cargando ingredientes:', err)
+  }
+})
+
+// Inicializar o cargar el plato si es edición
 watch(() => props.plate, (plate) => {
   if (plate) {
     form.value = {
@@ -29,8 +43,7 @@ watch(() => props.plate, (plate) => {
       }))
     }
   } else {
-    // Si no hay plato (nuevo), inicializa con al menos un ingrediente vacío
-    form.value = { name: '', items: [{ ingredientId: '', quantity: 0 }] }
+    resetForm()
   }
 }, { immediate: true })
 
@@ -47,13 +60,13 @@ function removeIngredientRow(index) {
 }
 
 async function save() {
-  const payload = { ...form.value }
-  
-  // Verifica si los ingredientes están bien seleccionados
-  payload.items = payload.items.map(item => ({
-    ingredient_id: item.ingredientId,
-    quantity: item.quantity
-  }));
+  const payload = {
+    ...form.value,
+    items: form.value.items.map(item => ({
+      ingredient_id: item.ingredientId,
+      quantity: item.quantity
+    }))
+  }
 
   if (isEditing.value) {
     await updatePlate(props.plate.id, payload)
@@ -65,8 +78,8 @@ async function save() {
   resetForm()
   emit('close')
 }
-
 </script>
+
 
 <template>
   <div v-if="show" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 px-4">

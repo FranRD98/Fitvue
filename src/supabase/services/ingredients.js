@@ -7,7 +7,7 @@ export async function getIngredients(userId) {
     .from('ingredients')
     .select('*')
     .eq('created_by', userId)
-    .order('created_at', { ascending: false })
+    .order('name', { ascending: true });
 
   if (error) {
     console.error('Error al obtener ingredientes:', error)
@@ -23,6 +23,7 @@ export async function getIngredientById(id) {
     .from('ingredients')
     .select('*')
     .eq('id', id)
+    
   if (error) {
     console.error('Error al obtener ingrediente:', error)
     return []

@@ -6,6 +6,7 @@ export async function getPlates(uid = null) {
   let query = supabase
     .from('plates')
     .select('id, name, items, created_by') // incluye created_by para seguridad
+    .order('name', { ascending: true });
 
   if (uid) {
     query = query.eq('created_by', uid)
@@ -25,6 +26,7 @@ export async function getPlates(uid = null) {
       .from('ingredients')
       .select('*')
       .in('id', ingredientIds)
+      .order('name', { ascending: true });
 
     if (ingredientsError) {
       console.error('Error al obtener ingredientes:', ingredientsError)

@@ -17,9 +17,9 @@ export async function getRoutines(category) {
   let query
 
   if (category && category !== '') {
-    query = supabase.from('routines').select('*').eq('id_category', category)
+    query = supabase.from('routines').select('*').eq('id_category', category).order('title', { ascending: true });
   } else {
-    query = supabase.from('routines').select('*')
+    query = supabase.from('routines').select('*').order('title', { ascending: true });
   }
 
   const { data, error } = await query
@@ -35,7 +35,7 @@ export async function getPublishedRoutines() {
     .from('routines')
     .select('*')
     .eq('published', true)
-    .order('created_at', { ascending: false }) // opcional si tenés campo de fecha
+    .order('title', { ascending: true })
 
   if (error) {
     console.error('Error al obtener rutinas publicadas:', error)

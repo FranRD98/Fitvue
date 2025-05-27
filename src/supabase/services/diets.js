@@ -5,8 +5,8 @@ export async function getDiets(userId) {
   const { data, error } = await supabase
     .from('diets')
     .select('*')
-    .eq('user_id', userId) // Asegúrate de que este campo exista
-    .order('created_at', { ascending: false })
+    .eq('user_id', userId)
+    .order('title', { ascending: true })
 
   if (error) {
     console.error('Error al obtener las dietas:', error)
@@ -73,4 +73,59 @@ export async function deleteDiet(id) {
     .eq('id', id)
 
   if (error) throw error
+}
+
+// Obtiene toda la información de una dieta en concreto (se utiliza para que el user pueda ver la asignada por coach)
+export async function getFullDiet(dietId) {
+  // 1. Obtener la dieta por ID
+  const { data: diet, error } = await supabase
+    .from('diets')
+    .select('*')
+    .eq('id', dietId)
+    .single()
+
+  if (error) {
+    console.error('Error al obtener dieta:', error)
+    throw error
+  }
+
+  // 2. Hidratar con ingredientes
+  return await hydrateDietIngredients(diet)
+}
+
+export async function hydrateDietIngredients(diet) {
+  const ingredientIds = new Set()
+
+  diet.meals.forEach(meal => {
+    meal.items.forEach(plate => {
+      plate.items.forEach(item => {
+        if (item.ingredient_id) {
+          ingredientIds.add(item.ingredient_id)
+        }
+      })
+    })
+  })
+
+  const { data: ingredients, error } = await supabase
+    .from('ingredients')
+    .select('*')
+    .in('id', Array.from(ingredientIds))
+
+  if (error) {
+    console.error('Error al cargar ingredientes:', error)
+    throw error
+  }
+
+  const ingredientsMap = Object.fromEntries(ingredients.map(i => [i.id, i]))
+
+  diet.meals.forEach(meal => {
+    meal.items.forEach(plate => {
+      plate.items = plate.items.map(item => ({
+        ...item,
+        ingredient: ingredientsMap[item.ingredient_id] || null
+      }))
+    })
+  })
+
+  return diet
 }
