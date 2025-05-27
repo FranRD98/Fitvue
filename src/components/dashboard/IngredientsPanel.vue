@@ -7,7 +7,8 @@ import {
   getIngredients,
   createIngredient,
   updateIngredient,
-  deleteIngredient
+  deleteIngredient,
+  isIngredientUsed 
 } from '@/supabase/services/ingredients'
 
 const ingredients = ref([])
@@ -84,17 +85,27 @@ async function handleSaveFromModal(data) {
 }
 
 async function removeIngredient(ingredient) {
-  if (confirm(`¿Eliminar "${ingredient.name}"?`)) {
+  const inUse = await isIngredientUsed(ingredient.id)
+
+  if (inUse) {
+    alert(`❌ El ingrediente "${ingredient.name}" está siendo usado en algún plato y no puede ser eliminado.`)
+    return
+  }
+
+  const confirmed = confirm(`¿Estás seguro de que deseas eliminar "${ingredient.name}"? Esta acción no se puede deshacer.`)
+  if (confirmed) {
     await deleteIngredient(ingredient.id)
     await loadIngredients()
   }
 }
+
 
 const filteredIngredients = computed(() =>
   ingredients.value.filter(i => i.name.toLowerCase().includes(searchQuery.value.toLowerCase()))
 )
 
 onMounted(loadIngredients)
+
 </script>
 
 <template>

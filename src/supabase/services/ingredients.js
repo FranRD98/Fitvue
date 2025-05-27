@@ -1,4 +1,3 @@
-// src/supabase/services/ingredients.js
 import { supabase } from '@/supabase/config'
 
 // Obtener todos los ingredientes
@@ -60,3 +59,19 @@ export async function deleteIngredient(id) {
 
   if (error) throw error
 }
+
+// Verifica si un ingrediente está siendo usado en algún plato
+export async function isIngredientUsed(ingredientId) {
+  const { data, error } = await supabase
+    .from('plates')
+    .select('id')
+    .filter('items', 'cs', JSON.stringify([{ ingredient_id: ingredientId }]))
+
+  if (error) {
+    console.error('Error comprobando uso del ingrediente:', error)
+    throw error
+  }
+
+  return data.length > 0
+}
+
