@@ -1,44 +1,135 @@
 # FitVue 🏋️‍♂️  
 
-🚀 **FitVue** es una plataforma interactiva para personas interesadas en el fitness y la vida saludable. Ofrece recomendaciones personalizadas, seguimiento del progreso y un panel de administración para mejorar la experiencia de los usuarios.  
+🚀 **FitVue** es una plataforma interactiva para personas interesadas en el fitness y la vida saludable. Ofrece recomendaciones personalizadas, seguimiento del progreso y herramientas de gestión potentes para profesionales del entrenamiento.  
 
-## 🎯 Objetivos del proyecto  
-✅ Desarrollar una página web dinámica e intuitiva.  
-✅ Permitir a los usuarios registrarse y recibir recomendaciones personalizadas.  
-✅ Ofrecer planes de ejercicio y alimentación adaptados a cada usuario.  
-✅ Facilitar el seguimiento del progreso en hábitos saludables.  
-✅ Proporcionar herramientas a los administradores para monitorizar usuarios.  
+Diseñada para usuarios individuales y entrenadores personales, **FitVue** centraliza el control del progreso, la planificación de rutinas, las revisiones físicas y mucho más.  
 
 ---
 
-## 🛠️ Tecnologías utilizadas  
+## 👥 Roles y planes disponibles
+
+### 👤 Usuario Básico (gratuito)
+- Acceso limitado al contenido.
+- Visualización de rutinas y dietas predefinidas.
+- Sin personalización ni seguimiento detallado.
+
+### 💎 Usuario Premium
+- Registro y seguimiento de revisiones físicas.
+- Generación automática de rutinas y dietas personalizadas.
+- Visualización de gráficos de evolución, radar charts y más.
+
+### 🧑‍🏫 Usuario Profesional (Pro)
+- Gestión completa de clientes.
+- Asignación de rutinas y dietas a medida.
+- Seguimiento del progreso de cada cliente en tiempo real.
+- Paneles de control administrativos potentes.
+
+---
+
+## 🎯 Objetivos del proyecto
+
+- ✅ Desarrollar una página web dinámica, intuitiva y funcional.
+- ✅ Permitir a los usuarios registrarse y recibir recomendaciones personalizadas.
+- ✅ Ofrecer planes de ejercicio y alimentación adaptados al perfil y rol del usuario.
+- ✅ Facilitar el seguimiento del progreso mediante visualizaciones intuitivas.
+- ✅ Proporcionar herramientas completas a profesionales para gestionar clientes.
+
+---
+
+## 🛠️ Tecnologías utilizadas
+
 - **Frontend:** VueJS ⚡  
-- **Backend y Base de datos:** Supabase 🔥  
+- **Backend y BBDD:** Supabase 🔥  
 - **Autenticación:** Supabase Auth 🔐  
 - **Estilos:** TailwindCSS 🎨  
 - **Gestión de estado:** Pinia 🌐  
 
 ---
 
-![Landing](./public/github/Landing.jpeg)
+## 🖼️ Vista previa de la plataforma
+
+### 🧭 Landing y Login
+| Landing | Login |
+|--------|-------|
+| ![Landing](./public/github/Landing.jpeg) | ![Login](./public/github/Login.jpeg) |
 
 ---
 
-## ✨ Características principales  
-### 👤 Gestión de usuario  
-- Registro e inicio de sesión con autenticación segura.  
-- Creación y edición del perfil con datos personales.  
+### 🏠 Panel principal
+| Web | Móvil |
+|-----|-------|
+| ![HomePanel](./public/github/HomePanel_PremiumUser.jpeg) | ![HomePanelMobile](./public/github/HomePanelMobile_PremiumUser.jpeg) |
 
-### 🏋️‍♂️ Planes personalizados  
-- Generación automática de rutinas de ejercicios y dietas según objetivos.  
-- Ajuste dinámico basado en el progreso y preferencias del usuario.  
+---
 
-### 📊 Seguimiento del progreso  
-- Registro de calorías consumidas y ejercicios completados.  
-- Cálculo automático del porcentaje de cumplimiento del plan.  
-- Historial y estadísticas visuales.  
+### 📊 Seguimiento del progreso
 
-### 🛠️ Panel de administración  
-- Seguimiento de la evolución de los usuarios.  
-- Edición y asignación de rutinas y dietas.  
-- Registro de medidas físicas (peso, grasa corporal, etc.).  
+| Revisión física | Nueva revisión |
+|----------------|----------------|
+| ![ReviewDetail](./public/github/ReviewDetail_PremiumUser.jpeg) | ![NewReview](./public/github/NewReview_PremiumUser.jpeg) |
+
+---
+
+### 💪 Ejercicios y levantamientos
+
+| Historial de levantamientos | Crear ejercicio |
+|-----------------------------|------------------|
+| ![LiftingHistory](./public/github/LiftingExerciseHistory_PremiumUser.jpeg) | ![NewExercise](./public/github/NewExercise_PremiumUser.jpeg) |
+
+---
+
+### 🥗 Planificación personalizada
+
+| Crear dieta personalizada |
+|---------------------------|
+| ![NewDiet](./public/github/NewDiet_PremiumUser.jpeg) |
+
+---
+
+### 👥 Gestión por el profesional
+
+| Panel de clientes | Panel de rutinas |
+|-------------------|------------------|
+| ![ClientsPanel](./public/github/ClientsPanel_ProUser.jpeg) | ![RoutinesPanel](./public/github/RoutinesPanel_ProUser.jpeg) |
+
+---
+
+## ✨ Características principales
+
+### 👤 Gestión de usuario
+- Registro e inicio de sesión con autenticación segura.
+- Edición del perfil con información personal y objetivos.
+
+### 🏋️ Planes personalizados
+- Rutinas y dietas generadas automáticamente según objetivos.
+- Seguimiento del progreso a través de gráficos y comparativas.
+
+### 📈 Progreso visual e histórico
+- Revisión física con medidas detalladas.
+- Radar charts y line charts para visualizar la evolución.
+
+### 📋 Panel Pro para entrenadores
+- Gestión completa de clientes.
+- Asignación de rutinas, dietas y revisiones personalizadas.
+- Visualización clara del progreso de cada cliente.
+
+---
+
+## 🚧 En desarrollo
+
+- 📅 Calendario de sesiones integradas  
+- 📲 Versión móvil como Progressive Web App (PWA)  
+
+---
+
+## 💬 Contribuciones
+
+Toda sugerencia, mejora o pull request es más que bienvenida 🙌
+
+---
+
+## 🌍 Demo
+
+🔗 [https://fitvue.netlify.app/](https://fitvue.netlify.app/)
+
+---
