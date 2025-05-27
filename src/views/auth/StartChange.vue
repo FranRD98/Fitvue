@@ -27,15 +27,20 @@ const userData = ref({
 })
 
 onMounted(() => {
-  const plan = Number(route.params.suscriptionPlan)
-  userData.value.plan_id = [1, 2, 3].includes(plan) ? plan : 1
-
   const stored = userStore.userData
   if (stored) {
     userData.value = {
       ...userData.value,
       uid: stored.uid || '',
-      email: stored.email || '',    }
+      email: stored.email || '',
+      plan_id: stored.plan_id || 1,
+      role: stored.role || 'user'
+    }
+  }
+
+  // Si es coach, solo necesita nombre y apellido
+  if (stored?.role === 'coach') {
+    step.value = 0
   }
 })
 
@@ -43,8 +48,35 @@ const macros = ref({ carbs: 0, proteins: 0, fats: 0 })
 const calorieResult = ref(null)
 
 const nextStep = async () => {
+  const isCoach = userData.value.plan_id === 3 || userData.value.role === 'coach'
+
+  // Validación común al primer paso
+  if (step.value === 0 && (!userData.value.name || !userData.value.last_name)) {
+    alert('Por favor, completa este campo antes de continuar.')
+    return
+  }
+
+  // Si es coach, solo necesitamos nombre y apellidos
+  if (isCoach) {
+    try {
+      await userStore.updateUserData(userStore.userData.uid, {
+        name: userData.value.name,
+        last_name: userData.value.last_name,
+        plan_id: userData.value.plan_id,
+        role: 'coach',
+        completedForm: true
+      })
+
+      await userStore.fetchUserData()
+      router.push('/dashboard')
+    } catch (error) {
+      console.error('❌ Error guardando datos del coach:', error)
+    }
+    return
+  }
+
+  // Si no es coach, sigue flujo normal
   if (
-    (step.value === 0 && (!userData.value.name || !userData.value.last_name)) ||
     (step.value === 1 && !userData.value.gender) ||
     (step.value === 2 && !userData.value.goal) ||
     (step.value === 3 && !userData.value.birthday) ||
@@ -60,36 +92,32 @@ const nextStep = async () => {
     step.value++
   } else {
     calculateCalories()
-    if (userStore.userData?.uid) {
-      try {
-        await userStore.updateUserData(userStore.userData.uid, {
-          name: userData.value.name,
-          last_name: userData.value.last_name,
-          birthday: new Date(userData.value.birthday),
-          plan_id: userData.value.plan_id,
-          height: userData.value.height,
-          weight: userData.value.weight,
-          age: userData.value.age,
-          activity: userData.value.activity,
-          role: userData.value.plan_id === 3 ? 'coach' : 'user',
-          profile_image: userData.value.profile_image,
-          completedForm: true,
-          goal: userData.value.goal,
-          gender: userData.value.gender
-        })
 
-        // Refrescamos los datos en el store
-        await userStore.fetchUserData()
+    try {
+      await userStore.updateUserData(userStore.userData.uid, {
+        name: userData.value.name,
+        last_name: userData.value.last_name,
+        birthday: new Date(userData.value.birthday),
+        plan_id: userData.value.plan_id,
+        height: userData.value.height,
+        weight: userData.value.weight,
+        age: userData.value.age,
+        activity: userData.value.activity,
+        role: 'user',
+        profile_image: userData.value.profile_image,
+        completedForm: true,
+        goal: userData.value.goal,
+        gender: userData.value.gender
+      })
 
-        // Redireccionamos al dashboard
-        router.push('/dashboard')
-
-      } catch (error) {
-        console.error('Error guardando datos:', error)
-      }
+      await userStore.fetchUserData()
+      router.push('/dashboard')
+    } catch (error) {
+      console.error('❌ Error guardando datos:', error)
     }
   }
 }
+
 
 const previousStep = () => {
   if (step.value > 0) step.value--

@@ -9,47 +9,43 @@ const router = useRouter()
 const userStore = useUserStore()
 
 onMounted(async () => {
+  const plan = Number(route.query.plan)
   console.log('[✅ URL Params]', route.query)
 
-  const plan = Number(route.query.plan)
-
-  // Si no es plan de pago, redirige
   if (![2, 3].includes(plan)) {
-    router.push('/dashboard')
-    return
+    return router.push('/dashboard')
   }
 
-  // Actualizamos datos del usuario desde Supabase
+  // Esperamos a que el usuario esté actualizado
   await userStore.fetchUserData()
 
   const userId = userStore.userData?.uid
 
   if (userId) {
-    const updateFields = {
-      plan_id: plan,
-      ...(plan === 3 && { role: 'coach' })  // si el plan es 3, añade el role
-    }
-
     const { error } = await supabase
       .from('users')
-      .update(updateFields)
+      .update({
+        plan_id: plan,
+        ...(plan === 3 && { role: 'coach' })
+      })
       .eq('uid', userId)
 
     if (error) {
-      console.error('❌ Error actualizando datos del usuario:', error)
+      return console.error('❌ Error actualizando plan:', error)
     }
   }
 
-  // Volvemos a actualizar los datos tras la modificación
+  // Esperamos de nuevo tras actualizar
   await userStore.fetchUserData()
 
-  // Redirige según si ya completó el formulario inicial
+  // Redirige según si completó el formulario
   if (userStore.userData?.completedForm) {
     router.push('/dashboard')
   } else {
     router.push('/empezar')
   }
 })
+
 
 </script>
 
