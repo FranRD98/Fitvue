@@ -64,22 +64,22 @@ Diseñada para usuarios individuales y entrenadores personales, **FitVue** centr
 ![ReviewDetail](./public/github/ReviewDetail_PremiumUser.jpeg)
 
 ### ➕ Nueva revisión
-![NewReview](./public/github/NewReview_PremiumUser.jpeg) |
+![NewReview](./public/github/NewReview_PremiumUser.jpeg)
 
 ### 💪 Historial de levantamientos
 ![LiftingHistory](./public/github/LiftingExerciseHistory_PremiumUser.jpeg)
 
 ### ➕ Crear ejercicio
-![NewExercise](./public/github/NewExercise_PremiumUser.jpeg) |
+![NewExercise](./public/github/NewExercise_PremiumUser.jpeg)
 
 ### 🥗 Crear dieta personalizada
-![NewDiet](./public/github/NewDiet_PremiumUser.jpeg) |
+![NewDiet](./public/github/NewDiet_PremiumUser.jpeg)
 
 ### 👥 Panel de clientes (Pro)
 ![ClientsPanel](./public/github/ClientsPanel_ProUser.jpeg)
 
 ### 📋 Panel de rutinas (Pro)
-![RoutinesPanel](./public/github/RoutinesPanel_ProUser.jpeg) |
+![RoutinesPanel](./public/github/RoutinesPanel_ProUser.jpeg)
 
 ---
 
