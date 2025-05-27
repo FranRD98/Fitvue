@@ -111,7 +111,7 @@ const registerUser = async () => {
     <!-- Columna derecha (mockup) -->
     <div class="hidden md:block md:w-1/2 bg-gray-100">
       <img
-        src="https://placehold.co/800x800?text=Vista+FitVue"
+        src="/img/register_form.jpg"
         alt="Vista previa"
         class="w-full h-full object-cover"
       />

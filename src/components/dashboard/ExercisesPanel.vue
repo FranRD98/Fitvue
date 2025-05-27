@@ -52,7 +52,7 @@ const loadExercises = async () => {
 
   start()
   try {
-    exercises.value = await getExercises()
+    exercises.value = await getExercises(userStore.userData?.uid)        
     exerciseCategories.value = await getExerciseCategories()
   } catch (err) {
     console.error('Error al cargar ejercicios:', err)

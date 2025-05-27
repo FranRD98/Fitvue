@@ -84,7 +84,10 @@ const login = async () => {
 
     <!-- Columna derecha (imagen en escritorio) -->
     <div class="hidden md:block md:w-1/2 bg-gray-200">
-      <img src="https://placehold.co/800x800?text=Vista+FitVue" alt="Vista previa" class="w-full h-full object-cover" />
+      <img 
+      src="/img/login_form.jpg"
+      alt="Vista previa"
+      class="w-full h-full object-cover" />
     </div>
   </div>
 </template>

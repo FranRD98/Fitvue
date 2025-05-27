@@ -263,7 +263,7 @@ function resetForm() {
                 <div class="flex gap-2">
                   <select v-model="day.selectedExercise" class="input">
                     <option disabled selected value="">Selecciona un ejercicio</option>
-                    <option v-for="ex in exercises" :key="ex.id" :value="ex.id">{{ ex.name }}</option>
+                    <option v-for="ex in exercises" :key="ex.id" :value="ex.id">{{ ex.name }} ({{ ex.exercises_categories.category_name }})</option>
                   </select>
                   <button
                     type="button"

@@ -16,6 +16,8 @@ export async function getExercises(userId) {
       exercises_categories (category_name)
     `)
     .in('created_by', [userId, ...adminIds])
+    .order('name', { ascending: true });
+
 
   if (error) {
     console.error('Error al obtener los ejercicios:', error)
@@ -53,7 +55,7 @@ export async function getExerciseCategories() {
 
 // Crear ejercicio
 export async function createExercise(exerciseData) {
-  const { name, description, id_category, image } = exerciseData;
+  const { name, description, id_category, image, created_by } = exerciseData;
 
   const { data, error } = await supabase
     .from('exercises')
@@ -64,7 +66,8 @@ export async function createExercise(exerciseData) {
         id_category,
         image,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        created_by
       }
     ]);
 
@@ -79,7 +82,7 @@ export async function createExercise(exerciseData) {
 
 // Actualizar ejercicio
 export async function updateExercise(exerciseId, exerciseData) {
-  const { name, description, id_category, imageUrl } = exerciseData;
+  const { name, description, id_category, image_url } = exerciseData;
 
   const { data, error } = await supabase
     .from('exercises')  // Asegúrate de que 'exercises' sea el nombre correcto de la tabla
@@ -87,7 +90,7 @@ export async function updateExercise(exerciseId, exerciseData) {
       name,
       description,
       id_category,
-      image_url: imageUrl,  // Actualiza la URL de la imagen
+      image_url: image_url,  // Actualiza la URL de la imagen
       updated_at: new Date().toISOString()
     })
     .eq('id', exerciseId);  // Filtra por el ID del ejercicio
