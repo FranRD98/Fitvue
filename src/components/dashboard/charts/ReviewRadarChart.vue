@@ -68,7 +68,11 @@ const options = {
     datalabels: {
       color: '#000',
       font: { weight: 'bold' },
-      formatter: (value) => `${value} cm`,
+      formatter: (value, context) => {
+        const label = context.chart.data.labels[context.dataIndex]
+        const isWeight = label.toLowerCase().includes('peso') // Preciso y flexible
+        return `${value} ${isWeight ? 'kg' : 'cm'}`
+      },
       anchor: 'end',
       align: 'end'
     }

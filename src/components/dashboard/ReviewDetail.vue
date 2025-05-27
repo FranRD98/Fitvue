@@ -117,7 +117,9 @@ onMounted(async () => {
             class="bg-white border border-gray-200 p-5 rounded-xl shadow-sm hover:shadow-md transition"
           >
             <h3 class="text-sm font-medium text-gray-500 mb-1">{{ item.label }}</h3>
-            <p class="text-2xl font-semibold text-[var(--color-primary)]">{{ item.value }} cm</p>
+              <p class="text-2xl font-semibold text-[var(--color-primary)]">
+                {{ item.value }} {{ item.key === 'weight' ? 'kg' : 'cm' }}
+              </p>
           </div>
         </div>
       </div>
