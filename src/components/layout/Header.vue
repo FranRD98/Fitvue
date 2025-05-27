@@ -222,13 +222,6 @@ const userName = computed(() => userData.value?.name || 'Usuario')
     <nav class="flex flex-col gap-5 text-[var(--color-text)] text-lg">
       <router-link
         @click="closeMenu"
-        to="/nosotros"
-        class="hover:text-[var(--color-primary)] transition"
-      >
-        ¿Qué es FitVue?
-      </router-link>
-      <router-link
-        @click="closeMenu"
         to="/rutinas"
         class="hover:text-[var(--color-primary)] transition"
       >
