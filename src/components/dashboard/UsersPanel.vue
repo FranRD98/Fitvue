@@ -159,9 +159,11 @@ const filteredUsers = computed(() => {
           <tr>
             <th class="py-3 px-2">Nombre</th>
             <th class="px-2">Email</th>
-            <th class="px-2">Creado</th>
+            <th class="px-2">Rutina Asignada (Coach)</th>
+            <th class="px-2">Dieta Asignada (Coach)</th>
             <th v-if="role !== 'coach'" class="px-2">Plan</th>
             <th v-if="role !== 'coach'" class="px-2">Rol</th>
+            <th class="px-2">Creado</th>
             <th class="px-2 text-right">Acciones</th>
           </tr>
         </thead>
@@ -176,9 +178,17 @@ const filteredUsers = computed(() => {
               {{ user.name }} {{ user.last_name }}
             </td>
             <td class="py-3 px-2 whitespace-nowrap">{{ user.email }}</td>
-            <td class="py-3 px-2 whitespace-nowrap">{{ new Date(user.created_at).toLocaleDateString() || '—' }}</td>
+
+            <td v-if="user.assigned_routine_by_coach" class="py-3 px-2 capitalize">Sí</td>
+            <td v-else class="py-3 px-2 capitalize">No</td>
+
+            <td v-if="user.assigned_diet" class="py-3 px-2 capitalize">Sí</td>
+            <td v-else class="py-3 px-2 capitalize">No</td>
+
             <td v-if="role !== 'coach'" class="py-3 px-2 capitalize">{{ user.plan_id || '—' }}</td>
             <td v-if="role !== 'coach'" class="py-3 px-2 capitalize">{{ user.role || '—' }}</td>
+            <td class="py-3 px-2 whitespace-nowrap">{{ new Date(user.created_at).toLocaleDateString() || '—' }}</td>
+
             <td class="py-3 px-2 text-right">
               <button
                 @click.prevent.stop="handleDelete(user)"

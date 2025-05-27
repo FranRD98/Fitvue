@@ -35,7 +35,10 @@ const emit = defineEmits(['toggleSidebar'])
         <h1 class="text-lg md:text-xl font-bold text-[var(--color-primary)]">
           ¡Hola, {{ userStore.userData?.name || 'Usuario' }}!
         </h1>
-        <p class="text-xs md:text-sm text-gray-500 truncate">{{ randomMessage }}</p>
+        <p class="text-xs md:text-sm text-gray-500 leading-snug max-h-[3.5rem] overflow-hidden">
+          {{ randomMessage }}
+        </p>
+
       </div>
     </div>
   </header>
