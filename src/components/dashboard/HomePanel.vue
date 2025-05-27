@@ -1,37 +1,43 @@
 <script setup>
   import { ref, watch, computed } from 'vue'
+  import { useRoute, useRouter } from 'vue-router'
+
   import { useUserStore } from '@/stores/user'
   import { getReviewsById } from '@/supabase/services/progress'
-  import { useRouter } from 'vue-router'
   import { useDelayedSkeleton } from '@/composables/useDelayedSkeleton'
   import ProgressStats from './ProgressStats.vue'
 
   const userStore = useUserStore()
-  const router = useRouter()
+  const router = useRouter()  
+const route = useRoute()
 
   const reviews = ref([])
   const lastReview = computed(() => reviews.value[0])
   const { loading, showSkeleton, start, finish } = useDelayedSkeleton(300) // <-- 300ms
 
-  watch(
-    () => userStore.userData?.uid,
-    async (uid) => {
-      if (!uid) return
+watch(
+  () => [userStore.userData?.uid, route.query.refresh],
+  async ([uid, refresh]) => {
+    if (!uid) return
 
-      start()
+    start()
 
-      try {
-        const data = await getReviewsById(uid)
-        reviews.value = data
+    try {
+      const data = await getReviewsById(uid)
+      reviews.value = data
+    } catch (err) {
+      console.error('Error cargando reviews:', err)
+    } finally {
+      finish()
+    }
 
-      } catch (err) {
-        console.error('Error cargando reviews:', err)
-      } finally {
-        finish()
-      }
-    },
-    { immediate: true }
-  )
+    if (refresh) {
+      const { refresh, ...rest } = route.query
+      router.replace({ path: route.path, query: rest })
+    }
+  },
+  { immediate: true }
+)
 
   function formatDate(date) {
     return new Date(date).toLocaleDateString('es-ES', {

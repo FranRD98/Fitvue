@@ -91,8 +91,7 @@ function handleNext() {
   }
  else {
     createReview(userData.value)
-    router.push('/dashboard')
-  }
+    router.push({ path: '/dashboard', query: { refresh: 'true' } })  }
 }
 
 function handleBack() {
