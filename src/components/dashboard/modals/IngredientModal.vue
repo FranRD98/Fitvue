@@ -61,22 +61,23 @@ const handleSubmit = () => {
         <div class="grid grid-cols-2 gap-4">
           <div class="space-y-1">
             <label for="calories" class="text-sm font-medium text-gray-700">Calorías (100g)</label>
-            <input id="calories" v-model="form.calories" type="number" class="input" />
+            <input id="calories" v-model="form.calories" step="any" type="number" class="input" />
           </div>
 
           <div class="space-y-1">
             <label for="protein" class="text-sm font-medium text-gray-700">Proteínas</label>
-            <input id="protein" v-model="form.protein" type="number" class="input" />
+            <input id="protein" v-model="form.protein" step="any" type="number" class="input" />
+
           </div>
 
           <div class="space-y-1">
             <label for="carbs" class="text-sm font-medium text-gray-700">Carbohidratos</label>
-            <input id="carbs" v-model="form.carbs" type="number" class="input" />
+            <input id="carbs" v-model="form.carbs" step="any" type="number" class="input" />
           </div>
 
           <div class="space-y-1">
             <label for="fats" class="text-sm font-medium text-gray-700">Grasas</label>
-            <input id="fats" v-model="form.fats" type="number" class="input" />
+            <input id="fats" v-model="form.fats" step="any" type="number" class="input" />
           </div>
         </div>
 
