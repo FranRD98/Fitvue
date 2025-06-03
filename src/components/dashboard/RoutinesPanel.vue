@@ -1,11 +1,11 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useUserStore } from '@/stores/user'  // Importamos el store de Pinia
-import { getRoutinesByUser, assignRoutineToUser, getAssignedRoutine, unassignRoutineFromUser, updateRoutine, getCoachAssignedRoutine } from '@/supabase/services/routines.js'
+import { getRoutinesByUser, assignRoutineToUser, getAssignedRoutine, unassignRoutineFromUser, updateRoutine, getCoachAssignedRoutine, deleteRoutine } from '@/supabase/services/routines.js'
 import RoutineFormModal from '@/components/dashboard/modals/RoutineFormModal.vue'
 import RoutineAssignedViewer from '@/components/dashboard/RoutineAssignedViewer.vue'
 
-import { IconPlus, IconLayoutGrid, IconLayoutList, IconLockOff, IconRocket, IconLockOpen2 } from '@tabler/icons-vue'
+import { IconPlus, IconLayoutGrid, IconLayoutList, IconLockOff, IconRocket, IconLockOpen2, IconTrash } from '@tabler/icons-vue'
 import { useDelayedSkeleton } from '@/composables/useDelayedSkeleton'
 
 const routines = ref([])
@@ -60,6 +60,13 @@ const togglePublished = async (routine) => {
     routine.published = newValue
   } catch (error) {
     console.error('Error al publicar rutina:', error)
+  }
+}
+
+async function removeRoutine(routine) {
+  if (confirm(`¿Eliminar la dieta "${routine.title}"?`)) {
+    await deleteRoutine(routine.id)
+    await loadRoutines()
   }
 }
 
@@ -237,73 +244,47 @@ const handleUnassign = async () => {
             <p class="text-sm text-gray-600 mb-3 line-clamp-3">{{ routine.description }}</p>
             <p class="text-xs text-gray-500 mt-auto">Ejercicios totales: {{ countExercises(routine) }}</p>
 
-            <div class="flex justify-between">
-              
-              <!-- Checkbox publicar Rutina -->
-              <div v-if="userStore.userData?.role === 'admin'" class="mt-4 flex justify-end">
-                <label class="flex items-center gap-2 cursor-pointer select-none" @click.stop>
-                  <input
-                    type="checkbox"
-                    class="sr-only"
-                    :checked="routine.published"
-                    @change="() => togglePublished(routine)"
-                  />
+            <div class="mt-4 flex justify-between items-center">
+              <!-- Asignar Rutina -->
+              <label class="flex items-center gap-2 cursor-pointer select-none" @click.stop>
+                <input
+                  type="checkbox"
+                  class="sr-only"
+                  :checked="assignedRoutineId"
+                  @change="($event) => {
+                    if ($event.target.checked) {
+                      handleAssign(routine.id)
+                    } else {
+                      handleUnassign()
+                    }
+                  }"
+                />
+                <div
+                  class="w-10 h-6 flex items-center bg-gray-300 rounded-full p-1 duration-300 ease-in-out"
+                  :class="{ 'bg-green-500': assignedRoutineId === routine.id }"
+                >
                   <div
-                    class="w-10 h-6 flex items-center bg-gray-300 rounded-full p-1 duration-300 ease-in-out"
-                    :class="{ 'bg-green-500': routine.published }"
-                  >
-                    <div
-                      class="bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out"
-                      :class="{ 'translate-x-4': routine.published }"
-                    ></div>
-                  </div>
-                  <span class="text-sm text-gray-700">
-                    {{ routine.published ? 'Publicado' : 'No publicado' }}
-                  </span>
-                </label>
-              </div>
-              
-              <!-- Checkbox Asignar Rutina -->
-              <div class="mt-4 flex justify-end">
-                <label class="flex items-center gap-2 cursor-pointer select-none" @click.stop>
-                  <input
-                    type="checkbox"
-                    class="sr-only"
-                    :checked="assignedRoutineId"
-                    @change="($event) => {
-                      if ($event.target.checked) {
-                        handleAssign(routine.id)
-                      } else {
-                        handleUnassign()
-                      }
-                    }"
-                  />
-                  <div
-                    class="w-10 h-6 flex items-center bg-gray-300 rounded-full p-1 duration-300 ease-in-out"
-                    :class="{ 'bg-green-500': assignedRoutineId === routine.id }"
-                  >
-                    <div
-                      class="bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out"
-                      :class="{ 'translate-x-4': assignedRoutineId === routine.id }"
-                    ></div>
-                  </div>
-                  <span class="text-sm text-gray-700">
-                    {{ assignedRoutineId === routine.id ? 'Asignada' : 'Sin asignar' }}
-                  </span>
-                </label>
-              </div>
+                    class="bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out"
+                    :class="{ 'translate-x-4': assignedRoutineId === routine.id }"
+                  ></div>
+                </div>
+                <span class="text-sm text-gray-700">
+                  {{ assignedRoutineId === routine.id ? 'Asignada' : 'Sin asignar' }}
+                </span>
+              </label>
+
+              <!-- Botón eliminar -->
+              <button
+                @click.stop="removeRoutine(routine)"
+                class="text-red-600 hover:text-white hover:bg-red-600 p-2 rounded-full transition"
+                title="Eliminar rutina"
+              >
+                <IconTrash class="w-5 h-5" />
+              </button>
             </div>
-
-          </div>
         </div>
-
-      <div>
-        
+        </div>
       </div>
-
-      </div>
-
-
 
       <!-- Vista Tabla -->
        <div v-else-if="viewMode === 'table' && filteredRoutines.length" class="overflow-x-auto">

@@ -249,3 +249,14 @@ export async function unassignRoutineFromUser(uid) {
 
   if (error) throw error
 }
+
+// Eliminar rutina
+export async function deleteRoutine(id) {
+
+  const { error } = await supabase
+    .from('routines')
+    .delete()
+    .eq('id', id)
+
+  if (error) throw error
+}
